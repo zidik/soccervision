@@ -57,8 +57,8 @@ PID::PID(float Kc, float tauI, float tauD, float interval) {
     //Default the limits to the full range of I/O: 3.3V
     //Make sure to set these to more appropriate limits for
     //your application.
-    setInputLimits(0.0, 3.3);
-    setOutputLimits(0.0, 3.3);
+    setInputLimits(0.0f, 3.3f);
+    setOutputLimits(0.0f, 3.3f);
  
     tSample_ = interval;
  
@@ -141,7 +141,7 @@ void PID::setTunings(float Kc, float tauI, float tauD) {
     if (tauI == 0.0) {
         tempTauR = 0.0;
     } else {
-        tempTauR = (1.0 / tauI) * tSample_;
+        tempTauR = (1.0f / tauI) * tSample_;
     }
  
     //For "bumpless transfer" we need to rescale the accumulated error.
