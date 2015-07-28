@@ -4,6 +4,7 @@
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 
+#include <set>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -22,7 +23,7 @@ public:
 
 	typedef std::vector<WebSocketServer::Listener*> Listeners;
 	typedef Listeners::const_iterator ListenersIt;
-	typedef std::set<websocketpp::connection_hdl> Connections;
+	typedef std::set<websocketpp::connection_hdl, std::owner_less<websocketpp::connection_hdl>> Connections;
 	typedef Connections::iterator ConnectionsIt;
 	typedef websocketpp::server<websocketpp::config::asio> Server;
 	//typedef websocketpp::server<websocketpp::config::core> Server;
