@@ -10,7 +10,7 @@ INSTALL BOOTSTRAP
 1. download latest
 2. in boost folder execute
    > bootstrap
-   > .\b2 runtime-link=static --with-thread --with-regex
+   > .\b2 runtime-link=static --with-date_time --with-thread --with-regex
 3. create BOOSTROOT environment variable pointing to the library path (C:\boost etc)
 
 
