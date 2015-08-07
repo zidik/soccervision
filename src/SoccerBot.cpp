@@ -117,9 +117,38 @@ void SoccerBot::run() {
 
 	if (!frontCamera->isOpened() && !rearCamera->isOpened()) {
 		std::cout << "! Neither of the cameras was opened, running in test mode" << std::endl;
-
+		double time;
 		while (running) {
-			Sleep(100);
+			//Sleep(100);
+			// for debugging!
+			{
+				time = Util::millitime();
+
+				if (lastStepTime != 0.0) {
+					dt = (float)(time - lastStepTime);
+				}
+				else {
+					dt = 1.0f / 60.0f;
+				}
+
+				handleServerMessages();
+				handleCommunicationMessages();
+				/*
+				if (activeController != NULL) {
+					activeController->step(dt, visionResults);
+				}
+				*/
+				robot->step(dt, visionResults);
+
+				if (server != NULL && stateRequested) {
+					server->broadcast(Util::json("state", getStateJSON()));
+					
+					stateRequested = false;
+				}
+
+				lastStepTime = time;
+
+			}
 
 			if (SignalHandler::exitRequested) {
 				running = false;
@@ -997,7 +1026,7 @@ std::string SoccerBot::getStateJSON() {
 
     stream << "{";
 
-    
+	stream << "\"robot_id\":" << Config::robotId << ",";
 	stream << "\"robot\":{" << robot->getJSON() << "},";
     stream << "\"dt\":" << dt << ",";
     stream << "\"totalTime\":" << totalTime << ",";

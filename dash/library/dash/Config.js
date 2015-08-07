@@ -4,9 +4,18 @@ window.Dash = {};
 Dash.Config = {
 	socket: {
 		host: 'localhost',
-		port: 8000
+		port: 8000,
+		socketId: 1
+	},
+	socket2: {
+		host: '172.17.35.231',
+		port: 8000,
+		socketId: 2
 	},
 	robot: {
+		radius: 0.125
+	},
+	robot2: {
 		radius: 0.125
 	},
 	ball: {

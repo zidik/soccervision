@@ -4,6 +4,7 @@ $(document).ready(function() {
 		dbg: new Dash.Debug(),
 		renderer: new Dash.Renderer(),
 		socket: new Dash.Socket(),
+		socket2: new Dash.Socket(),
 		ui: new Dash.UI()
 	};
 	

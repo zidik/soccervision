@@ -731,7 +731,7 @@ std::string TestController::getJSON() {
 		stream << "\"" << (it->first) << "\": \"" << (it->second) << "\",";
 	}
 
-	Vision::Obstruction goalPathObstruction = getGoalPathObstruction();
+	Vision::Obstruction goalPathObstruction; //= getGoalPathObstruction(); //commented out for debugging!
 	bool isGoalPathObstructed = goalPathObstruction.left || goalPathObstruction.right;
 
 	//send some debug information to the client

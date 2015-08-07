@@ -9,8 +9,10 @@ Dash.Socket.prototype = new Dash.Bindable();
 
 Dash.Socket.Event = {
 	OPEN: 'open',
+	OPEN_2: 'open2',
 	CLOSE: 'close',
 	MESSAGE_RECEIVED: 'message-received',
+	MESSAGE_RECEIVED_2: 'message-received2',
 	MESSAGE_SENT: 'message-sent',
 	ERROR: 'error'
 };
@@ -22,23 +24,31 @@ Dash.Socket.State = {
 	CLOSED: 3
 };
 
-Dash.Socket.prototype.open = function(host, port) {
+Dash.Socket.prototype.open = function(host, port, socketId) {
 	var self = this;
-	
+
 	this.host = host;
 	this.port = port;
+
 	this.ws = new WebSocket('ws://' + this.host + ':' + this.port);
 	this.opening = true;
 	
 	this.ws.onopen = function() {
 		this.opening = false;
-		
-		self.fire({
-			type: Dash.Socket.Event.OPEN,
-			socket: self
-		});
+		if(socketId == 1) {
+			self.fire({
+				type: Dash.Socket.Event.OPEN,
+				socket: self
+			});
+		} else if(socketId == 2) {
+			self.fire({
+				type: Dash.Socket.Event.OPEN_2,
+				socket2: self
+			});
+		}
 	};
-	
+
+
 	this.ws.onclose = function() {
 		self.fire({
 			type: Dash.Socket.Event.CLOSE,
@@ -53,12 +63,21 @@ Dash.Socket.prototype.open = function(host, port) {
 			socket: self
 		});
 	};
-	
+
 	this.ws.onmessage = function(message) {
-		self.fire({
-			type: Dash.Socket.Event.MESSAGE_RECEIVED,
-			message: message
-		});
+		if(socketId == 1) {
+			self.fire({
+				type: Dash.Socket.Event.MESSAGE_RECEIVED,
+				message: message
+			});
+		} else if(socketId == 2) {
+			self.fire({
+				type: Dash.Socket.Event.MESSAGE_RECEIVED_2,
+				message: message
+			});
+		}
+
+
 	};
 };
 
@@ -95,7 +114,6 @@ Dash.Socket.prototype.send = function(message) {
 			
 			return;
 		}
-		
 		this.ws.send(message);
 
 		this.fire({

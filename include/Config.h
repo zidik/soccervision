@@ -10,6 +10,8 @@ namespace Config {
 		COM
 	};
 
+	const std::string robotId = "1";
+
 	const CommunicationMode communicationMode = ETHERNET;
 	//const CommunicationMode communicationMode = SERIAL;
 	//const CommunicationMode communicationMode = COM;

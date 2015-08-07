@@ -14,6 +14,7 @@ Dash.UI = function() {
 	this.currentStateIndex = 0;
 	this.repeatedLogCount = 0;
 	this.extractedCameraTranslator = false;
+
 };
 
 Dash.UI.prototype = new Dash.Bindable();
@@ -26,8 +27,10 @@ Dash.UI.Event = {
 Dash.UI.prototype.init = function() {
 	this.initDebugListener();
 	this.initSlider();
-	this.initSocket();
-	this.initRobot();
+
+	this.initSocket(dash.socket,1);
+	this.initSocket(dash.socket2,2);
+    this.initRobots();
 	this.initFpsCounter();
 	this.initKeyboardController();
 	this.initJoystickController();
@@ -207,15 +210,26 @@ Dash.UI.prototype.setupParameterFields = function() {
 	});
 };
 
-Dash.UI.prototype.initSocket = function() {
+Dash.UI.prototype.initSocket = function(socket, robotId) {
 	var self = this,
 		cookieHost = $.cookie('host');
-		
+
 	if (cookieHost != null) {
-		dash.config.socket.host = cookieHost;
+		socket.host = cookieHost;
 	}
-	
-	dash.socket.bind(Dash.Socket.Event.OPEN, function(e) {
+
+    var eventOpen, eventMsgRcvd;
+    if (robotId == 1) {
+        eventOpen = Dash.Socket.Event.OPEN;
+        eventMsgRcvd = Dash.Socket.Event.MESSAGE_RECEIVED;
+    } else if (robotId == 2) {
+        eventOpen = Dash.Socket.Event.OPEN_2;
+        eventMsgRcvd = Dash.Socket.Event.MESSAGE_RECEIVED_2;
+    } else {
+        alert("robotId not set on socket");
+    }
+
+	socket.bind(eventOpen, function(e) {
 		if (self.reconnectTimeout != null) {
 			window.clearTimeout(self.reconnectTimeout);
 			
@@ -231,13 +245,13 @@ Dash.UI.prototype.initSocket = function() {
 		$('#rebuild-btn').text('Rebuild');
 		
 		//window.setTimeout(function() {
-			dash.socket.send('<get-controller>');
+			socket.send('<get-controller>');
 		//}, 2000);
 
 		self.setupParameterFields();
 	});
 	
-	dash.socket.bind(Dash.Socket.Event.CLOSE, function(e) {
+	socket.bind(Dash.Socket.Event.CLOSE, function(e) {
 		//dash.dbg.log('- Socket server closed');
 		
 		$('#connecting').show();
@@ -250,52 +264,56 @@ Dash.UI.prototype.initSocket = function() {
 		}
 		
 		self.reconnectTimeout = window.setTimeout(function() {
-			dash.socket.open(dash.config.socket.host, dash.config.socket.port);
+			socket.open(socket.host, socket.port, socket.socketId);
 		}, 1000);
 		
 		$('#controller-choice OPTION:eq(0)').trigger('select');
 	});
 	
-	dash.socket.bind(Dash.Socket.Event.ERROR, function(e) {
+	socket.bind(Dash.Socket.Event.ERROR, function(e) {
 		//dash.dbg.log('- Socket error occured: ' + e.message);
 	});
-	
-	dash.socket.bind(Dash.Socket.Event.MESSAGE_SENT, function(e) {
+
+	socket.bind(Dash.Socket.Event.MESSAGE_SENT, function(e) {
 		self.flashClass('#tx', 'active', 100);
 	});
-	
-	dash.socket.bind(Dash.Socket.Event.MESSAGE_RECEIVED, function(e) {
-		var message;
-		
-		try {
-			message = JSON.parse(e.message.data);
-		} catch (ex) {
-			dash.dbg.log('- Invalid message', e.message.data);
-			debugger;
-			
-			return;
-		}
-		
-		self.handleMessage(message);
-		
-		self.flashClass('#rx', 'active', 100);
+
+	socket.bind(eventMsgRcvd, function(e) {
+
+        var message;
+
+        try {
+            message = JSON.parse(e.message.data);
+        } catch (ex) {
+            dash.dbg.log('- Invalid message', e.message.data);
+            debugger;
+
+            return;
+        }
+
+            self.handleMessage(message,robotId);
+
+            self.flashClass('#rx', 'active', 100);
+
+
 	});
-	
-	dash.socket.open(dash.config.socket.host, dash.config.socket.port);
+
+	//socket.open(socket.host, socket.port); //commented out for debugging
 	
 	/*window.setInterval(function() {
-		if (dash.socket.getState() != Dash.Socket.State.OPEN) {
+		if (socket.getState() != Dash.Socket.State.OPEN) {
 			$('#connecting').show();
 			
-			dash.socket.open(dash.config.socket.host, dash.config.socket.port);
+			socket.open(dash.config.socket.host, dash.config.socket.port);
 		} else {
 			$('#connecting').hide();
 		}
 	}, 1000);*/
 };
 
-Dash.UI.prototype.initRobot = function() {
+Dash.UI.prototype.initRobots = function() {
 	this.robot = new Dash.Robot(dash.socket);
+	this.robot2 = new Dash.Robot(dash.socket2);
 };
 
 Dash.UI.prototype.initFpsCounter = function() {
@@ -395,6 +413,7 @@ Dash.UI.prototype.initKeyListeners = function() {
 };
 
 Dash.UI.prototype.initControls = function() {
+
 	var self = this,
 		keyboardEnabled = $.cookie('keyboard-enabled'),
 		joystickEnabled = $.cookie('joystick-enabled');
@@ -456,19 +475,33 @@ Dash.UI.prototype.initControls = function() {
 	});
 	
 	$('#host-btn').click(function() {
-		var newHost = window.prompt('Enter robot hostname or IP', dash.config.socket.host);
+		var newHost = window.prompt('Enter 1. robot hostname or IP', dash.config.socket.host);
 		
 		if (typeof(newHost) == 'string' && newHost.length> 0) {
 			dash.config.socket.host = newHost;
 			
-			dash.socket.open(dash.config.socket.host, dash.config.socket.port);
+			dash.socket.open(dash.config.socket.host, dash.config.socket.port, dash.config.socket.socketId);
 			
 			$.cookie('host', dash.config.socket.host);
 			
 			$(this).html(dash.config.socket.host);
 		}
 	}).html(dash.config.socket.host);
-	
+
+	$('#host-btn2').click(function() {
+		var newHost = window.prompt('Enter 2. robot hostname or IP', dash.config.socket2.host);
+
+		if (typeof(newHost) == 'string' && newHost.length> 0) {
+			dash.config.socket2.host = newHost;
+
+			dash.socket2.open(dash.config.socket2.host, dash.config.socket2.port, dash.config.socket2.socketId);
+
+			$.cookie('host2', dash.config.socket2.host);
+
+			$(this).html(dash.config.socket2.host);
+		}
+	}).html(dash.config.socket2.host);
+
 	$('#rebuild-btn').click(function() {
 		var btn = $(this);
 		
@@ -825,13 +858,12 @@ Dash.UI.prototype.isKeyDown = function(key) {
 	return typeof(this.keystates[key]) != 'undefined' && this.keystates[key] == true;
 };
 
-Dash.UI.prototype.handleMessage = function(message) {
+Dash.UI.prototype.handleMessage = function(message,robotId) {
 	if (typeof(message.id) != 'string') {
 		dash.dbg.log('- Unknown message', message);
-		
 		return;
 	}
-	
+
 	switch (message.id) {
 		case 'controller':
 			this.handleControllerMessage(message.payload);
@@ -888,9 +920,8 @@ Dash.UI.prototype.handleControllerMessage = function(controller) {
 };
 
 Dash.UI.prototype.handleStateMessage = function(state) {
-	this.addState(state);
-
-	dash.socket.send('<get-state>'); // request for new state
+        this.addState(state);
+        dash.socket.send('<get-state>'); // request for new state
 };
 
 Dash.UI.prototype.handleLogMessage = function(messages) {
