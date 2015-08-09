@@ -1,5 +1,6 @@
-Dash.JoystickController = function(robot) {
+Dash.JoystickController = function(robot, socket ) {
 	this.robot = robot;
+	this.socket = socket;
 	this.gamepad = null;
 	this.useGamepad = false;
 	this.enabled = false;
@@ -39,22 +40,22 @@ Dash.JoystickController.prototype.onButtonDown = function(e) {
 		// find ball instantly
 		dash.ui.states = [];
 		//dash.ui.robot.resetPosition();
-		dash.socket.send('<run-find-ball>');
-		//dash.socket.send('<run-watch-ball>');
+		this.socket.send('<run-find-ball>');
+		//this.socket.send('<run-watch-ball>');
 	} else if (e.control == 'FACE_3') { // blue X
 		dash.ui.toggleTargetSide();
 		window.setTimeout(function() { dash.ui.toggleTargetSide(); }, 250);
 		window.setTimeout(function() {
 			dash.ui.states = [];
-			dash.socket.send('<run-find-ball>');
+			this.socket.send('<run-find-ball>');
 		}, 250);
 
 		/*dash.ui.states = [];
 
-		dash.socket.send('<run-find-ball>');*/
-		//dash.socket.send('<run-fetch-ball-near>');
+		this.socket.send('<run-find-ball>');*/
+		//this.socket.send('<run-fetch-ball-near>');
 	} else if (e.control == 'FACE_2') { // red B
-		dash.socket.send('<run-manual-control>');
+		this.socket.send('<run-manual-control>');
 	} else if (e.control == 'LEFT_TOP_SHOULDER') {
 		this.robot.toggleDribbler();
 	} else if (e.control == 'DPAD_UP') {

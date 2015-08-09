@@ -1,7 +1,8 @@
-Dash.Robot = function(socket) {
+Dash.Robot = function(socket, _robotId) {
 	this.socket = socket;
 	this.controller = null;
 	this.dribblerActive = false;
+	this.robotId = _robotId;
 };
 
 Dash.Robot.prototype.setController = function(name) {

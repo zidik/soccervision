@@ -24,18 +24,18 @@ Dash.UI.Event = {
 	KEY_UP: 'key-up'
 }
 
-Dash.UI.prototype.init = function() {
+Dash.UI.prototype.init = function(socket, robotId) {
+	this.socket = socket;
+    this.robotId = robotId;
 	this.initDebugListener();
 	this.initSlider();
-
-	this.initSocket(dash.socket,1);
-	this.initSocket(dash.socket2,2);
-    this.initRobots();
+	this.initSocket();
+    this.initRobot();
 	this.initFpsCounter();
 	this.initKeyboardController();
 	this.initJoystickController();
 	this.initKeyListeners();
-	this.initControls();
+	this.initControls(dash.config.controls);
 	this.initBlobberView();
 	this.initFrameCanvas();
 };
@@ -197,6 +197,7 @@ Dash.UI.prototype.initSlider = function() {
 };
 
 Dash.UI.prototype.setupParameterFields = function() {
+    var self = this;
 	$('.send-parameter-field').each(function() {
 		var index = $(this).data('index'),
 			value = parseFloat(window.localStorage['parameter-' + index]);
@@ -206,30 +207,30 @@ Dash.UI.prototype.setupParameterFields = function() {
 		}
 
 		$(this).val(value);
-		dash.socket.send('<parameter:' + index + ':' + value + '>');
+        self.socket.send('<parameter:' + index + ':' + value + '>');
 	});
 };
 
-Dash.UI.prototype.initSocket = function(socket, robotId) {
+Dash.UI.prototype.initSocket = function() {
 	var self = this,
 		cookieHost = $.cookie('host');
 
 	if (cookieHost != null) {
-		socket.host = cookieHost;
+		this.socket.host = cookieHost;
 	}
 
     var eventOpen, eventMsgRcvd;
-    if (robotId == 1) {
+    if (this.robotId == dash.config.robot.robotId) {
         eventOpen = Dash.Socket.Event.OPEN;
         eventMsgRcvd = Dash.Socket.Event.MESSAGE_RECEIVED;
-    } else if (robotId == 2) {
+    } else if (this.robotId == dash.config2.robot.robotId) {
         eventOpen = Dash.Socket.Event.OPEN_2;
         eventMsgRcvd = Dash.Socket.Event.MESSAGE_RECEIVED_2;
     } else {
         alert("robotId not set on socket");
     }
 
-	socket.bind(eventOpen, function(e) {
+	this.socket.bind(eventOpen, function(e) {
 		if (self.reconnectTimeout != null) {
 			window.clearTimeout(self.reconnectTimeout);
 			
@@ -245,13 +246,13 @@ Dash.UI.prototype.initSocket = function(socket, robotId) {
 		$('#rebuild-btn').text('Rebuild');
 		
 		//window.setTimeout(function() {
-			socket.send('<get-controller>');
+        self.socket.send('<get-controller>');
 		//}, 2000);
 
 		self.setupParameterFields();
 	});
 	
-	socket.bind(Dash.Socket.Event.CLOSE, function(e) {
+	this.socket.bind(Dash.Socket.Event.CLOSE, function(e) {
 		//dash.dbg.log('- Socket server closed');
 		
 		$('#connecting').show();
@@ -264,21 +265,21 @@ Dash.UI.prototype.initSocket = function(socket, robotId) {
 		}
 		
 		self.reconnectTimeout = window.setTimeout(function() {
-			socket.open(socket.host, socket.port, socket.socketId);
+            self.socket.open(self.socket.host, self.socket.port, self.socket.socketId);
 		}, 1000);
 		
 		$('#controller-choice OPTION:eq(0)').trigger('select');
 	});
 	
-	socket.bind(Dash.Socket.Event.ERROR, function(e) {
+	this.socket.bind(Dash.Socket.Event.ERROR, function(e) {
 		//dash.dbg.log('- Socket error occured: ' + e.message);
 	});
 
-	socket.bind(Dash.Socket.Event.MESSAGE_SENT, function(e) {
+	this.socket.bind(Dash.Socket.Event.MESSAGE_SENT, function(e) {
 		self.flashClass('#tx', 'active', 100);
 	});
 
-	socket.bind(eventMsgRcvd, function(e) {
+	this.socket.bind(eventMsgRcvd, function(e) {
 
         var message;
 
@@ -291,14 +292,14 @@ Dash.UI.prototype.initSocket = function(socket, robotId) {
             return;
         }
 
-            self.handleMessage(message,robotId);
+            self.handleMessage(message,this.robotId);
 
             self.flashClass('#rx', 'active', 100);
 
 
 	});
 
-	//socket.open(socket.host, socket.port); //commented out for debugging
+	//this.socket.open(socket.host, socket.port); //commented out for debugging
 	
 	/*window.setInterval(function() {
 		if (socket.getState() != Dash.Socket.State.OPEN) {
@@ -311,9 +312,8 @@ Dash.UI.prototype.initSocket = function(socket, robotId) {
 	}, 1000);*/
 };
 
-Dash.UI.prototype.initRobots = function() {
-	this.robot = new Dash.Robot(dash.socket);
-	this.robot2 = new Dash.Robot(dash.socket2);
+Dash.UI.prototype.initRobot = function() {
+	this.robot = new Dash.Robot(this.socket, this.robotId);
 };
 
 Dash.UI.prototype.initFpsCounter = function() {
@@ -335,8 +335,8 @@ Dash.UI.prototype.initKeyboardController = function() {
 };
 
 Dash.UI.prototype.initJoystickController = function() {
-	this.joystickController = new Dash.JoystickController(this.robot);
-	
+	this.joystickController = new Dash.JoystickController(this.robot, this.socket);
+
 	this.joystickController.gamepad.bind(Gamepad.Event.CONNECTED, function(device) {
 		dash.dbg.log('! Controller connected', device);
 
@@ -412,7 +412,7 @@ Dash.UI.prototype.initKeyListeners = function() {
 	});
 };
 
-Dash.UI.prototype.initControls = function() {
+Dash.UI.prototype.initControls = function(controls) {
 
 	var self = this,
 		keyboardEnabled = $.cookie('keyboard-enabled'),
@@ -468,26 +468,24 @@ Dash.UI.prototype.initControls = function() {
 			.iphoneStyle('refresh');
 	};
 	
-	$('#controller-choice').change(function() {
+	$(controls.controllerChoice).change(function() {
 		var controller = $(this).val();
 		
 		self.setController(controller);
 	});
 	
-	$('#host-btn').click(function() {
-		var newHost = window.prompt('Enter 1. robot hostname or IP', dash.config.socket.host);
-		
-		if (typeof(newHost) == 'string' && newHost.length> 0) {
-			dash.config.socket.host = newHost;
-			
-			dash.socket.open(dash.config.socket.host, dash.config.socket.port, dash.config.socket.socketId);
-			
-			$.cookie('host', dash.config.socket.host);
-			
-			$(this).html(dash.config.socket.host);
-		}
+	$(controls.hostBtn).click(function() {
+        if(self.socket.socketId == dash.config.socket.socketId) {
+            var newHost = window.prompt('Enter robot hostname or IP', dash.config.socket.host);
+            if (typeof(newHost) == 'string' && newHost.length > 0) {
+                dash.config.socket.host = newHost;
+                self.socket.open(dash.config.socket.host, dash.config.socket.port, dash.config.socket.socketId);
+                $.cookie('host', dash.config.socket.host);
+                $(this).html(dash.config.socket.host);
+            }
+        }
 	}).html(dash.config.socket.host);
-
+/*
 	$('#host-btn2').click(function() {
 		var newHost = window.prompt('Enter 2. robot hostname or IP', dash.config.socket2.host);
 
@@ -501,6 +499,7 @@ Dash.UI.prototype.initControls = function() {
 			$(this).html(dash.config.socket2.host);
 		}
 	}).html(dash.config.socket2.host);
+*/
 
 	$('#rebuild-btn').click(function() {
 		var btn = $(this);
@@ -533,20 +532,20 @@ Dash.UI.prototype.initControls = function() {
 	});
 	
 	$('#calibrate-camera-btn').click(function() {
-		dash.socket.send('<get-camera-calibration>');
+        self.socket.send('<get-camera-calibration>');
 	});
 	
 	$('#calibrate-blobber-btn').click(function() {
 		var selectedClass = $('#blobber-class').val();
-		
-		dash.socket.send('<get-blobber-calibration:' + selectedClass + '>');
+
+        self.socket.send('<get-blobber-calibration:' + selectedClass + '>');
 	});
 	
 	$('#fetch-frame-btn').click(function() {
 		dash.ui.showModal('camera-view');
-		
-		dash.socket.send('<get-frame>');
-		dash.socket.send('<list-screenshots>');
+
+        self.socket.send('<get-frame>');
+        self.socket.send('<list-screenshots>');
 	});
 
 	$('#toggle-camera-translator-btn').click(function() {
@@ -559,8 +558,8 @@ Dash.UI.prototype.initControls = function() {
 	
 	$('#blobber-class').change(function() {
 		var selectedClass = $('#blobber-class').val();
-		
-		dash.socket.send('<get-blobber-calibration:' + selectedClass + '>');
+
+        self.socket.send('<get-blobber-calibration:' + selectedClass + '>');
 	});
 	
 	$('#reset-position-btn').click(function() {
@@ -576,7 +575,7 @@ Dash.UI.prototype.initControls = function() {
 	});
 	
 	$('#stop-btn').click(function() {
-		dash.socket.send('<stop>');
+        self.socket.send('<stop>');
 	});
 
 	$('#drive-to-btn').click(function() {
@@ -586,17 +585,17 @@ Dash.UI.prototype.initControls = function() {
 	$('#turn-by-btn').click(function() {
 		var angle = window.prompt('Enter angle', 90.0);
 
-		dash.socket.send('<turn-by:' + angle +'>');
+        self.socket.send('<turn-by:' + angle +'>');
 	});
 
 	$(window).keydown(function(e) {
 		if (e.keyCode == 27) {
-			dash.socket.send('<stop>');
+            self.socket.send('<stop>');
 		}
 	});
 
 	$('.send-cmd-btn').click(function() {
-		dash.socket.send('<' + $(this).data('cmd') + '>');
+        self.socket.send('<' + $(this).data('cmd') + '>');
 	});
 
 	$('.send-parameter-field').keyup(function() {
@@ -612,7 +611,7 @@ Dash.UI.prototype.initControls = function() {
 		var value = parseFloat($(this).val());
 
 		if (!isNaN(value)) {
-			dash.socket.send('<parameter:' + $(this).data('index') + ':' + value + '>');
+            self.socket.send('<parameter:' + $(this).data('index') + ':' + value + '>');
 		}
 	});
 	
@@ -638,15 +637,15 @@ Dash.UI.prototype.initControls = function() {
 	});
 	
 	$('#test-watch-ball-btn').click(function() {
-		dash.socket.send('<test-watch-ball>');
+		this.socket.send('<test-watch-ball>');
 	});
 	
 	$('#test-chase-ball-btn').click(function() {
-		dash.socket.send('<test-chase-ball>');
+		this.socket.send('<test-chase-ball>');
 	});
 	
 	$('#test-find-goal-btn').click(function() {
-		dash.socket.send('<test-find-goal>');
+		this.socket.send('<test-find-goal>');
 	});*/
 	
 	$('#graphs-toggle-btn').click(function() {
@@ -670,27 +669,27 @@ Dash.UI.prototype.initControls = function() {
 	
 	// camera calibration
 	$('#camera-exposure').slider('change', function(value) {
-		dash.socket.send('<camera-set-exposure:' + value + '>');
+        self.socket.send('<camera-set-exposure:' + value + '>');
 	});
 	
 	$('#camera-gain').slider('change', function(value) {
-		dash.socket.send('<camera-set-gain:' + value + '>');
+        self.socket.send('<camera-set-gain:' + value + '>');
 	});
 	
 	$('#camera-red, #camera-green, #camera-blue').slider('change', function() {
 		var red = $('#camera-red').val(),
 			green = $('#camera-green').val(),
 			blue = $('#camera-blue').val();
-		
-		dash.socket.send('<camera-set-white-balance:' + red + ':' + green + ':' + blue + '>');
+
+        self.socket.send('<camera-set-white-balance:' + red + ':' + green + ':' + blue + '>');
 	});
 	
 	$('#camera-luminosity-gamma').slider('change', function(value) {
-		dash.socket.send('<camera-set-luminosity-gamma:' + (value) + '>');
+        self.socket.send('<camera-set-luminosity-gamma:' + (value) + '>');
 	});
 	
 	$('#camera-chromaticity-gamma').slider('change', function(value) {
-		dash.socket.send('<camera-set-chromaticity-gamma:' + (value) + '>');
+        self.socket.send('<camera-set-chromaticity-gamma:' + (value) + '>');
 	});
 	
 	// blobber
@@ -700,8 +699,8 @@ Dash.UI.prototype.initControls = function() {
 			u = $('#blobber-u').val().replace(' ', ','),
 			v = $('#blobber-v').val().replace(' ', ','),
 			mergeThreshold = $('#blobber-merge-threshold').val();
-		
-		dash.socket.send('<set-blobber-calibration:' + selectedClass + ':' + y + ':' + u + ':' + v + ':' + mergeThreshold + '>');
+
+        self.socket.send('<set-blobber-calibration:' + selectedClass + ':' + y + ':' + u + ':' + v + ':' + mergeThreshold + '>');
 	});
 	
 	$('#frame-img, #frame-classification, #frame-canvas').bind('contextmenu', function(e) {
@@ -739,31 +738,31 @@ Dash.UI.prototype.initControls = function() {
 				mode = 3;
 			break;
 		}
-			
-		dash.socket.send('<blobber-threshold:' + color + ':' + x + ':' + y + ':' + mode + ':' + brush + ':' + stdev + '>');
-		dash.socket.send('<get-frame>');
+
+        self.socket.send('<blobber-threshold:' + color + ':' + x + ':' + y + ':' + mode + ':' + brush + ':' + stdev + '>');
+        self.socket.send('<get-frame>');
 		
 		e.preventDefault();
 	});
 	
 	$('#blobber-clear-current-btn').click(function() {
-		dash.socket.send('<blobber-clear:' + $('#threshold-class').val() + '>');
+        self.socket.send('<blobber-clear:' + $('#threshold-class').val() + '>');
 	});
 	
 	$('#blobber-clear-all-btn').click(function() {
-		dash.socket.send('<blobber-clear>');
+        self.socket.send('<blobber-clear>');
 	});
 
 	$('#screenshot-btn').click(function() {
-		dash.socket.send('<screenshot:' + $('#screenshot-filename').val().replace('-', '_') + '>');
+        self.socket.send('<screenshot:' + $('#screenshot-filename').val().replace('-', '_') + '>');
 	});
 	
 	$('#ai-toggle-go-btn').click(function() {
-		dash.socket.send('<toggle-go>');
+        self.socket.send('<toggle-go>');
 	});
 
 	$('#ai-toggle-side-btn').click(function() {
-		dash.socket.send('<toggle-side>');
+        self.socket.send('<toggle-side>');
 	});
 
 	$('#status').click(function() {
@@ -771,11 +770,11 @@ Dash.UI.prototype.initControls = function() {
 	});
 	
 	$('#camera-choice').change(function() {
-		dash.socket.send('<camera-choice:' + $(this).val()+ '>');
+        self.socket.send('<camera-choice:' + $(this).val()+ '>');
 	});
 
 	$('#stream-choice').change(function() {
-		dash.socket.send('<stream-choice:' + $(this).val()+ '>');
+        self.socket.send('<stream-choice:' + $(this).val()+ '>');
 
 		self.applyScreenshotState();
 	});
@@ -784,7 +783,7 @@ Dash.UI.prototype.initControls = function() {
 		var k = parseInt($('#camera-k').val()) / 1000000000,
 			zoom = parseInt($('#camera-zoom').val()) / 1000;
 
-		dash.socket.send('<camera-adjust:' + k + ':' + zoom + '>');
+        self.socket.send('<camera-adjust:' + k + ':' + zoom + '>');
 	});
 };
 
@@ -815,11 +814,11 @@ Dash.UI.prototype.toggleTargetSide = function() {
 	
 	var lastState = this.states[this.states.length - 1];
 
-	dash.socket.send('<toggle-side>');
+	this.socket.send('<toggle-side>');
 };
 
 Dash.UI.prototype.driveTo = function(x, y, orientation) {
-	dash.socket.send('<drive-to:' + x + ':' + y+ ':' + orientation + '>');
+	this.socket.send('<drive-to:' + x + ':' + y+ ':' + orientation + '>');
 };
 
 Dash.UI.prototype.setController = function(name) {
@@ -916,12 +915,12 @@ Dash.UI.prototype.handleControllerMessage = function(controller) {
 		}
 	});
 
-	dash.socket.send('<get-state>');
+	this.socket.send('<get-state>');
 };
 
 Dash.UI.prototype.handleStateMessage = function(state) {
         this.addState(state);
-        dash.socket.send('<get-state>'); // request for new state
+        this.socket.send('<get-state>'); // request for new state
 };
 
 Dash.UI.prototype.handleLogMessage = function(messages) {
@@ -978,7 +977,7 @@ Dash.UI.prototype.handleFrameMessage = function(frame) {
 
 	this.applyScreenshotState();
 
-	dash.socket.send('<get-frame>');
+	this.socket.send('<get-frame>');
 };
 
 
@@ -1326,7 +1325,7 @@ Dash.UI.prototype.shutdown = function(callback) {
 
 Dash.UI.prototype.request = function(action, callback) {
 	$.ajax({
-		url: 'http://' + dash.config.socket.host + '/dash/soccerbot.php?action=' + action,
+		url: 'http://' + this.socket.host + '/dash/soccerbot.php?action=' + action,
 		type: 'GET',
 		dataType: 'html',
 		timeout: 120000

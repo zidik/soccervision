@@ -1,8 +1,9 @@
-Dash.Socket = function() {
+Dash.Socket = function(socketId) {
 	this.host = null;
 	this.port = null;
 	this.ws = null;
 	this.opening = false;
+	this.socketId = socketId;
 };
 
 Dash.Socket.prototype = new Dash.Bindable();
@@ -35,16 +36,18 @@ Dash.Socket.prototype.open = function(host, port, socketId) {
 	
 	this.ws.onopen = function() {
 		this.opening = false;
-		if(socketId == 1) {
+		if(socketId == dash.config.socket.socketId) {
 			self.fire({
 				type: Dash.Socket.Event.OPEN,
 				socket: self
 			});
-		} else if(socketId == 2) {
+		} else if(socketId == dash.config.socket2.socketId) {
 			self.fire({
 				type: Dash.Socket.Event.OPEN_2,
 				socket2: self
 			});
+		} else {
+			alert('unknown socketId on OPEN');
 		}
 	};
 
@@ -65,16 +68,18 @@ Dash.Socket.prototype.open = function(host, port, socketId) {
 	};
 
 	this.ws.onmessage = function(message) {
-		if(socketId == 1) {
+		if(socketId == dash.config.socket.socketId) {
 			self.fire({
 				type: Dash.Socket.Event.MESSAGE_RECEIVED,
 				message: message
 			});
-		} else if(socketId == 2) {
+		} else if(socketId == dash.config.socket2.socketId) {
 			self.fire({
 				type: Dash.Socket.Event.MESSAGE_RECEIVED_2,
 				message: message
 			});
+		} else {
+			alert('unknown socketId on MESSAGE_RECEIVED');
 		}
 
 
