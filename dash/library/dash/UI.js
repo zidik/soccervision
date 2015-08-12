@@ -24,9 +24,10 @@ Dash.UI.Event = {
 	KEY_UP: 'key-up'
 }
 
-Dash.UI.prototype.init = function(socket, robotId) {
+Dash.UI.prototype.init = function(socket, robotId, socketEvents, buttonControls) {
 	this.socket = socket;
     this.robotId = robotId;
+	this.socketEvents = socketEvents;
 	this.initDebugListener();
 	this.initSlider();
 	this.initSocket();
@@ -35,7 +36,7 @@ Dash.UI.prototype.init = function(socket, robotId) {
 	this.initKeyboardController();
 	this.initJoystickController();
 	this.initKeyListeners();
-	this.initControls(dash.config.controls);
+	this.initControls(buttonControls);
 	this.initBlobberView();
 	this.initFrameCanvas();
 };
@@ -218,7 +219,7 @@ Dash.UI.prototype.initSocket = function() {
 	if (cookieHost != null) {
 		this.socket.host = cookieHost;
 	}
-
+	/*
     var eventOpen, eventMsgRcvd;
     if (this.robotId == dash.config.robot.robotId) {
         eventOpen = Dash.Socket.Event.OPEN;
@@ -229,8 +230,8 @@ Dash.UI.prototype.initSocket = function() {
     } else {
         alert("robotId not set on socket");
     }
-
-	this.socket.bind(eventOpen, function(e) {
+	*/
+	this.socket.bind(this.socketEvents.OPEN, function(e) {
 		if (self.reconnectTimeout != null) {
 			window.clearTimeout(self.reconnectTimeout);
 			
@@ -252,7 +253,7 @@ Dash.UI.prototype.initSocket = function() {
 		self.setupParameterFields();
 	});
 	
-	this.socket.bind(Dash.Socket.Event.CLOSE, function(e) {
+	this.socket.bind(this.socketEvents.CLOSE, function(e) {
 		//dash.dbg.log('- Socket server closed');
 		
 		$('#connecting').show();
@@ -265,21 +266,21 @@ Dash.UI.prototype.initSocket = function() {
 		}
 		
 		self.reconnectTimeout = window.setTimeout(function() {
-            self.socket.open(self.socket.host, self.socket.port, self.socket.socketId);
+            self.socket.open(self.socket.host, self.socket.port, self.socketEvents);
 		}, 1000);
 		
 		$('#controller-choice OPTION:eq(0)').trigger('select');
 	});
 	
-	this.socket.bind(Dash.Socket.Event.ERROR, function(e) {
+	this.socket.bind(this.socketEvents.ERROR, function(e) {
 		//dash.dbg.log('- Socket error occured: ' + e.message);
 	});
 
-	this.socket.bind(Dash.Socket.Event.MESSAGE_SENT, function(e) {
+	this.socket.bind(this.socketEvents.MESSAGE_SENT, function(e) {
 		self.flashClass('#tx', 'active', 100);
 	});
 
-	this.socket.bind(eventMsgRcvd, function(e) {
+	this.socket.bind(this.socketEvents.MESSAGE_RECEIVED, function(e) {
 
         var message;
 
@@ -292,7 +293,7 @@ Dash.UI.prototype.initSocket = function() {
             return;
         }
 
-            self.handleMessage(message,this.robotId);
+            self.handleMessage(message,self.robotId);
 
             self.flashClass('#rx', 'active', 100);
 
@@ -475,15 +476,24 @@ Dash.UI.prototype.initControls = function(controls) {
 	});
 	
 	$(controls.hostBtn).click(function() {
+		var newHost;
         if(self.socket.socketId == dash.config.socket.socketId) {
-            var newHost = window.prompt('Enter robot hostname or IP', dash.config.socket.host);
+            newHost = window.prompt('Enter 1. robot hostname or IP', dash.config.socket.host);
             if (typeof(newHost) == 'string' && newHost.length > 0) {
                 dash.config.socket.host = newHost;
-                self.socket.open(dash.config.socket.host, dash.config.socket.port, dash.config.socket.socketId);
+                self.socket.open(dash.config.socket.host, dash.config.socket.port, self.socketEvents);
                 $.cookie('host', dash.config.socket.host);
                 $(this).html(dash.config.socket.host);
-            }
-        }
+			}
+        } else {
+			newHost = window.prompt('Enter 2. robot hostname or IP', dash.config.socket2.host);
+			if (typeof(newHost) == 'string' && newHost.length > 0) {
+				dash.config.socket2.host = newHost;
+				self.socket.open(dash.config.socket2.host, dash.config.socket2.port, self.socketEvents);
+				$.cookie('host', dash.config.socket2.host);
+				$(this).html(dash.config.socket2.host);
+			}
+		}
 	}).html(dash.config.socket.host);
 /*
 	$('#host-btn2').click(function() {
