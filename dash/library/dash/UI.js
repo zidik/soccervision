@@ -24,10 +24,10 @@ Dash.UI.Event = {
 	KEY_UP: 'key-up'
 }
 
-Dash.UI.prototype.init = function(socket, robotId, socketEvents, buttonControls) {
+Dash.UI.prototype.init = function(socket, robotId) {
 	this.socket = socket;
     this.robotId = robotId;
-	this.socketEvents = socketEvents;
+	this.socketEvents = socket.socketEvents;
 	this.initDebugListener();
 	this.initSlider();
 	this.initSocket();
@@ -36,7 +36,7 @@ Dash.UI.prototype.init = function(socket, robotId, socketEvents, buttonControls)
 	this.initKeyboardController();
 	this.initJoystickController();
 	this.initKeyListeners();
-	this.initControls(buttonControls);
+	this.initControls();
 	this.initBlobberView();
 	this.initFrameCanvas();
 };
@@ -427,8 +427,8 @@ Dash.UI.prototype.initControls = function(controls) {
 		self.hideStateInfo();
 	});
 
-	this.keyboardController.enabled = parseInt(keyboardEnabled) == 1 ? true : false;
-	this.joystickController.enabled = parseInt(joystickEnabled) == 1 ? true : false;
+	this.keyboardController.enabled = parseInt(keyboardEnabled) == 1;
+	this.joystickController.enabled = parseInt(joystickEnabled) == 1;
 
 	$('INPUT[name="keyboard-controller-enabled"]').prop('checked', this.keyboardController.enabled);
 	$('INPUT[name="joystick-controller-enabled"]').prop('checked',  this.joystickController.enabled);
@@ -469,23 +469,23 @@ Dash.UI.prototype.initControls = function(controls) {
 			.iphoneStyle('refresh');
 	};
 	
-	$(controls.controllerChoice).change(function() {
+	$('#controller-choice').change(function() {
 		var controller = $(this).val();
 		
 		self.setController(controller);
 	});
 	
-	$(controls.hostBtn).click(function() {
+	$('#host-btn').click(function() {
 		var newHost;
-        if(self.socket.socketId == dash.config.socket.socketId) {
+        //if(self.socket.socketId == dash.config.socket.socketId) {
             newHost = window.prompt('Enter 1. robot hostname or IP', dash.config.socket.host);
             if (typeof(newHost) == 'string' && newHost.length > 0) {
                 dash.config.socket.host = newHost;
-                self.socket.open(dash.config.socket.host, dash.config.socket.port, self.socketEvents);
+                self.socket.open(dash.config.socket.host, dash.config.socket.port);
                 $.cookie('host', dash.config.socket.host);
                 $(this).html(dash.config.socket.host);
 			}
-        } else {
+        /*} else {
 			newHost = window.prompt('Enter 2. robot hostname or IP', dash.config.socket2.host);
 			if (typeof(newHost) == 'string' && newHost.length > 0) {
 				dash.config.socket2.host = newHost;
@@ -493,7 +493,7 @@ Dash.UI.prototype.initControls = function(controls) {
 				$.cookie('host', dash.config.socket2.host);
 				$(this).html(dash.config.socket2.host);
 			}
-		}
+		}*/
 	}).html(dash.config.socket.host);
 /*
 	$('#host-btn2').click(function() {

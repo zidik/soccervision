@@ -1,25 +1,41 @@
 // Define the namespace
 window.Dash = {};
 
-Dash.Config = {
-	socket: {
+Dash.Config = function() {
+	this.socket = null;
+	this.robot = null;
+	this.ball = {
+		radius: 0.021335
+	};
+	this.field = {
+		width: 4.5,
+			height: 3.0
+	};
+	this.keyboard = {
+		speed: 0.5,
+			turnRate: Math.PI
+	};
+	this.joystick = {
+		speed: 1.5,
+			turnRate: Math.PI * 2
+	};
+};
+
+
+Dash.Config.prototype.init = function(robotNr) {
+	this.socket = {
 		host: 'localhost',
 		port: 8000,
-		socketId: 'soc1',
+		socketId: 'soc' + robotNr,
 		Events: {
-			OPEN: 'open',
-			CLOSE: 'close',
-			MESSAGE_RECEIVED: 'message-received',
-			MESSAGE_SENT: 'message-sent',
-			ERROR: 'error'
-		},
-		States: {
-		CONNECTING: 0,
-		OPEN: 1,
-		CLOSING: 2,
-		CLOSED: 3
+			OPEN: 'open' + robotNr,
+			CLOSE: 'close' + robotNr,
+			MESSAGE_RECEIVED: 'message-received' + robotNr,
+			MESSAGE_SENT: 'message-sent' + robotNr,
+			ERROR: 'error' + robotNr
 		}
-	},
+
+	};/*
 	socket2: {
 		host: '172.17.35.231',
 		port: 8000,
@@ -37,30 +53,18 @@ Dash.Config = {
 			CLOSING: 2,
 			CLOSED: 3
 		}
-	},
-	robot: {
+	},*/
+	this.robot = {
 		radius: 0.125,
-		robotId: 'samott1'
-	},
+		robotId: 'samott' + robotNr
+	};/*
 	robot2: {
 		radius: 0.125,
 		robotId: 'samott2'
-	},
-	ball: {
-		radius: 0.021335
-	},
-	field: {
-		width: 4.5,
-		height: 3.0
-	},
-	keyboard: {
-		speed: 0.5,
-		turnRate: Math.PI
-	},
-	joystick: {
-		speed: 1.5,
-		turnRate: Math.PI * 2
-	},
+	},*/
+
+
+	/*
 	controls: {
 		hostBtn: '#host-btn',
 		controllerChoice: '#controller-choice'
@@ -68,5 +72,5 @@ Dash.Config = {
 	controls2: {
 		hostBtn: '#host-btn2',
 		controllerChoice: '#controller-choice'
-	}
+	}*/
 };
