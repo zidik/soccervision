@@ -1,6 +1,7 @@
 #include "Vision.h"
 #include "Config.h"
 #include "Util.h"
+#include <utility>
 
 #include <iostream>
 #include <algorithm>
@@ -61,6 +62,7 @@ Vision::Result* Vision::process() {
 
 	result->vision = this;
 
+	result->robots = processGoalsAndRobots(dir);
 	result->goals = processGoals(dir);
 	result->balls = processBalls(dir, result->goals);
 
@@ -167,6 +169,71 @@ ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
 	}
 
 	return filteredBalls;
+}
+
+ObjectList Vision::processGoalsAndRobots(Dir dir) {
+	ObjectList yellow;
+	ObjectList blue;
+	ObjectList goals;
+	ObjectList robots;
+
+	std::vector<std::pair<Object, Object>> adjacentBlobs;
+
+	goals = Vision::processGoals(dir);
+
+	for (int i = 0; i < goals.size(); i++) {
+		goals.at(i)->type == 0 ? yellow.push_back(goals.at(i)) : blue.push_back(goals.at(i));
+	}
+	for (int i = 0; i < yellow.size(); i++) {
+		Object* Ygoal = yellow.at(i);
+		for (int j = 0; j < blue.size(); j++) {
+			Object* Bgoal = blue.at(j);
+
+			int Ylow, Yhigh, Yleft, Yright;
+			int Blow, Bhigh, Bleft, Bright;
+			Yhigh = Ygoal->y - Ygoal->height / 2;
+			Ylow = Ygoal->y + Ygoal->height / 2;
+			Yleft = Ygoal->x - Ygoal->width / 2;
+			Yright = Ygoal->x + Ygoal->width / 2;
+
+			Bhigh = Bgoal->y - Bgoal->height / 2;
+			Blow = Bgoal->y + Bgoal->height / 2;
+			Bleft = Bgoal->x - Bgoal->width / 2;
+			Bright = Bgoal->x + Bgoal->width / 2;
+
+			//Sees if Yellow blob is higher of the two
+			if (abs(Ylow - Bhigh) < Config::maxRobotBlobBoxDifferenceY) {
+				//Sees if blobs have vertically aligned edges
+				if (abs(Yleft - Bleft) < Config::maxRobotBlobBoxDifferenceX || abs(Yright - Bright) < Config::maxRobotBlobBoxDifferenceX) {
+					//Sees if blobs do not overlap with blobs
+					if ((std::max(Ygoal->area, Bgoal->area) / std::min(Ygoal->area, Bgoal->area)) < Config::maxRobotBlobSizeRatio) {
+						Object* robot = new Object(
+							(Ygoal->x + Bgoal->x) / 2,
+							(Ygoal->y + Bgoal->y) / 2,
+							std::max(Ygoal->width, Bgoal->width),
+							Ygoal->height + Bgoal->height,
+							Ygoal->area + Bgoal->area,
+							Bgoal->distance,
+							Bgoal->distanceX,
+							Bgoal->distanceY,
+							Bgoal->angle,
+							RobotColor::YELLOWHIGH,
+							dir == Dir::FRONT ? false : true
+							);
+
+							robot->processed = false;
+							robots.push_back(robot);
+					}
+					else {
+
+					}
+				}
+			}
+		}
+	}
+
+
+	return goals;
 }
 
 ObjectList Vision::processGoals(Dir dir) {

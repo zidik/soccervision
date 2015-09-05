@@ -81,6 +81,15 @@ namespace Config {
 	// maximum width/height ratio for objects to be considered valid
 	const float maxBallSizeRatio = 5.0f;
 
+	//Maximum size difference for robot blobs bounding boxes in Y coordinate(non overlapping, bicolor)
+	const int maxRobotBlobBoxDifferenceY = 100;
+
+	//Maximum X coordinate difference for non-overlapping bicolor robot blobs
+	const int maxRobotBlobBoxDifferenceX = 100;
+
+	//Maximum blob size ratio for blue and yellow blobs on robots
+	const float maxRobotBlobSizeRatio = 2.0f;
+
 	// goals with area over this value are definately considered to be valid
 	const int goalCertainArea = 10000;
 
@@ -279,6 +288,12 @@ enum Side {
 	BLUE = 0,
     YELLOW = 1,
 	UNKNOWN = 2
+};
+
+enum RobotColor {
+	YELLOWHIGH = 0,
+	BLUEHIGH = 1,
+	WHATEVER = 2
 };
 
 enum Dir {
