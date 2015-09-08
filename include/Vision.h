@@ -151,8 +151,8 @@ public:
 	Obstruction getGoalPathObstruction(float goalDistance);
 
 private:
-	ObjectList processGoalsAndRobots(Dir dir);
-	ObjectList processGoals(Dir dir);
+	std::pair<ObjectList, ObjectList> processGoalsAndRobots(Dir dir);
+	std::pair<ObjectList, ObjectList> processGoals(Dir dir);
 	ObjectList processBalls(Dir dir, ObjectList& goals);
 	float getSurroundMetric(int x, int y, int radius, std::vector<std::string> validColors, std::string requiredColor = "", int side = 0, bool allowNone = false);
     PathMetric getPathMetric(int x1, int y1, int x2, int y2, std::vector<std::string> validColors, std::string requiredColor = "");

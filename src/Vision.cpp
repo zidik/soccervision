@@ -59,11 +59,13 @@ void Vision::setDebugImage(unsigned char* image, int width, int height) {
 
 Vision::Result* Vision::process() {
 	Result* result = new Result();
+	std::pair<ObjectList, ObjectList> goalsAndRobots;
 
 	result->vision = this;
 
-	result->robots = processGoalsAndRobots(dir);
-	result->goals = processGoals(dir);
+	goalsAndRobots = processGoalsAndRobots(dir);
+	result->robots = goalsAndRobots.second;
+	result->goals = goalsAndRobots.first;
 	result->balls = processBalls(dir, result->goals);
 
 	updateColorDistances();
@@ -171,18 +173,19 @@ ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
 	return filteredBalls;
 }
 
-ObjectList Vision::processGoalsAndRobots(Dir dir) {
+std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 	ObjectList yellow;
 	ObjectList blue;
-	ObjectList goals;
+	std::pair<ObjectList, ObjectList> goals;
+	ObjectList goalBlobs;
 	ObjectList robots;
 
 	std::vector<std::pair<Object, Object>> adjacentBlobs;
 
 	goals = Vision::processGoals(dir);
 
-	for (int i = 0; i < goals.size(); i++) {
-		goals.at(i)->type == 0 ? yellow.push_back(goals.at(i)) : blue.push_back(goals.at(i));
+	for (int i = 0; i < goalBlobs.size(); i++) {
+		goalBlobs.at(i)->type == 0 ? yellow.push_back(goalBlobs.at(i)) : blue.push_back(goalBlobs.at(i));
 	}
 	for (int i = 0; i < yellow.size(); i++) {
 		Object* Ygoal = yellow.at(i);
@@ -202,9 +205,9 @@ ObjectList Vision::processGoalsAndRobots(Dir dir) {
 			Bright = Bgoal->x + Bgoal->width / 2;
 
 			//Sees if Yellow blob is higher of the two
-			if (abs(Ylow - Bhigh) < Config::maxRobotBlobBoxDifferenceY) {
+			if (abs(Ylow - Bhigh) < Config::maxRobotBlobBoxDifferenceRatioY * Ygoal->height) {
 				//Sees if blobs have vertically aligned edges
-				if (abs(Yleft - Bleft) < Config::maxRobotBlobBoxDifferenceX || abs(Yright - Bright) < Config::maxRobotBlobBoxDifferenceX) {
+				if ((abs(Yleft - Bleft) < Config::maxRobotBlobBoxDifferenceRatioX * Ygoal->width) || (abs(Yright - Bright) < Config::maxRobotBlobBoxDifferenceRatioX * Ygoal->width)) {
 					//Sees if blobs do not overlap with blobs
 					if ((std::max(Ygoal->area, Bgoal->area) / std::min(Ygoal->area, Bgoal->area)) < Config::maxRobotBlobSizeRatio) {
 						Object* robot = new Object(
@@ -231,12 +234,13 @@ ObjectList Vision::processGoalsAndRobots(Dir dir) {
 			}
 		}
 	}
+	std::pair<ObjectList, ObjectList> goalsAndRobotsResult;
+	make_pair(goals.second, robots);
 
-
-	return goals;
+	return goalsAndRobotsResult;
 }
 
-ObjectList Vision::processGoals(Dir dir) {
+std::pair<ObjectList, ObjectList> Vision::processGoals(Dir dir) {
 	ObjectList allGoals;
 	ObjectList filteredGoals;
 
@@ -325,7 +329,9 @@ ObjectList Vision::processGoals(Dir dir) {
 		}
 	}
 
-	return filteredGoals;
+	//return filteredGoals;	//commented out for testing purposes
+	std::pair<ObjectList, ObjectList> goalsResult = make_pair(allGoals, filteredGoals);
+	return goalsResult;
 }
 
 bool Vision::isValidGoal(Object* goal, Side side) {

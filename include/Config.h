@@ -81,14 +81,14 @@ namespace Config {
 	// maximum width/height ratio for objects to be considered valid
 	const float maxBallSizeRatio = 5.0f;
 
-	//Maximum size difference for robot blobs bounding boxes in Y coordinate(non overlapping, bicolor)
-	const int maxRobotBlobBoxDifferenceY = 100;
+	//Maximum size difference for robot blobs bounding boxes in Y coordinate(non overlapping, bicolor) compared to box height
+	const float maxRobotBlobBoxDifferenceRatioY = 0.3f;
 
-	//Maximum X coordinate difference for non-overlapping bicolor robot blobs
-	const int maxRobotBlobBoxDifferenceX = 100;
+	//Maximum X coordinate difference for non-overlapping bicolor robot blobs compared to box height
+	const float maxRobotBlobBoxDifferenceRatioX = 0.3f;
 
 	//Maximum blob size ratio for blue and yellow blobs on robots
-	const float maxRobotBlobSizeRatio = 2.0f;
+	const float maxRobotBlobSizeRatio = 3.0f;
 
 	// goals with area over this value are definately considered to be valid
 	const int goalCertainArea = 10000;
