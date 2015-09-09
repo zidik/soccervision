@@ -128,20 +128,24 @@ void DebugRenderer::renderRobots(unsigned char* image, const ObjectList& robots,
 		robot = *it;
 
 		if (robot->type == RobotColor::YELLOWHIGH) {
-			r = 200;
-			g = 0;
+			r = 50;
+			g = 200;
 			b = 0;
+			sprintf(buf, "yellowHigh");
 		}
 		else {
-			r = 200;
+			r = 100;
 			g = 0;
 			b = 200;
+			sprintf(buf, "blueHigh");
 		}
 
-		//canvas.drawBoxCentered(robot->x, robot->y, robot->width, robot->height, r, g, b);
+		canvas.drawBoxCentered(robot->x, robot->y, robot->width, robot->height, r, g, b);
 		canvas.drawCircle(robot->x, robot->y, 30, r, g, b);
-		//canvas.drawLine(robot->x - robot->width / 2, robot->y - robot->height / 2, robot->x + robot->width / 2, robot->y + robot->height / 2, r, g, b);
-		//canvas.drawLine(robot->x - robot->width / 2, robot->y + robot->height / 2, robot->x + robot->width / 2, robot->y - robot->height / 2, r, g, b);
+		canvas.drawLine(robot->x - robot->width / 2, robot->y - robot->height / 2, robot->x + robot->width / 2, robot->y + robot->height / 2, r, g, b);
+		canvas.drawLine(robot->x - robot->width / 2, robot->y + robot->height / 2, robot->x + robot->width / 2, robot->y - robot->height / 2, r, g, b);
+
+		canvas.drawText(robot->x + 2, robot->y - 8, buf, r, g, b);
 
 		sprintf(buf, "%.2fm %.1f deg", robot->distance, Math::radToDeg(robot->angle));
 		canvas.drawText(robot->x + 2, robot->y + 2, buf, r, g, b);

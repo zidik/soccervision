@@ -168,7 +168,7 @@ ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
 
 			filteredBalls.push_back(ball);
 		}
-	}
+	}	
 
 	return filteredBalls;
 }
@@ -183,13 +183,16 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 	std::vector<std::pair<Object, Object>> adjacentBlobs;
 
 	goals = Vision::processGoals(dir);
+	goalBlobs = goals.first;
 
-	for (int i = 0; i < goalBlobs.size(); i++) {
-		goalBlobs.at(i)->type == 0 ? yellow.push_back(goalBlobs.at(i)) : blue.push_back(goalBlobs.at(i));
+	for (int i = 0; i < (int)goalBlobs.size(); i++) {
+		goalBlobs.at(i)->type == Side::YELLOW ? yellow.push_back(goalBlobs.at(i)) : blue.push_back(goalBlobs.at(i));
 	}
-	for (int i = 0; i < yellow.size(); i++) {
+	//std::cout << "- Number of yellow goal blobs: " << yellow.size() << std::endl;
+	//std::cout << "- Number of blue goal blobs: " << blue.size() << std::endl;
+	for (int i = 0; i < (int)yellow.size(); i++) {
 		Object* Ygoal = yellow.at(i);
-		for (int j = 0; j < blue.size(); j++) {
+		for (int j = 0; j < (int)blue.size(); j++) {
 			Object* Bgoal = blue.at(j);
 
 			int Ylow, Yhigh, Yleft, Yright;
@@ -208,7 +211,7 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 			if (abs(Ylow - Bhigh) < Config::maxRobotBlobBoxDifferenceRatioY * Ygoal->height) {
 				//Sees if blobs have vertically aligned edges
 				if ((abs(Yleft - Bleft) < Config::maxRobotBlobBoxDifferenceRatioX * Ygoal->width) || (abs(Yright - Bright) < Config::maxRobotBlobBoxDifferenceRatioX * Ygoal->width)) {
-					//Sees if blobs do not overlap with blobs
+					//Sees if blobs are similar size
 					if ((std::max(Ygoal->area, Bgoal->area) / std::min(Ygoal->area, Bgoal->area)) < Config::maxRobotBlobSizeRatio) {
 						Object* robot = new Object(
 							(Ygoal->x + Bgoal->x) / 2,
@@ -232,11 +235,40 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 					}
 				}
 			}
+			//Sees if Blue blob is higher of the two
+			else if (abs(Blow - Yhigh) < Config::maxRobotBlobBoxDifferenceRatioY * Bgoal->height) {
+				//Sees if blobs have vertically aligned edges
+				if ((abs(Yleft - Bleft) < Config::maxRobotBlobBoxDifferenceRatioX * Bgoal->width) || (abs(Yright - Bright) < Config::maxRobotBlobBoxDifferenceRatioX * Bgoal->width)) {
+					//Sees if blobs are similar size
+					if ((std::max(Bgoal->area, Ygoal->area) / std::min(Ygoal->area, Bgoal->area)) < Config::maxRobotBlobSizeRatio) {
+						Object* robot = new Object(
+							(Ygoal->x + Bgoal->x) / 2,
+							(Ygoal->y + Bgoal->y) / 2,
+							std::max(Ygoal->width, Bgoal->width),
+							Ygoal->height + Bgoal->height,
+							Ygoal->area + Bgoal->area,
+							Ygoal->distance,
+							Ygoal->distanceX,
+							Ygoal->distanceY,
+							Ygoal->angle,
+							RobotColor::BLUEHIGH,
+							dir == Dir::FRONT ? false : true
+							);
+
+						robot->processed = false;
+						robots.push_back(robot);
+					}
+					else {
+
+					}
+				}
+			}
 		}
 	}
 	std::pair<ObjectList, ObjectList> goalsAndRobotsResult;
-	make_pair(goals.second, robots);
-
+	goalsAndRobotsResult = make_pair(goals.second, robots);
+	//std::cout << "- Number of goal blobs: " << goals.second.size() << " : " << goalsAndRobotsResult.first.size() << std::endl;
+	//std::cout << "- Number of robot blobs: " << robots.size() << " : " << goalsAndRobotsResult.second.size() << std::endl;
 	return goalsAndRobotsResult;
 }
 
@@ -329,8 +361,9 @@ std::pair<ObjectList, ObjectList> Vision::processGoals(Dir dir) {
 		}
 	}
 
-	//return filteredGoals;	//commented out for testing purposes
 	std::pair<ObjectList, ObjectList> goalsResult = make_pair(allGoals, filteredGoals);
+	//std::cout << "- Number of goal blobs: " << allGoals.size() << " : " << goalsResult.first.size() << std::endl;
+	//std::cout << "- Number of filtered goals: " << filteredGoals.size() << " : " << goalsResult.second.size() << std::endl;
 	return goalsResult;
 }
 

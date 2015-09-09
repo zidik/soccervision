@@ -15,8 +15,12 @@ namespace Config {
 	//const CommunicationMode communicationMode = COM;
 
 	// camera serials
-	const int frontCameraSerial = 857769553;
+	//telliskivi kaamerad
+	//const int frontCameraSerial = 857769553;
 	const int rearCameraSerial = 857735761;
+
+	//Oskari kodus olev kaamera
+	const int frontCameraSerial = 391119441;
 
 	// indexes of motors according to the communication messages
 	const int wheelFLId = 0;
