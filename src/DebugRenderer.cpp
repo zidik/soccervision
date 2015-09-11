@@ -133,15 +133,21 @@ void DebugRenderer::renderRobots(unsigned char* image, const ObjectList& robots,
 			b = 0;
 			sprintf(buf, "yellowHigh");
 		}
-		else {
+		else if (robot->type == RobotColor::BLUEHIGH) {
 			r = 100;
 			g = 0;
 			b = 200;
 			sprintf(buf, "blueHigh");
 		}
+		else {
+			r = 255;
+			g = 0;
+			b = 0;
+			sprintf(buf, "UNKNOWN");
+		}
 
 		canvas.drawBoxCentered(robot->x, robot->y, robot->width, robot->height, r, g, b);
-		canvas.drawCircle(robot->x, robot->y, 30, r, g, b);
+		canvas.drawCircle(robot->x, robot->y, std::min(robot->width / 2, robot->height / 2), r, g, b);
 		canvas.drawLine(robot->x - robot->width / 2, robot->y - robot->height / 2, robot->x + robot->width / 2, robot->y + robot->height / 2, r, g, b);
 		canvas.drawLine(robot->x - robot->width / 2, robot->y + robot->height / 2, robot->x + robot->width / 2, robot->y - robot->height / 2, r, g, b);
 
@@ -162,7 +168,7 @@ void DebugRenderer::renderRobots(unsigned char* image, const ObjectList& robots,
 		int density = robot->area * 100 / boxArea;
 
 		sprintf(buf, "%d - %d%%", robot->area, density);
-		canvas.drawText(robot->x - robot->width / 2 + 2, robot->y - robot->height / 2 - 9, buf);*/
+		canvas.drawText(robot->x + 2, robot->y + 22, buf);*/
 	}
 }
 
