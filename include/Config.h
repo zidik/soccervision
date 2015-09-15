@@ -89,7 +89,7 @@ namespace Config {
 	const float maxRobotBlobSizeRatio = 2.5f;
 
 	const float maxRobotBlobXcoorDifferenceRatioToWidthAverage = 0.85f;
-	const float maxRobotBlobYcoorDifferenceRatioToHeightSum = 0.55f;
+	const float maxRobotBlobYcoorDifferenceRatioToHeightSum = 0.65f;
 
 	// goals with area over this value are definately considered to be valid
 	const int goalCertainArea = 10000;

@@ -174,6 +174,7 @@ ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
 }
 
 std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
+	//NEED TO RECALCULATE ALL ROBOT BLOB DISTANCES; LOOK AT PROCESSGOALS
 	ObjectList yellow;
 	ObjectList blue;
 	std::pair<ObjectList, ObjectList> goals;
@@ -225,7 +226,7 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 							(Ygoal->y - Bgoal->y) < 0 ? Bgoal->distance : Ygoal->distance,
 							(Ygoal->y - Bgoal->y) < 0 ? Bgoal->distanceX : Ygoal->distanceX,
 							(Ygoal->y - Bgoal->y) < 0 ? Bgoal->distanceY : Ygoal->distanceY,
-							(Ygoal->y - Bgoal->y) < 0 ? Bgoal->angle : Ygoal->angle, 
+							(Ygoal->y - Bgoal->y) < 0 ? Bgoal->angle : Ygoal->angle,
 							(Ygoal->y - Bgoal->y) < 0 ? RobotColor::YELLOWHIGH : RobotColor::BLUEHIGH,
 							dir == Dir::FRONT ? false : true
 							);
@@ -235,6 +236,86 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 					else {
 						//Robot is probably in front of the goal
 						//this code needs to be written
+						//So i wrote this code now, needs to be tested on a field with real robots and markings
+
+						//check if yellow blob is smaller
+						if (Ygoal->area < Bgoal->area) {
+							//check if there is blue below yellow blob
+							if (Ygoal->y + Ygoal->height < Bgoal->y + Bgoal->height / 2) {
+								Object* robot = new Object(
+									Ygoal->x,
+									Ygoal->y + Ygoal->height / 2,
+									Ygoal->width,
+									Ygoal->height * 2,
+									Ygoal->area * 2,
+									Ygoal->distance,
+									Ygoal->distanceX,
+									Ygoal->distanceY,
+									Ygoal->angle,
+									RobotColor::YELLOWHIGH,
+									dir == Dir::FRONT ? false : true
+									);
+								robot->processed = false;
+								robots.push_back(robot);
+							}
+							//check if there is blue above the yellow blob
+							else if ((Ygoal->y - Ygoal->height < Bgoal->y + Bgoal->height / 2) && (Ygoal->y - Ygoal->height > Bgoal->y - Bgoal->height / 2)) {
+								Object* robot = new Object(
+									Ygoal->x,
+									Ygoal->y - Ygoal->height / 2,
+									Ygoal->width,
+									Ygoal->height * 2,
+									Ygoal->area * 2,
+									Ygoal->distance,
+									Ygoal->distanceX,
+									Ygoal->distanceY,
+									Ygoal->angle,
+									RobotColor::BLUEHIGH,
+									dir == Dir::FRONT ? false : true
+									);
+								robot->processed = false;
+								robots.push_back(robot);
+							}
+						}
+						else {
+							//blue blob is smaller
+							//check if there is yellow below blue blob
+							if (Bgoal->y + Bgoal->height < Ygoal->y + Ygoal->height / 2) {
+								Object* robot = new Object(
+									Bgoal->x,
+									Bgoal->y + Bgoal->height / 2,
+									Bgoal->width,
+									Bgoal->height * 2,
+									Bgoal->area * 2,
+									Bgoal->distance,
+									Bgoal->distanceX,
+									Bgoal->distanceY,
+									Bgoal->angle,
+									RobotColor::BLUEHIGH,
+									dir == Dir::FRONT ? false : true
+									);
+								robot->processed = false;
+								robots.push_back(robot);
+							}
+							//check if there is yellow above blue blob
+							else if ((Bgoal->y - Bgoal->height < Ygoal->y + Ygoal->height / 2) && (Bgoal->y - Bgoal->height > Ygoal->y - Ygoal->height / 2)) {
+								Object* robot = new Object(
+									Bgoal->x,
+									Bgoal->y - Bgoal->height / 2,
+									Bgoal->width,
+									Bgoal->height * 2,
+									Bgoal->area * 2,
+									Bgoal->distance,
+									Bgoal->distanceX,
+									Bgoal->distanceY,
+									Bgoal->angle,
+									RobotColor::YELLOWHIGH,
+									dir == Dir::FRONT ? false : true
+									);
+								robot->processed = false;
+								robots.push_back(robot);
+							}
+						}
 					}
 				}
 			}
