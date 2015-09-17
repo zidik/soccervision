@@ -181,6 +181,8 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 	ObjectList goalBlobs;
 	ObjectList robots;
 
+	bool debug = canvas.data != NULL;
+
 	goals = Vision::processGoals(dir);
 
 	goalBlobs = goals.first;
@@ -189,138 +191,120 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 		Object* goal = *it;
 		goal->type == Side::YELLOW ? yellow.push_back(goal) : blue.push_back(goal);
 	}
-	//Check every pair of yellow and blue blobs
-	for (ObjectListItc it = yellow.begin(); it != yellow.end(); it++) {
-		Object* Ygoal = *it;
-		for (ObjectListItc jt = blue.begin(); jt != blue.end(); jt++) {
-			Object* Bgoal = *jt;
 
-			int Xdiff, Ydiff, aveWidth, sumHeight;
+	for (ObjectListItc jt = blue.begin(); jt != blue.end(); jt++) {
+		Object* Bgoal = *jt;
 
-			Xdiff = abs(Ygoal->x - Bgoal->x);
-			aveWidth = (Ygoal->width + Bgoal->width) / 2;
+		//new algorithm, works kinda well
+		//DISTANCE CALCULATION NEEDS TO BE REWRITTEN
+		//FALSE POSITIVES (MAINLY BLUE GOAL) NEEDS TO BE LOOKED INTO
+		//BLOB MERGING NEEDS TO BE WRITTEN (basic idea: sort blobs by angle, then take the leftmost one in camera pic and look for closeby blobs, remove those blobs, repeat.)
 
-			//Check if blobs have similar enough x-coordinate
-			if (Xdiff < aveWidth * Config::maxRobotBlobXcoorDifferenceRatioToWidthAverage) {
-				Ydiff = abs(Ygoal->y - Bgoal->y);
-				sumHeight = Ygoal->height + Bgoal->height;
+		int iterations, validCount, x2, y2, x, y;
+		std::vector<std::pair<int, int>> scanPointsUp;
+		std::vector<std::pair<int, int>> scanPointsDown;
 
-				//Check if blobs have similar enough y-coordinate
-				if (Ydiff < sumHeight * Config::maxRobotBlobYcoorDifferenceRatioToHeightSum) {
+		validCount = 0;
 
-					//Check if blobs are similar size
-					if (((int)Math::max((float)(Ygoal->area), (float)(Bgoal->area)) / (int)Math::min((float)(Ygoal->area), (float)(Bgoal->area))) < Config::maxRobotBlobSizeRatio) {
-						int robotLeft, robotRight, robotTop, robotBottom;
+		x = Bgoal->x;
+		y = Bgoal->y;
 
-						robotRight = (int)Math::max((float)(Ygoal->x + Ygoal->width / 2), (float)(Bgoal->x + Bgoal->width / 2));
-						robotLeft = (int)Math::min((float)(Ygoal->x - Ygoal->width / 2), (float)(Bgoal->x - Bgoal->width / 2));
-						robotBottom = (int)Math::max((float)(Ygoal->y + Ygoal->height / 2), (float)(Bgoal->y + Bgoal->height / 2));
-						robotTop = (int)Math::min((float)(Ygoal->y - Ygoal->height / 2), (float)(Bgoal->y - Bgoal->height / 2));
+		x2 = Config::cameraWidth / 2;
+		y2 = Config::cameraHeight;
 
-						Object* robot = new Object(
-							(robotLeft + robotRight) / 2,
-							(robotTop + robotBottom) / 2,
-							robotRight - robotLeft,
-							robotBottom - robotTop,
-							Ygoal->area + Bgoal->area,
-							(Ygoal->y - Bgoal->y) < 0 ? Bgoal->distance : Ygoal->distance,
-							(Ygoal->y - Bgoal->y) < 0 ? Bgoal->distanceX : Ygoal->distanceX,
-							(Ygoal->y - Bgoal->y) < 0 ? Bgoal->distanceY : Ygoal->distanceY,
-							(Ygoal->y - Bgoal->y) < 0 ? Bgoal->angle : Ygoal->angle,
-							(Ygoal->y - Bgoal->y) < 0 ? RobotColor::YELLOWHIGH : RobotColor::BLUEHIGH,
-							dir == Dir::FRONT ? false : true
-							);
-						robot->processed = false;
-						robots.push_back(robot);
-					}
-					else {
-						//Robot is probably in front of the goal
-						//this code needs to be written
-						//So i wrote this code now, needs to be tested on a field with real robots and markings
+		iterations = (int)Math::min((float)(Bgoal->height), (float)(Bgoal->width));
 
-						//check if yellow blob is smaller
-						if (Ygoal->area < Bgoal->area) {
-							//check if there is blue below yellow blob
-							if (Ygoal->y + Ygoal->height < Bgoal->y + Bgoal->height / 2) {
-								Object* robot = new Object(
-									Ygoal->x,
-									Ygoal->y + Ygoal->height / 2,
-									Ygoal->width,
-									Ygoal->height * 2,
-									Ygoal->area * 2,
-									Ygoal->distance,
-									Ygoal->distanceX,
-									Ygoal->distanceY,
-									Ygoal->angle,
-									RobotColor::YELLOWHIGH,
-									dir == Dir::FRONT ? false : true
-									);
-								robot->processed = false;
-								robots.push_back(robot);
-							}
-							//check if there is blue above the yellow blob
-							else if ((Ygoal->y - Ygoal->height < Bgoal->y + Bgoal->height / 2) && (Ygoal->y - Ygoal->height > Bgoal->y - Bgoal->height / 2)) {
-								Object* robot = new Object(
-									Ygoal->x,
-									Ygoal->y - Ygoal->height / 2,
-									Ygoal->width,
-									Ygoal->height * 2,
-									Ygoal->area * 2,
-									Ygoal->distance,
-									Ygoal->distanceX,
-									Ygoal->distanceY,
-									Ygoal->angle,
-									RobotColor::BLUEHIGH,
-									dir == Dir::FRONT ? false : true
-									);
-								robot->processed = false;
-								robots.push_back(robot);
-							}
-						}
-						else {
-							//blue blob is smaller
-							//check if there is yellow below blue blob
-							if (Bgoal->y + Bgoal->height < Ygoal->y + Ygoal->height / 2) {
-								Object* robot = new Object(
-									Bgoal->x,
-									Bgoal->y + Bgoal->height / 2,
-									Bgoal->width,
-									Bgoal->height * 2,
-									Bgoal->area * 2,
-									Bgoal->distance,
-									Bgoal->distanceX,
-									Bgoal->distanceY,
-									Bgoal->angle,
-									RobotColor::BLUEHIGH,
-									dir == Dir::FRONT ? false : true
-									);
-								robot->processed = false;
-								robots.push_back(robot);
-							}
-							//check if there is yellow above blue blob
-							else if ((Bgoal->y - Bgoal->height < Ygoal->y + Ygoal->height / 2) && (Bgoal->y - Bgoal->height > Ygoal->y - Ygoal->height / 2)) {
-								Object* robot = new Object(
-									Bgoal->x,
-									Bgoal->y - Bgoal->height / 2,
-									Bgoal->width,
-									Bgoal->height * 2,
-									Bgoal->area * 2,
-									Bgoal->distance,
-									Bgoal->distanceX,
-									Bgoal->distanceY,
-									Bgoal->angle,
-									RobotColor::YELLOWHIGH,
-									dir == Dir::FRONT ? false : true
-									);
-								robot->processed = false;
-								robots.push_back(robot);
-							}
-						}
+		//calculate scanning points
+		if (x2 == x) {
+			for (int i = 0; i < iterations; i++) {
+				scanPointsUp.push_back(std::pair<int, int>(x, y - i));
+				scanPointsDown.push_back(std::pair<int, int>(x, y + i));
+			}
+		}
+		else {
+			float a, b;
+			a = (float)(y2 - y) / (float)(x2 - x);
+			b = y - a * x;
+			for (int i = 0; i < iterations; i++) {
+				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(y - i - b) / a), y - i));
+				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(y + i - b) / a), y + i));
+			}
+		}
+		while (!scanPointsDown.empty()) {
+			std::pair<int, int> currentCoordinates;
+			currentCoordinates = scanPointsDown.back();
+			scanPointsDown.pop_back();
+			Blobber::Color* currentColor;
+			currentColor = getColorAt(currentCoordinates.first, currentCoordinates.second);
+			if (currentColor != NULL) {
+				//std::cout << "Current pixel Color name: " << currentColor->name << std::endl;
+				//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
+				if (currentColor->name[0] == 'y') {
+					validCount++;
+					if (debug) canvas.drawMarker(currentCoordinates.first, currentCoordinates.second, 255, 0, 255);
+				}
+			}
+			//std::cout << "Current blob coordinates: " << x << ":" << y << std::endl;
+			//std::cout << "Current pixel coordinates: " << currentCoordinates.first << ":" << currentCoordinates.second << std::endl;
+		}
+		//std::cout << "valid to iterations ratio: " << validCount << ":" << iterations << std::endl;
+		if ((float)validCount / (float)iterations > 0.2f) {
+			Object* robot = new Object(
+				Bgoal->x,
+				Bgoal->y,
+				Bgoal->width,
+				Bgoal->height,
+				Bgoal->area,
+				Bgoal->distance,
+				Bgoal->distanceX,
+				Bgoal->distanceY,
+				Bgoal->angle,
+				RobotColor::BLUEHIGH,
+				dir == Dir::FRONT ? false : true
+				);
+			robot->processed = false;
+			robots.push_back(robot);
+		}
+		else {
+			//checks up
+			validCount = 0;
+			while (!scanPointsUp.empty()) {
+				std::pair<int, int> currentCoordinates;
+				currentCoordinates = scanPointsUp.back();
+				scanPointsUp.pop_back();
+				Blobber::Color* currentColor;
+				currentColor = getColorAt(currentCoordinates.first, currentCoordinates.second);
+				if (currentColor != NULL) {
+					//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
+					if (currentColor->name[0] == 'y') {
+						validCount++;
+						if (debug) canvas.drawMarker(currentCoordinates.first, currentCoordinates.second, 0, 255, 255);
 					}
 				}
+				//std::cout << "Current blob coordinates: " << x << ":" << y << std::endl;
+				//std::cout << "Current pixel Coordinates: " << currentCoordinates.first << ":" << currentCoordinates.second << std::endl;
+			}
+			//std::cout << "valid to iterations ratio: " << validCount << ":" << iterations << std::endl;
+			if ((float)validCount / (float)iterations > 0.2f) {
+				Object* robot = new Object(
+					Bgoal->x,
+					Bgoal->y,
+					Bgoal->width,
+					Bgoal->height,
+					Bgoal->area,
+					Bgoal->distance,
+					Bgoal->distanceX,
+					Bgoal->distanceY,
+					Bgoal->angle,
+					RobotColor::YELLOWHIGH,
+					dir == Dir::FRONT ? false : true
+					);
+				robot->processed = false;
+				robots.push_back(robot);
 			}
 		}
 	}
+
 	std::pair<ObjectList, ObjectList> goalsAndRobotsResult;
 	goalsAndRobotsResult = make_pair(goals.second, robots);
 	//std::cout << "- Number of goal blobs: " << goals.second.size() << " : " << goalsAndRobotsResult.first.size() << std::endl;

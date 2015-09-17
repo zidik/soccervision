@@ -151,13 +151,13 @@ void DebugRenderer::renderRobots(unsigned char* image, const ObjectList& robots,
 		canvas.drawLine(robot->x - robot->width / 2, robot->y - robot->height / 2, robot->x + robot->width / 2, robot->y + robot->height / 2, r, g, b);
 		canvas.drawLine(robot->x - robot->width / 2, robot->y + robot->height / 2, robot->x + robot->width / 2, robot->y - robot->height / 2, r, g, b);
 
-		canvas.drawText(robot->x + 2, robot->y - 8, buf, r, g, b);
+		canvas.drawText(robot->x + robot->width / 2, robot->y - 8, buf, r, g, b);
 
 		sprintf(buf, "%.2fm %.1f deg", robot->distance, Math::radToDeg(robot->angle));
-		canvas.drawText(robot->x + 2, robot->y + 2, buf, r, g, b);
+		canvas.drawText(robot->x + robot->width / 2, robot->y + 2, buf, r, g, b);
 
 		sprintf(buf, "%d x %d, %d", robot->x, robot->y + robot->height / 2, robot->area);
-		canvas.drawText(robot->x + 2, robot->y + 12, buf, r, g, b);
+		canvas.drawText(robot->x + robot->width / 2, robot->y + 12, buf, r, g, b);
 
 		/*int boxArea = robot->width * robot->height;
 
@@ -168,7 +168,7 @@ void DebugRenderer::renderRobots(unsigned char* image, const ObjectList& robots,
 		int density = robot->area * 100 / boxArea;
 
 		sprintf(buf, "%d - %d%%", robot->area, density);
-		canvas.drawText(robot->x + 2, robot->y + 22, buf);*/
+		canvas.drawText(robot->x + robot->width / 2, robot->y + 22, buf);*/
 	}
 }
 
