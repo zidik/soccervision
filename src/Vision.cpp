@@ -209,13 +209,13 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 				if (Ydiff < sumHeight * Config::maxRobotBlobYcoorDifferenceRatioToHeightSum) {
 
 					//Check if blobs are similar size
-					if ((std::max(Ygoal->area, Bgoal->area) / std::min(Ygoal->area, Bgoal->area)) < Config::maxRobotBlobSizeRatio) {
+					if (((int)Math::max((float)(Ygoal->area), (float)(Bgoal->area)) / (int)Math::min((float)(Ygoal->area), (float)(Bgoal->area))) < Config::maxRobotBlobSizeRatio) {
 						int robotLeft, robotRight, robotTop, robotBottom;
 
-						robotRight = std::max(Ygoal->x + Ygoal->width / 2, Bgoal->x + Bgoal->width / 2);
-						robotLeft = std::min(Ygoal->x - Ygoal->width / 2, Bgoal->x - Bgoal->width / 2);
-						robotBottom = std::max(Ygoal->y + Ygoal->height / 2, Bgoal->y + Bgoal->height / 2);
-						robotTop = std::min(Ygoal->y - Ygoal->height / 2, Bgoal->y - Bgoal->height / 2);
+						robotRight = (int)Math::max((float)(Ygoal->x + Ygoal->width / 2), (float)(Bgoal->x + Bgoal->width / 2));
+						robotLeft = (int)Math::min((float)(Ygoal->x - Ygoal->width / 2), (float)(Bgoal->x - Bgoal->width / 2));
+						robotBottom = (int)Math::max((float)(Ygoal->y + Ygoal->height / 2), (float)(Bgoal->y + Bgoal->height / 2));
+						robotTop = (int)Math::min((float)(Ygoal->y - Ygoal->height / 2), (float)(Bgoal->y - Bgoal->height / 2));
 
 						Object* robot = new Object(
 							(robotLeft + robotRight) / 2,
