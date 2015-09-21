@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "CameraTranslator.h"
 
 // TODO Move this into the actual class
 
@@ -16,7 +17,7 @@ class ParticleFilterLocalizer : public Localizer {
 public:
 	struct Landmark {
 		Landmark(std::string name, float x, float y) : name(name), x(x), y(y) {}
-
+		
 		std::string name;
 		float x;
 		float y;
@@ -31,25 +32,32 @@ public:
 		float probability;
 	};
 
-	struct Measurement {
-		Measurement() : distance(-1), angle(0) {}
-		Measurement(float distance, float angle) : distance(distance), angle(angle) {}
-
-		float distance;
-		float angle;
+	struct Measurement
+	{
+		Measurement() = default;
+		Measurement(Math::Vector bottomPixel, Dir cameraDirection) : bottomPixel{ bottomPixel }, cameraDirection{ cameraDirection } {};
+		Math::Vector bottomPixel;
+		Dir cameraDirection;
 	};
 
 	typedef std::map<std::string, Landmark*> LandmarkMap;
 	typedef std::vector<Particle*> ParticleList;
 	typedef std::map<std::string, Measurement> Measurements;
 
-	ParticleFilterLocalizer(int particleCount = Config::robotLocalizerParticleCount, float forwardNoise = Config::robotLocalizerForwardNoise, float turnNoise = Config::robotLocalizerTurnNoise, float distanceSenseNoise = Config::robotLocalizerDistanceNoise, float angleSenseNoise = Config::robotLocalizerAngleNoise);
+	void generateRandomParticles(int particleCount);
+	ParticleFilterLocalizer(
+		CameraTranslator* frontCameraTranslator,
+		CameraTranslator* rearCameraTranslator,
+		int particleCount = Config::robotLocalizerParticleCount,
+		float forwardNoise = Config::robotLocalizerForwardNoise,
+		float turnNoise = Config::robotLocalizerTurnNoise
+	);
     ~ParticleFilterLocalizer();
 
     void addLandmark(Landmark* landmark);
     void addLandmark(std::string name, float x, float y);
 	void move(float velocityX, float velocityY, float omega, float dt) { move(velocityX, velocityY, omega, dt, false); }
-    void move(float velocityX, float velocityY, float omega, float dt, bool exact = false);
+    void move(float velocityX, float velocityY, float omega, float dt, bool exact);
     float getMeasurementProbability(Particle* particle, const Measurements& measurements);
 	void setPosition(float x, float y, float orientation);
     void update(const Measurements& measurements);
@@ -59,11 +67,11 @@ public:
 	std::string getJSON() { return json; }
 
 private:
+	CameraTranslator* frontCameraTranslator;
+	CameraTranslator* rearCameraTranslator;
     const int particleCount;
     float forwardNoise;
     float turnNoise;
-    float distanceSenseNoise;
-    float angleSenseNoise;
     LandmarkMap landmarks;
     ParticleList particles;
 	std::string json;

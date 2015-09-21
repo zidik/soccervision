@@ -1942,14 +1942,14 @@ void TestController::FetchBallBehindState::step(float dt, Vision::Results* visio
 		Vision::Distance goalLeftDistance = visionResults->front->vision->getDistance(ownGoal->x - ownGoal->width / 2, ownGoal->y + ownGoal->height / 2);
 		Vision::Distance goalRightDistance = visionResults->front->vision->getDistance(ownGoal->x + ownGoal->width / 2, ownGoal->y + ownGoal->height / 2);
 
-		Math::Point goalCenterPos = Math::Point(ownGoal->distanceX, ownGoal->distanceY);
-		Math::Point goalLeftPos = Math::Point(goalLeftDistance.x, goalLeftDistance.y);
-		Math::Point goalRightPos = Math::Point(goalRightDistance.x, goalRightDistance.y);
-		Math::Point ballPos = Math::Point(ball->distanceX, ball->distanceY);
+		Math::Vector goalCenterPos = Math::Vector(ownGoal->distanceX, ownGoal->distanceY);
+		Math::Vector goalLeftPos = Math::Vector(goalLeftDistance.x, goalLeftDistance.y);
+		Math::Vector goalRightPos = Math::Vector(goalRightDistance.x, goalRightDistance.y);
+		Math::Vector ballPos = Math::Vector(ball->distanceX, ball->distanceY);
 
-		float goalBallDistanceCenter = goalCenterPos.getDistanceTo(ballPos);
-		float goalBallDistanceLeft = goalLeftPos.getDistanceTo(ballPos);
-		float goalBallDistanceRight = goalRightPos.getDistanceTo(ballPos);
+		float goalBallDistanceCenter = goalCenterPos.distanceTo(ballPos);
+		float goalBallDistanceLeft = goalLeftPos.distanceTo(ballPos);
+		float goalBallDistanceRight = goalRightPos.distanceTo(ballPos);
 		float goalBallDistance = Math::min(Math::min(goalBallDistanceCenter, goalBallDistanceLeft), goalBallDistanceRight);
 
 		avgBallGoalDistance.add(goalBallDistance);
@@ -2813,7 +2813,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 				}
 			} else {
 				// make sure to drive near the centerline of the field not out further
-				if (robot->getPosition().y < Config::fieldHeight / 2.0f) {
+				if (robot->getPosition().location.y < Config::fieldHeight / 2.0f) {
 					avoidBallSide = ai->targetSide == Side::BLUE ? TargetMode::RIGHT : TargetMode::LEFT;
 				} else {
 					avoidBallSide = ai->targetSide == Side::BLUE ? TargetMode::LEFT : TargetMode::RIGHT;
@@ -3195,11 +3195,11 @@ void TestController::DriveHomeState::step(float dt, Vision::Results* visionResul
 	Math::Position robotPos = robot->getPosition();
 
 	if (robot->hasTasks()) {
-		ai->dbg("distanceDiff", homePos.distanceTo(robotPos));
+		ai->dbg("distanceDiff", homePos.location.distanceTo(robotPos.location));
 		ai->dbg("minWhiteDistance", visionResults->rear->whiteDistance.min);
 
 		// continue based on lines if close enough
-		if (homePos.distanceTo(robotPos) < 1.0f && (visionResults->rear->whiteDistance.min != -1.0f && visionResults->rear->whiteDistance.min < 1.0f)) {
+		if (homePos.location.distanceTo(robotPos.location) < 1.0f && (visionResults->rear->whiteDistance.min != -1.0f && visionResults->rear->whiteDistance.min < 1.0f)) {
 			robot->clearTasks();
 		}
 

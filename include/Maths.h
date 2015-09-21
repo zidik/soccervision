@@ -112,10 +112,6 @@ static float floatModulus(float a, float b) {
     return ::fmod(a, b);
 }
 
-static float distanceBetween(float x1, float y1, float x2, float y2) {
-    return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
-}
-
 static float getOffsetAngleBetween(float x1, float y1, float x2, float y2) {
 	float a = sqrt(pow(x2, 2.0f) + pow(y2, 2.0f));
 	float b = sqrt(pow(x1, 2.0f) + pow(y1, 2.0f));
@@ -271,7 +267,7 @@ class Matrix4x1 {
 
 class Vector {
     public:
-        Vector() : x(0), y(0) {}
+		Vector() = default;
         Vector(float x, float y) : x(x), y(y) {}
 
         float getLength() const;
@@ -283,17 +279,25 @@ class Vector {
         Vector getScaled(float magnitude) const;
         Vector getSummed(const Vector& b) const;
 
+		Vector& operator-=(const Vector& other);
+
         static Vector createForwardVec(float dir, float magnitude = 1.0f);
         static Vector createDirVec(const Vector& from, const Vector& to);
 
-        float x;
-        float y;
+        float x = 0.0f;
+        float y = 0.0f;
 };
 
-struct Position : public Math::Vector {
-    inline Position(float x = 0.0f, float y = 0.0f, float orientation = 0.0f) : Vector(x, y), orientation(orientation) {}
+inline Vector operator-(Vector left, const Vector& right) {
+	return left -= right;
+}
 
-    float orientation;
+struct Position {
+	Position() = default;
+	Position(float x, float y, float orientation) : location(x, y), orientation(orientation) {}
+
+	Vector location;
+    float orientation = 0.0f;
 };
 
 typedef std::queue<Math::Position> PositionQueue;
@@ -326,18 +330,8 @@ class Rad : public Angle {
         float radians;
 };
 
-struct Point {
-    Point(float x, float y) : x(x), y(y) {}
-    Point() : x(0), y(0) {}
-    Point getRotated(float angle) const;
-    float getDistanceTo(Point other) const;
-
-    float x;
-    float y;
-};
-
-typedef std::vector<Point> PointList;
-typedef std::vector<Point>::iterator PointListIt;
+typedef std::vector<Vector> PointList;
+typedef std::vector<Vector>::iterator PointListIt;
 
 class Polygon {
 
@@ -346,11 +340,11 @@ public:
     Polygon(const PointList& points);
 
     void addPoint(float x, float y);
-    void addPoint(Point point);
+    void addPoint(Vector point);
     bool containsPoint(float x, float y) const;
     Polygon getTranslated(float dx, float dy) const;
     Polygon getScaled(float sx, float sy) const;
-    Polygon getRotated(float angle) const;
+	Polygon getRotated(float angle) const;
 	std::string toJSON();
 
 private:
@@ -397,7 +391,7 @@ private:
 
 };
 
-static float getAngleBetween(Math::Position pointA, Math::Position pointB, float orientationB) {
+static float getAngleBetween(Math::Vector pointA, Math::Vector pointB, float orientationB) {
 	Vector forwardVec = Vector::createForwardVec(orientationB);
 	Vector dirVec = Vector::createDirVec(pointA, pointB);
 

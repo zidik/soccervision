@@ -348,7 +348,7 @@ Math::PointList CameraTranslator::getPointsBetween(float x1, float y1, float x2,
 	float posX = x1, posY = y1;
 
 	while (posX * Math::sign(stepX) < x2 * Math::sign(stepX)) {
-		points.push_back(Math::Point(posX, posY));
+		points.push_back(Math::Vector(posX, posY));
 
 		posX += stepX;
 		posY += stepY;

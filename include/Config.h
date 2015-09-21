@@ -221,8 +221,6 @@ namespace Config {
 	const int robotLocalizerParticleCount = 1000;
 	const float robotLocalizerForwardNoise = 0.25f;
 	const float robotLocalizerTurnNoise = 0.3f; // 45deg
-	const float robotLocalizerDistanceNoise = 0.35f;
-	const float robotLocalizerAngleNoise = 0.2f; // ~~11deg
 
 	// maximum acceleration/deacceleration the robot should attempt
 	const float robotMaxAcceleration = 2.0f;
