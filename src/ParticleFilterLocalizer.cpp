@@ -60,8 +60,8 @@ void ParticleFilterLocalizer::addLandmark(std::string name, float x, float y) {
 void ParticleFilterLocalizer::setPosition(float x, float y, float orientation) {
 	for (unsigned int i = 0; i < particles.size(); i++) {
 		particles[i]->orientation = orientation;
-        particles[i]->x = x;
-        particles[i]->y = y;
+        particles[i]->location.x = x;
+        particles[i]->location.y = y;
 		particles[i]->probability = 1;
     }
 }
@@ -84,8 +84,8 @@ void ParticleFilterLocalizer::move(float velocityX, float velocityY, float veloc
 		float particleVelocityXLocal = particleVelocityX * Math::cos(particles[i]->orientation) - particleVelocityY * Math::sin(particles[i]->orientation);
 		float particleVelocityYLocal = particleVelocityX * Math::sin(particles[i]->orientation) + particleVelocityY * Math::cos(particles[i]->orientation);
 		particles[i]->orientation += particleVelocityOmega * dt;
-		particles[i]->x += particleVelocityXLocal * dt;
-		particles[i]->y += particleVelocityYLocal * dt;
+		particles[i]->location.x += particleVelocityXLocal * dt;
+		particles[i]->location.y += particleVelocityYLocal * dt;
 	}
 }
 
@@ -130,15 +130,12 @@ float ParticleFilterLocalizer::getMeasurementProbability(Particle* particle, con
 		Landmark* landmark = landmarkSearch->second;
 
 
-	    Math::Vector landmarkPosition(landmark->x, landmark->y); //TODO: Landmark'i sisse viia positsioon
-		Math::Vector particlePosition(particle->x, particle->y);
-		Math::Vector landmarkPositionFromParticle = landmarkPosition - particlePosition;
-		particlePosition.distanceTo(landmarkPosition);
+		Math::Vector landmarkPositionFromParticle = landmark->location - particle->location;
 		landmarkPositionFromParticle.getRotated(-particle->orientation);
 
 		CameraTranslator* translator = (measurement.cameraDirection == Dir::FRONT ? frontCameraTranslator : rearCameraTranslator);
-		CameraTranslator::CameraPosition excpectationCamPoS = translator->getCameraPosition(landmarkPositionFromParticle.x, landmarkPositionFromParticle.y);
-		Math::Vector expectation(excpectationCamPoS.x, excpectationCamPoS.y);
+		CameraTranslator::CameraPosition excpectedCamPos = translator->getCameraPosition(landmarkPositionFromParticle.x, landmarkPositionFromParticle.y);
+		Math::Vector expectation(excpectedCamPos.x, excpectedCamPos.y);
 		float error = measurement.bottomPixel.distanceTo(expectation);
 		probability *= Math::getGaussian(0, 10.0, error);
     }
@@ -162,8 +159,8 @@ void ParticleFilterLocalizer::resample() {
         }
 
         resampledParticles.push_back(new Particle(
-            particles[index]->x,
-            particles[index]->y,
+            particles[index]->location.x,
+            particles[index]->location.y,
             particles[index]->orientation,
             particles[index]->probability
         ));
@@ -194,8 +191,8 @@ Math::Position ParticleFilterLocalizer::getPosition() {
     for (unsigned int i = 0; i < particleCount; i++) {
         particle = particles[i];
 
-        xSum += particle->x;
-        ySum += particle->y;
+        xSum += particle->location.x;
+        ySum += particle->location.y;
         orientationSum += particle->orientation;
     }
 
@@ -221,7 +218,7 @@ Math::Position ParticleFilterLocalizer::getPosition() {
 			stream << ",";
 		}
 
-		stream << "[" << particle->x << ", " << particle->y << "]";
+		stream << "[" << particle->location.x << ", " << particle->location.y << "]";
 	 }
 
 	stream << "]}";

@@ -16,18 +16,16 @@ class ParticleFilterLocalizer : public Localizer {
 
 public:
 	struct Landmark {
-		Landmark(std::string name, float x, float y) : name(name), x(x), y(y) {}
+		Landmark(std::string name, float x, float y) : name(name), location(x, y) {}
 		
 		std::string name;
-		float x;
-		float y;
+		Math::Vector location;
 	};
 
 	struct Particle {
-		Particle(float x, float y, float orientation, float probability) : x(x), y(y), orientation(orientation), probability(probability) {}
-
-		float x;
-		float y;
+		Particle(float x, float y, float orientation, float probability) : location(x, y), orientation(orientation), probability(probability) {}
+		
+		Math::Vector location;
 		float orientation;
 		float probability;
 	};
