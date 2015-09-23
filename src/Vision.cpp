@@ -181,8 +181,6 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 	ObjectList goalBlobs;
 	ObjectList robots;
 
-	bool debug = canvas.data != NULL;
-
 	goals = Vision::processGoals(dir);
 
 	goalBlobs = goals.first;
@@ -192,146 +190,8 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 		goal->type == Side::YELLOW ? yellow.push_back(goal) : blue.push_back(goal);
 	}
 
-	for (ObjectListItc jt = blue.begin(); jt != blue.end(); jt++) {
-		Object* Bgoal = *jt;
-
-		//new algorithm, works kinda well
-		//DISTANCE CALCULATION NEEDS TO BE REWRITTEN
-		//FALSE POSITIVES (MAINLY BLUE GOAL) NEEDS TO BE LOOKED INTO
-		//BLOB MERGING NEEDS TO BE WRITTEN (basic idea: sort blobs by angle, then take the leftmost one in camera pic and look for closeby blobs, remove those blobs, repeat.)
-
-		int iterations, validCount, endX, endY, x, y;
-		int leftX, rightX, leftY, rightY;
-		std::vector<std::pair<int, int>> scanPointsUp;
-		std::vector<std::pair<int, int>> scanPointsDown;
-
-		validCount = 0;
-
-		x = Bgoal->x;
-		y = Bgoal->y;
-
-		endX = Config::cameraWidth / 2;
-		endY = Config::cameraHeight;
-
-		//create additional scan origin points
-		leftX = x - Bgoal->width / 3;
-		rightX = x + Bgoal->width / 3;
-		if (x < endX) {
-			leftY = y + Bgoal->height / 3;
-			rightY = y - Bgoal->height / 3;
-		}
-		else if (x > endX) {
-			leftY = y - Bgoal->height / 3;
-			rightY = y + Bgoal->height / 3;
-		}
-
-		iterations = (int)Math::min((float)(Bgoal->height), (float)(Bgoal->width));
-
-		//calculate scanning points
-		if (endX == x) {
-			for (int i = 0; i < iterations; i++) {
-				scanPointsUp.push_back(std::pair<int, int>(x, y - i));
-				scanPointsUp.push_back(std::pair<int, int>(leftX, y - i));
-				scanPointsUp.push_back(std::pair<int, int>(rightX, y - i));
-				scanPointsDown.push_back(std::pair<int, int>(x, y + i));
-				scanPointsDown.push_back(std::pair<int, int>(leftX, y + i));
-				scanPointsDown.push_back(std::pair<int, int>(rightX, y + i));
-			}
-		}
-		else {
-			float a, b, leftA, leftB, rightA, rightB;
-			a = (float)(endY - y) / (float)(endX - x);
-			leftA = (float)(endY - leftY) / (float)(endX - leftX);
-			rightA = (float)(endY - rightY) / (float)(endX - rightX);
-			b = y - a * x;
-			leftB = leftY - leftA * leftX;
-			rightB = rightY - rightA * rightX;
-			for (int i = 0; i < iterations; i++) {
-				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(y - i - b) / a), y - i));
-				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(leftY - i - leftB) / leftA), leftY - i));
-				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(rightY - i - rightB) / rightA), rightY - i));
-				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(y + i - b) / a), y + i));
-				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(leftY + i - leftB) / leftA), leftY + i));
-				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(rightY + i - rightB) / rightA), rightY + i));
-			}
-		}
-
-		iterations *= 3;
-
-		while (!scanPointsDown.empty()) {
-			std::pair<int, int> currentCoordinates;
-			currentCoordinates = scanPointsDown.back();
-			scanPointsDown.pop_back();
-			Blobber::Color* currentColor;
-			currentColor = getColorAt(currentCoordinates.first, currentCoordinates.second);
-			if (currentColor != NULL) {
-				//std::cout << "Current pixel Color name: " << currentColor->name << std::endl;
-				//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
-				if (currentColor->name[0] == 'y') {
-					validCount++;
-					if (debug) canvas.drawMarker(currentCoordinates.first, currentCoordinates.second, 255, 0, 255);
-				}
-			}
-			//std::cout << "Current blob coordinates: " << x << ":" << y << std::endl;
-			//std::cout << "Current pixel coordinates: " << currentCoordinates.first << ":" << currentCoordinates.second << std::endl;
-		}
-		//std::cout << "valid to iterations ratio: " << validCount << ":" << iterations << std::endl;
-		if ((float)validCount / (float)iterations > 0.2f) {
-			Object* robot = new Object(
-				Bgoal->x,
-				Bgoal->y,
-				Bgoal->width,
-				Bgoal->height,
-				Bgoal->area,
-				Bgoal->distance,
-				Bgoal->distanceX,
-				Bgoal->distanceY,
-				Bgoal->angle,
-				RobotColor::BLUEHIGH,
-				dir == Dir::FRONT ? false : true
-				);
-			robot->processed = false;
-			robots.push_back(robot);
-		}
-		else {
-			//checks up
-			validCount = 0;
-			while (!scanPointsUp.empty()) {
-				std::pair<int, int> currentCoordinates;
-				currentCoordinates = scanPointsUp.back();
-				scanPointsUp.pop_back();
-				Blobber::Color* currentColor;
-				currentColor = getColorAt(currentCoordinates.first, currentCoordinates.second);
-				if (currentColor != NULL) {
-					//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
-					if (currentColor->name[0] == 'y') {
-						validCount++;
-						if (debug) canvas.drawMarker(currentCoordinates.first, currentCoordinates.second, 0, 255, 255);
-					}
-				}
-				//std::cout << "Current blob coordinates: " << x << ":" << y << std::endl;
-				//std::cout << "Current pixel Coordinates: " << currentCoordinates.first << ":" << currentCoordinates.second << std::endl;
-			}
-			//std::cout << "valid to iterations ratio: " << validCount << ":" << iterations << std::endl;
-			if ((float)validCount / (float)iterations > 0.2f) {
-				Object* robot = new Object(
-					Bgoal->x,
-					Bgoal->y,
-					Bgoal->width,
-					Bgoal->height,
-					Bgoal->area,
-					Bgoal->distance,
-					Bgoal->distanceX,
-					Bgoal->distanceY,
-					Bgoal->angle,
-					RobotColor::YELLOWHIGH,
-					dir == Dir::FRONT ? false : true
-					);
-				robot->processed = false;
-				robots.push_back(robot);
-			}
-		}
-	}
+	bool blueSuccess = findRobotBlobs(dir, Side::BLUE, &blue, &robots);
+	bool yellowSuccess = findRobotBlobs(dir, Side::YELLOW, &yellow, &robots);
 
 	std::pair<ObjectList, ObjectList> goalsAndRobotsResult;
 	goalsAndRobotsResult = make_pair(goals.second, robots);
@@ -438,6 +298,221 @@ std::pair<ObjectList, ObjectList> Vision::processGoals(Dir dir) {
 	//std::cout << "- Number of filtered goals: " << filteredGoals.size() << " : " << goalsResult.second.size() << std::endl;
 	return goalsResult;
 }
+
+bool Vision::findRobotBlobs(Dir dir, Side color, ObjectList* blobs, ObjectList* robots) {
+	std::string robotColor = "";
+	if (color == Side::BLUE) robotColor = "yellow-goal";
+	else if (color == Side::YELLOW) robotColor = "blue-goal";
+	else return false;
+
+	bool debug = canvas.data != NULL;
+	for (ObjectListItc jt = blobs->begin(); jt != blobs->end(); jt++) {
+		Object* goal = *jt;
+
+		int blobMinArea = (int)(15.0f * Math::pow(Math::E, -0.715f * goal->distance));
+
+		if (goal->area < blobMinArea) continue;
+
+		//new algorithm, works kinda well
+		//DISTANCE CALCULATION NEEDS TO BE REWRITTEN
+		//FALSE POSITIVES (MAINLY BLUE GOAL) NEEDS TO BE LOOKED INTO
+		//BLOB MERGING NEEDS TO BE WRITTEN (basic idea: sort blobs by angle, then take the leftmost one in camera pic and look for closeby blobs, remove those blobs, repeat.)
+
+		int iterations, validCount, endX, endY, x, y;
+		int leftX, rightX, leftY, rightY;
+		std::vector<std::pair<int, int>> scanPointsUp;
+		std::vector<std::pair<int, int>> scanPointsDown;
+
+		validCount = 0;
+
+		x = goal->x;
+		y = goal->y;
+
+		endX = Config::cameraWidth / 2;
+		endY = Config::cameraHeight;
+
+		//create additional scan origin points
+		leftX = x - goal->width / 3;
+		rightX = x + goal->width / 3;
+		if (x < endX) {
+			leftY = y + goal->height / 3;
+			rightY = y - goal->height / 3;
+		}
+		else if (x > endX) {
+			leftY = y - goal->height / 3;
+			rightY = y + goal->height / 3;
+		}
+
+		iterations = (int)(Math::min((float)(goal->height), (float)(goal->width)) + 10);
+
+		//calculate scanning points
+		if (endX == x) {
+			for (int i = 0; i < iterations; i++) {
+				scanPointsUp.push_back(std::pair<int, int>(x, y - i));
+				scanPointsUp.push_back(std::pair<int, int>(leftX, y - i));
+				scanPointsUp.push_back(std::pair<int, int>(rightX, y - i));
+				scanPointsDown.push_back(std::pair<int, int>(x, y + i));
+				scanPointsDown.push_back(std::pair<int, int>(leftX, y + i));
+				scanPointsDown.push_back(std::pair<int, int>(rightX, y + i));
+			}
+		}
+		else {
+			float a, b, leftA, leftB, rightA, rightB;
+			a = (float)(endY - y) / (float)(endX - x);
+			leftA = (float)(endY - leftY) / (float)(endX - leftX);
+			rightA = (float)(endY - rightY) / (float)(endX - rightX);
+			b = y - a * x;
+			leftB = leftY - leftA * leftX;
+			rightB = rightY - rightA * rightX;
+			for (int i = 0; i < iterations; i++) {
+				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(y - i - b) / a), y - i));
+				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(leftY - i - leftB) / leftA), leftY - i));
+				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(rightY - i - rightB) / rightA), rightY - i));
+				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(y + i - b) / a), y + i));
+				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(leftY + i - leftB) / leftA), leftY + i));
+				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(rightY + i - rightB) / rightA), rightY + i));
+			}
+		}
+
+		iterations *= 3;
+
+		while (!scanPointsDown.empty()) {
+			std::pair<int, int> currentCoordinates;
+			currentCoordinates = scanPointsDown.back();
+			scanPointsDown.pop_back();
+			Blobber::Color* currentColor;
+			currentColor = getColorAt(currentCoordinates.first, currentCoordinates.second);
+			if (currentColor != NULL) {
+				//std::cout << "Current pixel Color name: " << currentColor->name << std::endl;
+				//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
+				if (strcmp(currentColor->name, robotColor.c_str()) == 0) {
+					validCount++;
+					if (debug) canvas.drawMarker(currentCoordinates.first, currentCoordinates.second, 255, 0, 255);
+				}
+			}
+			//std::cout << "Current blob coordinates: " << x << ":" << y << std::endl;
+			//std::cout << "Current pixel coordinates: " << currentCoordinates.first << ":" << currentCoordinates.second << std::endl;
+		}
+		//std::cout << "valid to iterations ratio: " << validCount << ":" << iterations << std::endl;
+		if ((float)validCount / (float)iterations > 0.1f) {
+			Distance robotDistance = getRobotDistance(goal->x, goal->y);
+			Object* robot = new Object(
+				goal->x,
+				goal->y,
+				goal->width,
+				goal->height,
+				goal->area,
+				goal->distance,
+				goal->distanceX,
+				goal->distanceY,
+				goal->angle,
+				color == Side::BLUE ? RobotColor::BLUEHIGH : RobotColor::YELLOWHIGH,
+				dir == Dir::FRONT ? false : true
+				);
+
+			if (robotDistance.straight > 0) {
+				robot->distance = robotDistance.straight;
+				robot->distanceX = robotDistance.x;
+				robot->distanceY = robotDistance.y;
+				robot->angle = robotDistance.angle;
+			}
+
+			robot->processed = false;
+			robots->push_back(robot);
+		}
+		else {
+			//checks up
+			validCount = 0;
+			while (!scanPointsUp.empty()) {
+				std::pair<int, int> currentCoordinates;
+				currentCoordinates = scanPointsUp.back();
+				scanPointsUp.pop_back();
+				Blobber::Color* currentColor;
+				currentColor = getColorAt(currentCoordinates.first, currentCoordinates.second);
+				if (currentColor != NULL) {
+					//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
+					if (strcmp(currentColor->name, robotColor.c_str()) == 0) {
+						validCount++;
+						if (debug) canvas.drawMarker(currentCoordinates.first, currentCoordinates.second, 0, 255, 255);
+					}
+				}
+				//std::cout << "Current blob coordinates: " << x << ":" << y << std::endl;
+				//std::cout << "Current pixel Coordinates: " << currentCoordinates.first << ":" << currentCoordinates.second << std::endl;
+			}
+			//std::cout << "valid to iterations ratio: " << validCount << ":" << iterations << std::endl;
+			if ((float)validCount / (float)iterations > 0.1f) {
+				Distance robotDistance = getRobotDistance(goal->x, goal->y);
+				Object* robot = new Object(
+					goal->x,
+					goal->y,
+					goal->width,
+					goal->height,
+					goal->area,
+					goal->distance,
+					goal->distanceX,
+					goal->distanceY,
+					goal->angle,
+					color == Side::BLUE ? RobotColor::YELLOWHIGH : RobotColor::BLUEHIGH,
+					dir == Dir::FRONT ? false : true
+					);
+
+				if (robotDistance.straight > 0) {
+					robot->distance = robotDistance.straight;
+					robot->distanceX = robotDistance.x;
+					robot->distanceY = robotDistance.y;
+					robot->angle = robotDistance.angle;
+				}
+
+				robot->processed = false;
+				robots->push_back(robot);
+			}
+		}
+	}
+
+	return true;
+}
+
+Vision::Distance Vision::getRobotDistance(int x, int y) {
+	int endX = Config::cameraWidth / 2;
+	int endY = Config::cameraHeight;
+	bool debug = canvas.data != NULL;
+
+		//calculate scanning points
+	if (endX == x) {
+
+		Blobber::Color* currentColor;
+		for (int i = 0; y + i < endY; i++) {
+
+			currentColor = getColorAt(x, y + i);
+			if (currentColor != NULL) {
+				//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
+				if (strcmp(currentColor->name, "green") == 0) {
+					if (debug) canvas.drawMarker(x, y + i, 0, 255, 0);
+					return getDistance(x, y + i);
+				}
+			}
+		}
+	}
+	else {
+		float a, b;
+		a = (float)(endY - y) / (float)(endX - x);
+		b = y - a * x;
+		Blobber::Color* currentColor;
+		for (int i = 0; y + i < endY; i++) {
+			
+			currentColor = getColorAt((int)Math::round((float)(y + i - b) / a), y + i);
+			if (currentColor != NULL) {
+				//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
+				if (strcmp(currentColor->name, "green") == 0) {
+					if (debug) canvas.drawMarker((int)Math::round((float)(y + i - b) / a), y + i, 0, 255, 0);
+					return getDistance((int)Math::round((float)(y + i - b) / a), y + i);
+				}
+			}			
+		}
+	}
+	return Distance(-1, -1, -1, -1);
+}
+
 
 bool Vision::isValidGoal(Object* goal, Side side) {
 	/*int x1, y1, x2, y2;

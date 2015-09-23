@@ -164,6 +164,8 @@ private:
 	ColorDistance getColorDistance(std::string colorName);
 	ColorList getViewColorOrder();
 	Object* Vision::mergeGoals(Object* goal1, Object* goal2);
+	bool findRobotBlobs(Dir dir, Side color, ObjectList* blobs, ObjectList* robots);
+	Distance getRobotDistance(int x, int y);
 	bool isValidBall(Object* ball, Dir dir, ObjectList& goals);
     bool isValidGoal(Object* goal, Side side);
 	bool isBallInGoal(Object* ball, Dir dir, ObjectList& goals);
