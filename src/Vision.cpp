@@ -200,7 +200,8 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 		//FALSE POSITIVES (MAINLY BLUE GOAL) NEEDS TO BE LOOKED INTO
 		//BLOB MERGING NEEDS TO BE WRITTEN (basic idea: sort blobs by angle, then take the leftmost one in camera pic and look for closeby blobs, remove those blobs, repeat.)
 
-		int iterations, validCount, x2, y2, x, y;
+		int iterations, validCount, endX, endY, x, y;
+		int leftX, rightX, leftY, rightY;
 		std::vector<std::pair<int, int>> scanPointsUp;
 		std::vector<std::pair<int, int>> scanPointsDown;
 
@@ -209,27 +210,54 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 		x = Bgoal->x;
 		y = Bgoal->y;
 
-		x2 = Config::cameraWidth / 2;
-		y2 = Config::cameraHeight;
+		endX = Config::cameraWidth / 2;
+		endY = Config::cameraHeight;
+
+		//create additional scan origin points
+		leftX = x - Bgoal->width / 3;
+		rightX = x + Bgoal->width / 3;
+		if (x < endX) {
+			leftY = y + Bgoal->height / 3;
+			rightY = y - Bgoal->height / 3;
+		}
+		else if (x > endX) {
+			leftY = y - Bgoal->height / 3;
+			rightY = y + Bgoal->height / 3;
+		}
 
 		iterations = (int)Math::min((float)(Bgoal->height), (float)(Bgoal->width));
 
 		//calculate scanning points
-		if (x2 == x) {
+		if (endX == x) {
 			for (int i = 0; i < iterations; i++) {
 				scanPointsUp.push_back(std::pair<int, int>(x, y - i));
+				scanPointsUp.push_back(std::pair<int, int>(leftX, y - i));
+				scanPointsUp.push_back(std::pair<int, int>(rightX, y - i));
 				scanPointsDown.push_back(std::pair<int, int>(x, y + i));
+				scanPointsDown.push_back(std::pair<int, int>(leftX, y + i));
+				scanPointsDown.push_back(std::pair<int, int>(rightX, y + i));
 			}
 		}
 		else {
-			float a, b;
-			a = (float)(y2 - y) / (float)(x2 - x);
+			float a, b, leftA, leftB, rightA, rightB;
+			a = (float)(endY - y) / (float)(endX - x);
+			leftA = (float)(endY - leftY) / (float)(endX - leftX);
+			rightA = (float)(endY - rightY) / (float)(endX - rightX);
 			b = y - a * x;
+			leftB = leftY - leftA * leftX;
+			rightB = rightY - rightA * rightX;
 			for (int i = 0; i < iterations; i++) {
 				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(y - i - b) / a), y - i));
+				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(leftY - i - leftB) / leftA), leftY - i));
+				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(rightY - i - rightB) / rightA), rightY - i));
 				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(y + i - b) / a), y + i));
+				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(leftY + i - leftB) / leftA), leftY + i));
+				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(rightY + i - rightB) / rightA), rightY + i));
 			}
 		}
+
+		iterations *= 3;
+
 		while (!scanPointsDown.empty()) {
 			std::pair<int, int> currentCoordinates;
 			currentCoordinates = scanPointsDown.back();
