@@ -174,9 +174,6 @@ ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
 }
 
 std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
-	//NEED TO RECALCULATE ALL ROBOT BLOB DISTANCES; LOOK AT PROCESSGOALS
-	ObjectList yellow;
-	ObjectList blue;
 	std::pair<ObjectList, ObjectList> goals;
 	ObjectList goalBlobs;
 	ObjectList robots;
@@ -185,13 +182,7 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 
 	goalBlobs = goals.first;
 
-	for (ObjectListItc it = goalBlobs.begin(); it != goalBlobs.end(); it++) {
-		Object* goal = *it;
-		goal->type == Side::YELLOW ? yellow.push_back(goal) : blue.push_back(goal);
-	}
-
-	bool blueSuccess = findRobotBlobs(dir, Side::BLUE, &blue, &robots);
-	bool yellowSuccess = findRobotBlobs(dir, Side::YELLOW, &yellow, &robots);
+	bool robotSuccess = findRobotBlobs(dir, &goalBlobs, &robots);
 
 	std::pair<ObjectList, ObjectList> goalsAndRobotsResult;
 	goalsAndRobotsResult = make_pair(goals.second, robots);
@@ -299,31 +290,29 @@ std::pair<ObjectList, ObjectList> Vision::processGoals(Dir dir) {
 	return goalsResult;
 }
 
-bool Vision::findRobotBlobs(Dir dir, Side color, ObjectList* blobs, ObjectList* robots) {
-	std::string robotColor = "";
-	if (color == Side::BLUE) robotColor = "yellow-goal";
-	else if (color == Side::YELLOW) robotColor = "blue-goal";
-	else return false;
+bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
+	std::string targetColor = "";
 
-	bool debug = canvas.data != NULL;
 	for (ObjectListItc jt = blobs->begin(); jt != blobs->end(); jt++) {
 		Object* goal = *jt;
+
+		if (goal->type == Side::BLUE) targetColor = "yellow-goal";
+		else if (goal->type == Side::YELLOW) targetColor = "blue-goal";
+		else return false;
 
 		int blobMinArea = (int)(15.0f * Math::pow(Math::E, -0.715f * goal->distance));
 
 		if (goal->area < blobMinArea) continue;
 
 		//new algorithm, works kinda well
-		//DISTANCE CALCULATION NEEDS TO BE REWRITTEN
-		//FALSE POSITIVES (MAINLY BLUE GOAL) NEEDS TO BE LOOKED INTO
+		//FALSE POSITIVES NEEDS TO BE LOOKED INTO
 		//BLOB MERGING NEEDS TO BE WRITTEN (basic idea: sort blobs by angle, then take the leftmost one in camera pic and look for closeby blobs, remove those blobs, repeat.)
 
-		int iterations, validCount, endX, endY, x, y;
+		int iterations, endX, endY, x, y;
 		int leftX, rightX, leftY, rightY;
+		float matchRatio;
 		std::vector<std::pair<int, int>> scanPointsUp;
 		std::vector<std::pair<int, int>> scanPointsDown;
-
-		validCount = 0;
 
 		x = goal->x;
 		y = goal->y;
@@ -374,27 +363,10 @@ bool Vision::findRobotBlobs(Dir dir, Side color, ObjectList* blobs, ObjectList* 
 			}
 		}
 
-		iterations *= 3;
+		//Scanning pixels down
+		matchRatio = getColorMatchRatio(&scanPointsDown, targetColor);
 
-		while (!scanPointsDown.empty()) {
-			std::pair<int, int> currentCoordinates;
-			currentCoordinates = scanPointsDown.back();
-			scanPointsDown.pop_back();
-			Blobber::Color* currentColor;
-			currentColor = getColorAt(currentCoordinates.first, currentCoordinates.second);
-			if (currentColor != NULL) {
-				//std::cout << "Current pixel Color name: " << currentColor->name << std::endl;
-				//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
-				if (strcmp(currentColor->name, robotColor.c_str()) == 0) {
-					validCount++;
-					if (debug) canvas.drawMarker(currentCoordinates.first, currentCoordinates.second, 255, 0, 255);
-				}
-			}
-			//std::cout << "Current blob coordinates: " << x << ":" << y << std::endl;
-			//std::cout << "Current pixel coordinates: " << currentCoordinates.first << ":" << currentCoordinates.second << std::endl;
-		}
-		//std::cout << "valid to iterations ratio: " << validCount << ":" << iterations << std::endl;
-		if ((float)validCount / (float)iterations > 0.1f) {
+		if (matchRatio > Config::robotScanMinMatchRatio) {
 			Distance robotDistance = getRobotDistance(goal->x, goal->y);
 			Object* robot = new Object(
 				goal->x,
@@ -406,7 +378,7 @@ bool Vision::findRobotBlobs(Dir dir, Side color, ObjectList* blobs, ObjectList* 
 				goal->distanceX,
 				goal->distanceY,
 				goal->angle,
-				color == Side::BLUE ? RobotColor::BLUEHIGH : RobotColor::YELLOWHIGH,
+				goal->type == Side::BLUE ? RobotColor::BLUEHIGH : RobotColor::YELLOWHIGH,
 				dir == Dir::FRONT ? false : true
 				);
 
@@ -421,26 +393,10 @@ bool Vision::findRobotBlobs(Dir dir, Side color, ObjectList* blobs, ObjectList* 
 			robots->push_back(robot);
 		}
 		else {
-			//checks up
-			validCount = 0;
-			while (!scanPointsUp.empty()) {
-				std::pair<int, int> currentCoordinates;
-				currentCoordinates = scanPointsUp.back();
-				scanPointsUp.pop_back();
-				Blobber::Color* currentColor;
-				currentColor = getColorAt(currentCoordinates.first, currentCoordinates.second);
-				if (currentColor != NULL) {
-					//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
-					if (strcmp(currentColor->name, robotColor.c_str()) == 0) {
-						validCount++;
-						if (debug) canvas.drawMarker(currentCoordinates.first, currentCoordinates.second, 0, 255, 255);
-					}
-				}
-				//std::cout << "Current blob coordinates: " << x << ":" << y << std::endl;
-				//std::cout << "Current pixel Coordinates: " << currentCoordinates.first << ":" << currentCoordinates.second << std::endl;
-			}
-			//std::cout << "valid to iterations ratio: " << validCount << ":" << iterations << std::endl;
-			if ((float)validCount / (float)iterations > 0.1f) {
+			//scans up
+			matchRatio = getColorMatchRatio(&scanPointsUp, targetColor);
+
+			if (matchRatio > Config::robotScanMinMatchRatio) {
 				Distance robotDistance = getRobotDistance(goal->x, goal->y);
 				Object* robot = new Object(
 					goal->x,
@@ -452,7 +408,7 @@ bool Vision::findRobotBlobs(Dir dir, Side color, ObjectList* blobs, ObjectList* 
 					goal->distanceX,
 					goal->distanceY,
 					goal->angle,
-					color == Side::BLUE ? RobotColor::YELLOWHIGH : RobotColor::BLUEHIGH,
+					goal->type == Side::BLUE ? RobotColor::YELLOWHIGH : RobotColor::BLUEHIGH,
 					dir == Dir::FRONT ? false : true
 					);
 
@@ -472,20 +428,50 @@ bool Vision::findRobotBlobs(Dir dir, Side color, ObjectList* blobs, ObjectList* 
 	return true;
 }
 
+float Vision::getColorMatchRatio(std::vector<std::pair<int, int>>* scanPoints, std::string colorName) {
+	int matchCount, testCount;
+	bool debug = canvas.data != NULL;
+	std::pair<int, int> currentCoordinates;
+	Blobber::Color* currentColor;
+
+	testCount = scanPoints->size();
+	if (testCount <= 0.0f) return 0.0f;
+
+	matchCount = 0;
+
+	while (!scanPoints->empty()) {
+		currentCoordinates = scanPoints->back();
+		scanPoints->pop_back();
+		currentColor = getColorAt(currentCoordinates.first, currentCoordinates.second);
+
+		if (currentColor != NULL) {
+			//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
+
+			if (strcmp(currentColor->name, colorName.c_str()) == 0) {
+				matchCount++;
+				if (debug) canvas.drawMarker(currentCoordinates.first, currentCoordinates.second, 0, 255, 255);
+			}
+		}
+		//std::cout << "Current blob coordinates: " << x << ":" << y << std::endl;
+		//std::cout << "Current pixel Coordinates: " << currentCoordinates.first << ":" << currentCoordinates.second << std::endl;
+	}
+	return (float)matchCount / (float)testCount;
+}
+
 Vision::Distance Vision::getRobotDistance(int x, int y) {
 	int endX = Config::cameraWidth / 2;
 	int endY = Config::cameraHeight;
 	bool debug = canvas.data != NULL;
 
-		//calculate scanning points
 	if (endX == x) {
-
 		Blobber::Color* currentColor;
-		for (int i = 0; y + i < endY; i++) {
 
+		for (int i = 0; y + i < endY; i++) {
 			currentColor = getColorAt(x, y + i);
+
 			if (currentColor != NULL) {
 				//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
+
 				if (strcmp(currentColor->name, "green") == 0) {
 					if (debug) canvas.drawMarker(x, y + i, 0, 255, 0);
 					return getDistance(x, y + i);
@@ -498,11 +484,13 @@ Vision::Distance Vision::getRobotDistance(int x, int y) {
 		a = (float)(endY - y) / (float)(endX - x);
 		b = y - a * x;
 		Blobber::Color* currentColor;
+
 		for (int i = 0; y + i < endY; i++) {
-			
 			currentColor = getColorAt((int)Math::round((float)(y + i - b) / a), y + i);
+
 			if (currentColor != NULL) {
 				//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
+
 				if (strcmp(currentColor->name, "green") == 0) {
 					if (debug) canvas.drawMarker((int)Math::round((float)(y + i - b) / a), y + i, 0, 255, 0);
 					return getDistance((int)Math::round((float)(y + i - b) / a), y + i);

@@ -163,8 +163,9 @@ private:
 	float getColorDistance(std::string colorName, int x1, int y1, int x2, int y2);
 	ColorDistance getColorDistance(std::string colorName);
 	ColorList getViewColorOrder();
-	Object* Vision::mergeGoals(Object* goal1, Object* goal2);
-	bool findRobotBlobs(Dir dir, Side color, ObjectList* blobs, ObjectList* robots);
+	Object* mergeGoals(Object* goal1, Object* goal2);
+	bool findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots);
+	float getColorMatchRatio(std::vector<std::pair<int, int>>* scanPoints, std::string colorName);
 	Distance getRobotDistance(int x, int y);
 	bool isValidBall(Object* ball, Dir dir, ObjectList& goals);
     bool isValidGoal(Object* goal, Side side);
