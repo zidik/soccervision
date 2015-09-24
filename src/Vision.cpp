@@ -416,16 +416,13 @@ bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
 	return true;
 }
 
-ObjectList Vision::mergeRobotBlobs(ObjectList blobs) {
+ObjectList Vision::mergeRobotBlobs(Dir dir, ObjectList blobs) {
 	ObjectList mergedRobots;
 	Object* focusBlob;
-	Object* mergedBlob;
-	ObjectList garbage;
 
 	float angleA, angleB, distanceA, distanceB;
 	float blobDistance;
 
-	mergedBlob = NULL;
 
 	for (ObjectListItc it = blobs.begin(); it != blobs.end(); it++) {
 		focusBlob = *it;
@@ -437,11 +434,15 @@ ObjectList Vision::mergeRobotBlobs(ObjectList blobs) {
 
 	while (!blobs.empty()) {
 		focusBlob = blobs.back();
-		mergedBlob->copyFrom(focusBlob);
 		blobs.pop_back();
+
+		bool merged = false;
 		//std::cout << "\t-current blob angle degrees: " << focusBlob->angle * 180.0f / Math::PI << std::endl;
 
 		if (focusBlob->processed) continue;
+
+		Object* mergedBlob;
+		mergedBlob->copyFrom(focusBlob);
 		
 		angleA = focusBlob->angle;
 		distanceA = focusBlob->distance;
@@ -460,17 +461,22 @@ ObjectList Vision::mergeRobotBlobs(ObjectList blobs) {
 
 			if (blobDistance < 0.35f) {
 				mergedBlob = mergedBlob->mergeWith(checkBlob);
+				merged = true;
 				checkBlob->processed = true;
-				garbage.push_back(checkBlob);
 			}
 		}
-		mergedRobots.push_back(mergedBlob);
 
-		for (ObjectListItc it = garbage.begin(); it != garbage.end(); it++) {
-			delete *it;
+		if (merged) {
+			Distance robotDistance = getRobotDistance(mergedBlob->x, mergedBlob->y, dir);
+			if (robotDistance.straight > 0) {
+				mergedBlob->distance = robotDistance.straight;
+				mergedBlob->distanceX = robotDistance.x;
+				mergedBlob->distanceY = robotDistance.y;
+				mergedBlob->angle = robotDistance.angle;
+			}
 		}
-
-		garbage.clear();
+		else if (mergedBlob->angle > Math::PI) mergedBlob->angle -= (2.0f * Math::PI);
+		mergedRobots.push_back(mergedBlob);
 	}
 
 	return mergedRobots;
