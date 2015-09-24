@@ -152,7 +152,6 @@ public:
 
 private:
 	std::pair<ObjectList, ObjectList> processGoalsAndRobots(Dir dir);
-	std::pair<ObjectList, ObjectList> processGoals(Dir dir);
 	ObjectList processBalls(Dir dir, ObjectList& goals);
 	float getSurroundMetric(int x, int y, int radius, std::vector<std::string> validColors, std::string requiredColor = "", int side = 0, bool allowNone = false);
     PathMetric getPathMetric(int x1, int y1, int x2, int y2, std::vector<std::string> validColors, std::string requiredColor = "");
@@ -165,8 +164,9 @@ private:
 	ColorList getViewColorOrder();
 	Object* mergeGoals(Object* goal1, Object* goal2);
 	bool findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots);
+	ObjectList mergeRobotBlobs(ObjectList blobs);
 	float getColorMatchRatio(std::vector<std::pair<int, int>>* scanPoints, std::string colorName);
-	Distance getRobotDistance(int x, int y);
+	Distance getRobotDistance(int x, int y, Dir dir);
 	bool isValidBall(Object* ball, Dir dir, ObjectList& goals);
     bool isValidGoal(Object* goal, Side side);
 	bool isBallInGoal(Object* ball, Dir dir, ObjectList& goals);
