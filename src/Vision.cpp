@@ -232,7 +232,7 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 
 	bool robotSuccess = findRobotBlobs(dir, &allGoalBlobs, &robots);
 
-	//mergedRobots = mergeRobotBlobs(robots);
+	mergedRobots = mergeRobotBlobs(dir, robots);
 
 	ObjectList mergedGoals = Object::mergeOverlapping(allGoalBlobs, Config::goalOverlapMargin, true);
 
@@ -271,7 +271,7 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 
 	std::pair<ObjectList, ObjectList> goalsAndRobotsResult;
 
-	goalsAndRobotsResult = make_pair(filteredGoals, robots);
+	goalsAndRobotsResult = make_pair(filteredGoals, mergedRobots);
 
 	return goalsAndRobotsResult;
 }
@@ -292,7 +292,6 @@ bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
 
 		//new algorithm, works kinda well
 		//FALSE POSITIVES NEEDS TO BE LOOKED INTO
-		//BLOB MERGING NEEDS TO BE WRITTEN (basic idea: sort blobs by angle, then take the leftmost one in camera pic and look for closeby blobs, remove those blobs, repeat.)
 
 		int iterations, endX, endY, x, y;
 		int leftX, rightX, leftY, rightY;
@@ -423,50 +422,52 @@ ObjectList Vision::mergeRobotBlobs(Dir dir, ObjectList blobs) {
 	float angleA, angleB, distanceA, distanceB;
 	float blobDistance;
 
-
 	for (ObjectListItc it = blobs.begin(); it != blobs.end(); it++) {
 		focusBlob = *it;
 		if (focusBlob->angle < (Math::PI / -2.0f)) focusBlob->angle += (2.0f * Math::PI);
 	}
 
-	//std::cout << "-sorting robot blobs by angle: " << blobs.size() << std::endl;
 	std::sort(blobs.begin(), blobs.end(), EntityComp(property::ANGLE));
 
 	while (!blobs.empty()) {
 		focusBlob = blobs.back();
 		blobs.pop_back();
 
-		bool merged = false;
-		//std::cout << "\t-current blob angle degrees: " << focusBlob->angle * 180.0f / Math::PI << std::endl;
-
 		if (focusBlob->processed) continue;
 
-		Object* mergedBlob;
-		mergedBlob->copyFrom(focusBlob);
-		
+		bool merged = false;
+
 		angleA = focusBlob->angle;
 		distanceA = focusBlob->distance;
 
-		for (ObjectListItc it = blobs.begin(); it <= blobs.end(); it++) {
-			Object* checkBlob = *it;
+		Object* mergedBlob = new Object(); 
+		mergedBlob->copyFrom(focusBlob);
 
-			if (focusBlob->type != checkBlob->type) continue;
+		if (!blobs.empty()) {
 
-			if (checkBlob->processed) continue;
+			for (ObjectListItc it = blobs.begin(); it != blobs.end(); it++) {
+				Object* checkBlob = *it;
 
-			angleB = checkBlob->angle;
-			distanceB = checkBlob->distance;
+				if (focusBlob->type != checkBlob->type) continue;
 
-			blobDistance = Math::sqrt(Math::pow(distanceA, 2.0f) + Math::pow(distanceB, 2.0f) - 2 * distanceA * distanceB * Math::cos(angleA - angleB));
+				if (checkBlob->processed) continue;
 
-			if (blobDistance < 0.35f) {
-				mergedBlob = mergedBlob->mergeWith(checkBlob);
-				merged = true;
-				checkBlob->processed = true;
+				angleB = checkBlob->angle;
+				distanceB = checkBlob->distance;
+
+				blobDistance = Math::sqrt(Math::pow(distanceA, 2.0f) + Math::pow(distanceB, 2.0f) - 2 * distanceA * distanceB * Math::cos(angleA - angleB));
+
+				//0.35m is maximum robot diameter by the rules
+				if (blobDistance < 0.35f) {
+					mergedBlob = mergedBlob->mergeWith(checkBlob);
+					merged = true;
+					checkBlob->processed = true;
+				}
 			}
 		}
 
 		if (merged) {
+			//recalculate distance of merged robot
 			Distance robotDistance = getRobotDistance(mergedBlob->x, mergedBlob->y, dir);
 			if (robotDistance.straight > 0) {
 				mergedBlob->distance = robotDistance.straight;
@@ -475,7 +476,9 @@ ObjectList Vision::mergeRobotBlobs(Dir dir, ObjectList blobs) {
 				mergedBlob->angle = robotDistance.angle;
 			}
 		}
-		else if (mergedBlob->angle > Math::PI) mergedBlob->angle -= (2.0f * Math::PI);
+		else if (mergedBlob->angle > Math::PI) {
+			mergedBlob->angle -= (2.0f * Math::PI);
+		}
 		mergedRobots.push_back(mergedBlob);
 	}
 

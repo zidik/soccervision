@@ -20,7 +20,10 @@ namespace Config {
 	const int rearCameraSerial = 857735761;
 
 	//Oskari kodus olev kaamera
-	const int frontCameraSerial = 391119441;
+	//const int frontCameraSerial = 391119441;
+
+	//Üks laboris olevatest kaameratest, mille oskar kokku pani
+	const int frontCameraSerial = 374363729;
 
 	// indexes of motors according to the communication messages
 	const int wheelFLId = 0;
