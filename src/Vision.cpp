@@ -178,6 +178,7 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 	ObjectList mergedRobots;
 	ObjectList allGoalBlobs;
 	ObjectList filteredGoals;
+	ObjectList filteredRobots;
 
     Distance distance;
     
@@ -233,6 +234,14 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 	bool robotSuccess = findRobotBlobs(dir, &allGoalBlobs, &robots);
 
 	mergedRobots = mergeRobotBlobs(dir, robots);
+
+	for (ObjectListItc it = mergedRobots.begin(); it != mergedRobots.end(); it++) {
+		Object* robot = *it;
+
+		if (isValidRobot(robot)) {
+			filteredRobots.push_back(robot);
+		}
+	}
 
 	ObjectList mergedGoals = Object::mergeOverlapping(allGoalBlobs, Config::goalOverlapMargin, true);
 
@@ -717,6 +726,11 @@ bool Vision::isValidGoal(Object* goal, Side side) {
 	}*/
 
     return true;
+}
+
+bool Vision::isValidRobot(Object* robot) {
+	//Write validation code here!!
+	return true;
 }
 
 bool Vision::isValidBall(Object* ball, Dir dir, ObjectList& goals) {

@@ -169,6 +169,7 @@ private:
 	Distance getRobotDistance(int x, int y, Dir dir);
 	bool isValidBall(Object* ball, Dir dir, ObjectList& goals);
     bool isValidGoal(Object* goal, Side side);
+	bool isValidRobot(Object* robot);
 	bool isBallInGoal(Object* ball, Dir dir, ObjectList& goals);
 	int getBallRadius(int width, int height);
 	int getBallSenseRadius(int ballRadius, float distance);
