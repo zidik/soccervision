@@ -88,14 +88,17 @@ namespace Config {
 	// maximum width/height ratio for objects to be considered valid
 	const float maxBallSizeRatio = 5.0f;
 
-	//Maximum blob size ratio for blue and yellow blobs on robots
-	const float maxRobotBlobSizeRatio = 2.5f;
+	//minimum width of robot blob
+	const float robotMinWidth = 0.04f;
 
-	const float maxRobotBlobXcoorDifferenceRatioToWidthAverage = 0.85f;
-	const float maxRobotBlobYcoorDifferenceRatioToHeightSum = 0.65f;
+	//Minimum density of merged robot blob
+	const float robotMinDensity = 0.05f;
+
+	//Maximum valid distance of robot, taken from field size
+	const float robotMaxDistance = 5.5f;
 
 	//Maximum ratio for valid pixels to scanned pixels when searching for robot markers
-	const float robotScanMinMatchRatio = 0.11f;
+	const float robotScanMinMatchRatio = 0.15f;
 
 	// goals with area over this value are definately considered to be valid
 	const int goalCertainArea = 10000;

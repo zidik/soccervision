@@ -166,7 +166,7 @@ private:
 	bool findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots);
 	ObjectList mergeRobotBlobs(Dir dir, ObjectList blobs);
 	float getColorMatchRatio(std::vector<std::pair<int, int>>* scanPoints, std::string colorName);
-	Distance getRobotDistance(int x, int y, Dir dir);
+	Distance getRobotDistance(int x, int y, int iterations, Dir dir);
 	bool isValidBall(Object* ball, Dir dir, ObjectList& goals);
     bool isValidGoal(Object* goal, Side side);
 	bool isValidRobot(Object* robot);

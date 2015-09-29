@@ -293,11 +293,14 @@ bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
 
 		if (goal->type == Side::BLUE) targetColor = "yellow-goal";
 		else if (goal->type == Side::YELLOW) targetColor = "blue-goal";
-		else return false;
+		else continue;
 
 		int blobMinArea = (int)(15.0f * Math::pow(Math::E, -0.715f * goal->distance));
 
 		if (goal->area < blobMinArea) continue;
+
+		//if blob is too far, it is not tested
+		if (goal->distance > 6.5f) continue;
 
 		//new algorithm, works kinda well
 		//FALSE POSITIVES NEEDS TO BE LOOKED INTO
@@ -326,7 +329,7 @@ bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
 			rightY = y + goal->height / 3;
 		}
 
-		iterations = (int)(Math::min((float)(goal->height), (float)(goal->width)) + 10);
+		iterations = (int)(Math::min((float)(goal->height), (float)(goal->width) / 2.0f) + 10);
 
 		//calculate scanning points
 		if (endX == x) {
@@ -361,7 +364,8 @@ bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
 		matchRatio = getColorMatchRatio(&scanPointsDown, targetColor);
 
 		if (matchRatio > Config::robotScanMinMatchRatio) {
-			Distance robotDistance = getRobotDistance(goal->x, goal->y, dir);
+			int iterations = (int)(Math::min((float)(goal->height), (float)(goal->width) * 1.5f) + 10);
+			Distance robotDistance = getRobotDistance(goal->x, goal->y, iterations, dir);
 			Object* robot = new Object(
 				goal->x,
 				goal->y,
@@ -376,7 +380,7 @@ bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
 				dir == Dir::FRONT ? false : true
 				);
 
-			if (robotDistance.straight > 0) {
+			if (robotDistance.straight > 0 && (robot->distance / robotDistance.straight) < 2.0f) {
 				robot->distance = robotDistance.straight;
 				robot->distanceX = robotDistance.x;
 				robot->distanceY = robotDistance.y;
@@ -392,7 +396,8 @@ bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
 			matchRatio = getColorMatchRatio(&scanPointsUp, targetColor);
 
 			if (matchRatio > Config::robotScanMinMatchRatio) {
-				Distance robotDistance = getRobotDistance(goal->x, goal->y, dir);
+				int iterations = (int)(Math::min((float)(goal->height), (float)(goal->width) * 1.5f) + 10);
+				Distance robotDistance = getRobotDistance(goal->x, goal->y, iterations, dir);
 				Object* robot = new Object(
 					goal->x,
 					goal->y,
@@ -477,7 +482,8 @@ ObjectList Vision::mergeRobotBlobs(Dir dir, ObjectList blobs) {
 
 		if (merged) {
 			//recalculate distance of merged robot
-			Distance robotDistance = getRobotDistance(mergedBlob->x, mergedBlob->y, dir);
+			int iterations = (int)(Math::min((float)(mergedBlob->height), (float)(mergedBlob->width) * 1.5f) + 10);
+			Distance robotDistance = getRobotDistance(mergedBlob->x, mergedBlob->y, iterations, dir);
 			if (robotDistance.straight > 0) {
 				mergedBlob->distance = robotDistance.straight;
 				mergedBlob->distanceX = robotDistance.x;
@@ -524,16 +530,16 @@ float Vision::getColorMatchRatio(std::vector<std::pair<int, int>>* scanPoints, s
 	return (float)matchCount / (float)testCount;
 }
 
-Vision::Distance Vision::getRobotDistance(int x, int y, Dir dir) {
+Vision::Distance Vision::getRobotDistance(int x, int y, int iterations, Dir dir) {
 	Distance distance;
 	int endX = Config::cameraWidth / 2;
 	int endY = Config::cameraHeight;
 	bool debug = canvas.data != NULL;
-
+	
 	if (endX == x) {
 		Blobber::Color* currentColor;
 
-		for (int i = 0; y + i < endY; i++) {
+		for (int i = 0; y + i < endY && i < iterations; i++) {
 			currentColor = getColorAt(x, y + i);
 
 			if (currentColor != NULL) {
@@ -563,7 +569,7 @@ Vision::Distance Vision::getRobotDistance(int x, int y, Dir dir) {
 		b = y - a * x;
 		Blobber::Color* currentColor;
 
-		for (int i = 0; y + i < endY; i++) {
+		for (int i = 0; y + i < endY && i < iterations; i++) {
 			currentColor = getColorAt((int)Math::round((float)(y + i - b) / a), y + i);
 
 			if (currentColor != NULL) {
@@ -730,6 +736,23 @@ bool Vision::isValidGoal(Object* goal, Side side) {
 
 bool Vision::isValidRobot(Object* robot) {
 	//Write validation code here!!
+
+	//check if robot size is expected
+	Distance dist_left, dist_right;
+	float meterDistance;
+	dist_left = getDistance(robot->x - robot->width / 2, robot->y - robot->height / 2);
+	dist_right = getDistance(robot->x + robot->width / 2, robot->y - robot->height / 2);
+	meterDistance = Math::sqrt(Math::pow(dist_left.straight, 2.0f) + Math::pow(dist_right.straight, 2.0f) - 2 * dist_left.straight * dist_right.straight * Math::cos(dist_left.angle - dist_right.angle));
+	if (meterDistance < Config::robotMinWidth) return false;
+
+	//check if robot density is normal
+	float robotDensity;
+	robotDensity = (float)robot->area / (robot->height * robot->width);
+	if (robotDensity < Config::robotMinDensity) return false;
+
+	//check if robot distance is normal
+	if (robot->distance > Config::robotMaxDistance) return false;
+
 	return true;
 }
 
