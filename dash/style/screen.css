@@ -415,7 +415,7 @@ A:hover {
 }
 
 /* Controller states */
-#controller-state {
+.controller-state {
     /* position: absolute; */
     /* top: 20px; */
     /* left: 20px; */
@@ -426,7 +426,7 @@ A:hover {
     border-radius: 5px;
     overflow: hidden;
 }
-#controller-state > LI {
+.controller-state > LI {
 	position: relative;
     width: 240px;
     padding: 5px 10px;
@@ -434,7 +434,7 @@ A:hover {
     background-color: rgba(0, 0, 0, 0.5);
     color: #FFF;
 }
-#controller-state > LI > UL {
+.controller-state > LI > UL {
 	margin: 0 0 0 10px;
 	padding: 0;
 	list-style: none;
@@ -474,21 +474,21 @@ A:hover {
 	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 	text-shadow: 1px 1px 2px #333;
 }
-#buttons {
+.buttons {
 	margin-top: 3em;
 	margin-left: 1em;
 	width: 160px;
 	/* right: -180px; */
 }
-#buttons BUTTON,
-#buttons SELECT {
+.buttons BUTTON,
+.buttons SELECT {
 	width: 100%;
 	line-height: 25px;
 }
-#buttons SELECT {
+.buttons SELECT {
 	padding: 5px 0;
 }
-#buttons .seperated {
+.buttons .seperated {
 	margin-top: 20px;
 }
 #parameters {

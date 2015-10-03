@@ -4,20 +4,21 @@ window.Dash = {};
 Dash.Config = function() {
 	this.socket = null;
 	this.robot = null;
+	this.controls = null;
 	this.ball = {
 		radius: 0.021335
 	};
 	this.field = {
 		width: 4.5,
-			height: 3.0
+		height: 3.0
 	};
 	this.keyboard = {
 		speed: 0.5,
-			turnRate: Math.PI
+		turnRate: Math.PI
 	};
 	this.joystick = {
 		speed: 1.5,
-			turnRate: Math.PI * 2
+		turnRate: Math.PI * 2
 	};
 };
 
@@ -55,8 +56,9 @@ Dash.Config.prototype.init = function(robotNr) {
 		}
 	},*/
 	this.robot = {
-		radius: 0.125,
-		robotId: 'samott' + robotNr
+		radius: 0.125 + robotNr,
+		robotId: 'samott' + robotNr,
+		robotIndex: robotNr
 	};/*
 	robot2: {
 		radius: 0.125,
@@ -64,12 +66,18 @@ Dash.Config.prototype.init = function(robotNr) {
 	},*/
 
 
-	/*
-	controls: {
-		hostBtn: '#host-btn',
-		controllerChoice: '#controller-choice'
-	},
-	controls2: {
+
+	this.controls = {
+		hostBtn:{
+			btnName: 'Host ' + robotNr,
+			btnId: 'host-btn' + robotNr
+		},
+		controllerChoice: {
+			btnName: 'STOP ' + robotNr,
+			btnId: 'stop-btn' + robotNr
+		}
+	};
+	/*controls2: {
 		hostBtn: '#host-btn2',
 		controllerChoice: '#controller-choice'
 	}*/

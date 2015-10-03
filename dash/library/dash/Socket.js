@@ -21,21 +21,6 @@ Dash.Socket.prototype.init = function(robotNr) {
 	};
 };
 
-/*
-Dash.Socket.Event = {
-	OPEN: 'open',
-	CLOSE: 'close',
-	MESSAGE_RECEIVED: 'message-received',
-	MESSAGE_SENT: 'message-sent',
-	ERROR: 'error'
-};
-Dash.Socket.Event2 = {
-	OPEN: 'open2',
-	CLOSE: 'close2',
-	MESSAGE_RECEIVED: 'message-received2',
-	MESSAGE_SENT: 'message-sent2',
-	ERROR: 'error2'
-}; */
 Dash.Socket.State = {
 	CONNECTING: 0,
 	OPEN: 1,

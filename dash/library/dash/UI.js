@@ -2,9 +2,9 @@ Dash.UI = function() {
 	this.states = [];
 	this.keystates = {};
 	this.reconnectTimeout = null;
-	this.stateSlider = null;
-	this.currentStateIndexWrap = null;
-	this.stateCountWrap = null;
+	//this.stateSlider = null;
+	//this.currentStateIndexWrap = null;
+	//this.stateCountWrap = null;
 	this.keyboardController = null;
 	this.joystickController = null;
 	this.lastLogMessage = null;
@@ -22,14 +22,15 @@ Dash.UI.prototype = new Dash.Bindable();
 Dash.UI.Event = {
 	KEY_DOWN: 'key-down',
 	KEY_UP: 'key-up'
-}
+};
 
-Dash.UI.prototype.init = function(socket, robotId) {
+Dash.UI.prototype.init = function(socket, config) {
 	this.socket = socket;
-    this.robotId = robotId;
+    this.robotId = config.robot.robotId;
+	this.robotIndex = config.robot.robotIndex;
 	this.socketEvents = socket.socketEvents;
 	this.initDebugListener();
-	this.initSlider();
+	//this.initSlider();
 	this.initSocket();
     this.initRobot();
 	this.initFpsCounter();
@@ -161,34 +162,34 @@ Dash.UI.prototype.initDebugListener = function() {
 		}
 	);
 };
-
+/*
 Dash.UI.prototype.initSlider = function() {
 	var self = this;
-	
+
 	this.stateSlider = $('#state-slider');
 	this.currentStateIndexWrap = $('#current-state-index');
 	this.stateCountWrap = $('#state-count');
-	
+
 	this.stateSlider.slider({
 		onChange: function(value) {
 			self.showState(value - 1);
 		}
 	});
-	
+
 	this.currentStateIndexWrap.bind('change keyup click mousewheel', function(e) {
 		var newIndex = parseInt(self.currentStateIndexWrap.val()) - 1;
-		
+
 		if (newIndex > self.states.length - 1) {
 			newIndex = self.states.length - 1;
 		} else if (newIndex < 0) {
 			newIndex = 0;
 		}
-		
+
 		self.currentStateIndexWrap.html(newIndex + 1);
-		
+
 		self.showState(newIndex);
 	});
-	
+
 	$('.slider').slider({
 		showRange: true,
 		showValue: true,
@@ -196,7 +197,7 @@ Dash.UI.prototype.initSlider = function() {
 		minChangeInterval: 500
 	});
 };
-
+*/
 Dash.UI.prototype.setupParameterFields = function() {
     var self = this;
 	$('.send-parameter-field').each(function() {
@@ -249,6 +250,8 @@ Dash.UI.prototype.initSocket = function() {
 		//window.setTimeout(function() {
         self.socket.send('<get-controller>');
 		//}, 2000);
+
+		dash.commonLogic.connectedRobots++;
 
 		self.setupParameterFields();
 	});
@@ -415,17 +418,106 @@ Dash.UI.prototype.initKeyListeners = function() {
 
 Dash.UI.prototype.initControls = function(controls) {
 
+	$('<div/>', {
+		id: 'buttons-' + this.robotId,
+		class: 'buttons'
+	}).appendTo('#robotControls');
+
+	$('<div><ul id="controller-state-' + this.robotId +
+		'" class="controller-state"></ul></div>').appendTo('#robotControls');
+
 	var self = this,
 		keyboardEnabled = $.cookie('keyboard-enabled'),
 		joystickEnabled = $.cookie('joystick-enabled');
 
-	$('#state-info-btn').click(function() {
-		self.showCurrentStateInfo();
-		
-		return false;
-	}).bind('clickoutside', function() {
-		self.hideStateInfo();
-	});
+	$('<button/>', {
+		text: 'STOP',
+		id: 'stop-btn-' + this.robotId,
+		class: 'live-only',
+		disabled: 'disabled',
+		click: (function() {
+			self.socket.send('<stop>');
+		})
+	}).appendTo('#buttons-' + this.robotId );
+
+	$('<button/>', {
+		text: dash.config.socket.host,
+		id: "host-btn-" + this.robotId,
+		click: (function() {
+			var newHost;
+			//if(self.socket.socketId == dash.config.socket.socketId) {
+			newHost = window.prompt('Enter ' + self.robotId +  'hostname or IP', dash.config.socket.host);
+			if (typeof(newHost) == 'string' && newHost.length > 0) {
+				dash.config.socket.host = newHost;
+				self.socket.open(dash.config.socket.host, dash.config.socket.port);
+				$.cookie('host', dash.config.socket.host);
+				$(this).html(dash.config.socket.host);
+			}
+			/*} else {
+			 newHost = window.prompt('Enter 2. robot hostname or IP', dash.config.socket2.host);
+			 if (typeof(newHost) == 'string' && newHost.length > 0) {
+			 dash.config.socket2.host = newHost;
+			 self.socket.open(dash.config.socket2.host, dash.config.socket2.port, self.socketEvents);
+			 $.cookie('host', dash.config.socket2.host);
+			 $(this).html(dash.config.socket2.host);
+			 }
+			 }*/
+		})
+	}).appendTo('#buttons-' + this.robotId);
+
+    $('<button/>', {
+        text: 'State info',
+        id: 'state-info-btn-' + this.robotId,
+		class: 'live-only',
+        disabled: 'disabled'
+    }).appendTo('#buttons-' + this.robotId);
+    $('#state-info-btn-' + this.robotId).click( function() {
+        self.showCurrentStateInfo();
+        return false;
+    }).bind('clickoutside', function() {
+        self.hideStateInfo();
+    });
+
+	$('<button/>', {
+		text: 'Show Video',
+		id: 'fetch-frame-btn-' + this.robotId,
+		class: "live-only",
+		disabled: 'disabled',
+		click: (function() {
+			dash.ui.showModal('camera-view');
+			self.socket.send('<get-frame>');
+			self.socket.send('<list-screenshots>');
+		})
+	}).appendTo('#buttons-' + this.robotId);
+
+	$('<button/>', {
+		text: 'Calibrate lens',
+		id: 'toggle-camera-translator-btn-' + this.robotId,
+		class: "live-only",
+		disabled: 'disabled',
+		click: (function() {
+			dash.ui.showModal('camera-translator');
+		})
+	}).appendTo('#buttons-' + this.robotId);
+
+    var table = $('<table style="width: 100%;"/>').addClass('ctrl manual-ctrl test-ctrl');
+    var row1 = $('<tr><th>Keyboard</th><td><input type="checkbox" name="keyboard-controller-enabled" value="1"/></td></tr>');
+	var row2 = $('<tr><th>Joystick</th><td><input type="checkbox" name="joystick-controller-enabled" value="1"/></td></tr>');
+	//$('<input />', { type: 'checkbox', id: 'cb1', name: 'keyboard-controller-enabled', value: 1 }).appendTo('#buttons-' + this.robotId);
+	table.append(row1);
+	table.append(row2);
+    $('#buttons-' + this.robotId).append(table);
+
+	var sel = $('<select/>', {
+		name: "controller-choice",
+		id: "controller-choice",
+		class: "live-only seperated",
+		disabled: "disabled"
+	}).appendTo('#buttons-' + this.robotId);
+
+	$("<option />", {value: "", text: "-- Select Controller --"}).appendTo(sel);
+	$("<option />", {value: "test", text: "Test Controller"}).appendTo(sel);
+	$("<option />", {value: "offensive-ai", text: "Offensive AI"}).appendTo(sel);
 
 	this.keyboardController.enabled = parseInt(keyboardEnabled) == 1;
 	this.joystickController.enabled = parseInt(joystickEnabled) == 1;
@@ -468,60 +560,109 @@ Dash.UI.prototype.initControls = function(controls) {
 			.attr('disabled', 'disabled')
 			.iphoneStyle('refresh');
 	};
-	
+
 	$('#controller-choice').change(function() {
 		var controller = $(this).val();
 		
 		self.setController(controller);
 	});
-	
-	$('#host-btn').click(function() {
-		var newHost;
-        //if(self.socket.socketId == dash.config.socket.socketId) {
-            newHost = window.prompt('Enter 1. robot hostname or IP', dash.config.socket.host);
-            if (typeof(newHost) == 'string' && newHost.length > 0) {
-                dash.config.socket.host = newHost;
-                self.socket.open(dash.config.socket.host, dash.config.socket.port);
-                $.cookie('host', dash.config.socket.host);
-                $(this).html(dash.config.socket.host);
-			}
-        /*} else {
-			newHost = window.prompt('Enter 2. robot hostname or IP', dash.config.socket2.host);
-			if (typeof(newHost) == 'string' && newHost.length > 0) {
-				dash.config.socket2.host = newHost;
-				self.socket.open(dash.config.socket2.host, dash.config.socket2.port, self.socketEvents);
-				$.cookie('host', dash.config.socket2.host);
-				$(this).html(dash.config.socket2.host);
-			}
-		}*/
-	}).html(dash.config.socket.host);
-/*
-	$('#host-btn2').click(function() {
-		var newHost = window.prompt('Enter 2. robot hostname or IP', dash.config.socket2.host);
 
-		if (typeof(newHost) == 'string' && newHost.length> 0) {
-			dash.config.socket2.host = newHost;
+	$('<button/>', {
+		text: "Reset position",
+		id: "reset-position-btn-" + this.robotId,
+		class: "live-only ctrl manual-ctrl",
+		disabled: "disabled",
+		click: (function() {
+			self.robot.resetPosition();
+		})
+	}).appendTo('#buttons-' + this.robotId);
 
-			dash.socket2.open(dash.config.socket2.host, dash.config.socket2.port, dash.config.socket2.socketId);
+	$('<button id="toggle-dribbler-btn-' + this.robotId +
+		'" class="live-only ctrl manual-ctrl" disabled="disabled">Toggle Dribbler</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="kick-btn-"' + this.robotId +
+		'" class="live-only ctrl manual-ctrl" disabled="disabled">Kick</button>'
+	).appendTo('#buttons-' + this.robotId);
 
-			$.cookie('host2', dash.config.socket2.host);
+			<!-- test controller -->
+	$('<button id="manual-control-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-manual-control" disabled="disabled">Manual Control</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="watch-ball-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-watch-ball" disabled="disabled">Watch Ball</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="watch-goal-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-watch-goal" disabled="disabled">Watch Goal</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="watch-goal-behind-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-watch-goal-behind" disabled="disabled">Watch Goal Behind</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="spin-around-dribbler-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-spin-around-dribbler" disabled="disabled">Spin around dribbler</button>'
+	).appendTo('#buttons-' + this.robotId);
+	/*$('<button id="fetch-ball-infront-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-fetch-ball-infront" disabled="disabled">Fetch ball in-front</button>'
+	).appendTo('#buttons-' + this.robotId);*/
+	$('<button id="find-ball-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-find-ball" disabled="disabled">Find ball</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="fetch-ball-front-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-fetch-ball-front" disabled="disabled">Fetch ball front</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="fetch-ball-direct-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-fetch-ball-direct" disabled="disabled">Fetch ball direct</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="fetch-ball-behind-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-fetch-ball-behind" disabled="disabled">Fetch ball behind</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="fetch-ball-near-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-fetch-ball-near" disabled="disabled">Fetch ball near</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="drive-circle-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-drive-circle" disabled="disabled">Drive Circle</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="accelerate-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-accelerate" disabled="disabled">Approach accelerated</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="escape-corner-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-escape-corner" disabled="disabled">Escape corner</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="drive-home-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-drive-home" disabled="disabled">Drive home</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="return-field-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="run-return-field" disabled="disabled">Return field</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="reset-position-btn-' + this.robotId + '" class="live-only ctrl test-ctrl ' +
+		'send-cmd-btn" data-cmd="reset-position" disabled="disabled">Reset position</button>'
+	).appendTo('#buttons-' + this.robotId);
 
-			$(this).html(dash.config.socket2.host);
-		}
-	}).html(dash.config.socket2.host);
-*/
+	$('<button id="drive-to-btn-' + this.robotId + '" class="live-only ctrl test-ctrl" ' +
+		'disabled="disabled">Drive to</button>'
+	).appendTo('#buttons-' + this.robotId);
+	$('<button id="turn-by-btn-' + this.robotId + '" class="live-only ctrl test-ctrl" ' +
+		'disabled="disabled">Turn by</button>'
+	).appendTo('#buttons-' + this.robotId);
 
-	$('#rebuild-btn').click(function() {
-		var btn = $(this);
-		
-		btn.html('Building..').attr('disabled', 'disabled');
-		
-		self.rebuild(function() {
-			btn.removeAttr('disabled').html('Rebuild');
-		});
-	});
-	
-	$('#kill-btn').click(function() {
+
+    $('<button/>', {
+        text: "Rebuild",
+        id: "rebuild-btn" + this.robotId,
+        click: (function() {
+            var btn = $(this);
+
+            btn.html('Building..').attr('disabled', 'disabled');
+
+            self.rebuild(function() {
+                btn.removeAttr('disabled').html('Rebuild');
+            });
+        })
+    }).appendTo('#buttons-' + this.robotId);
+
+    $('<button/>', {
+        text: "Kill",
+        id: "kill-btn" + this.robotId,
+	    click: (function() {
 		var btn = $(this);
 		
 		btn.html('Killing it..').attr('disabled', 'disabled');
@@ -529,9 +670,10 @@ Dash.UI.prototype.initControls = function(controls) {
 		self.kill(function() {
 			btn.removeAttr('disabled').html('Kill');
 		});
-	});
-	
-	$('#shutdown-btn').click(function() {
+	})
+    }).appendTo('#buttons-' + this.robotId);
+
+	$('#shutdown-btn-' + this.robotId).click(function() {
 		var btn = $(this);
 		
 		btn.html('Shutting down..').attr('disabled', 'disabled');
@@ -541,28 +683,21 @@ Dash.UI.prototype.initControls = function(controls) {
 		});
 	});
 	
-	$('#calibrate-camera-btn').click(function() {
+	$('#calibrate-camera-btn-' + this.robotId).click(function() {
         self.socket.send('<get-camera-calibration>');
 	});
 	
-	$('#calibrate-blobber-btn').click(function() {
+	$('#calibrate-blobber-btn-' + this.robotId).click(function() {
 		var selectedClass = $('#blobber-class').val();
 
         self.socket.send('<get-blobber-calibration:' + selectedClass + '>');
 	});
 	
-	$('#fetch-frame-btn').click(function() {
-		dash.ui.showModal('camera-view');
 
-        self.socket.send('<get-frame>');
-        self.socket.send('<list-screenshots>');
-	});
 
-	$('#toggle-camera-translator-btn').click(function() {
-		dash.ui.showModal('camera-translator');
-	});
 
-	$('#show-blobber-btn').click(function() {
+
+	$('#show-blobber-btn-' + this.robotId).click(function() {
 		dash.ui.showModal('blobber-view');
 	});
 	
@@ -572,27 +707,23 @@ Dash.UI.prototype.initControls = function(controls) {
         self.socket.send('<get-blobber-calibration:' + selectedClass + '>');
 	});
 	
-	$('#reset-position-btn').click(function() {
-		self.robot.resetPosition();
-	});
+
 	
-	$('#kick-btn').click(function() {
+	$('#kick-btn-' + this.robotId).click(function() {
 		self.robot.kick();
 	});
 	
-	$('#toggle-dribbler-btn').click(function() {
+	$('#toggle-dribbler-btn-' + this.robotId).click(function() {
 		self.robot.toggleDribbler();
 	});
 	
-	$('#stop-btn').click(function() {
-        self.socket.send('<stop>');
-	});
 
-	$('#drive-to-btn').click(function() {
+
+	$('#drive-to-btn-' + this.robotId).click(function() {
 		dash.renderer.showDriveTo();
 	});
 
-	$('#turn-by-btn').click(function() {
+	$('#turn-by-btn-' + this.robotId).click(function() {
 		var angle = window.prompt('Enter angle', 90.0);
 
         self.socket.send('<turn-by:' + angle +'>');
@@ -925,7 +1056,7 @@ Dash.UI.prototype.handleControllerMessage = function(controller) {
 		}
 	});
 
-	this.socket.send('<get-state>');
+	this.socket.send('<get-state>'); //Get first state
 };
 
 Dash.UI.prototype.handleStateMessage = function(state) {
@@ -1042,10 +1173,12 @@ Dash.UI.prototype.addState = function(state) {
 	}
 
 	this.states.push(state);
-
+	dash.commonLogic.allStates[state.robot_id].push(state);
 	// disable slider
-	this.stateSlider.slider('max', this.states.length);
-	this.stateCountWrap.html(this.states.length);
+	//this.stateSlider.slider('max', this.states.length);
+	//this.stateCountWrap.html(this.states.length);
+	dash.commonLogic.stateSlider.slider('max', this.states.length);
+	dash.commonLogic.stateCountWrap.html(this.states.length);
 
 	if (state.playing) {
 		$('#ai-toggle-go-btn').html('Stop');
@@ -1057,6 +1190,7 @@ Dash.UI.prototype.addState = function(state) {
 	
 	if (live) {
 		this.showState(this.states.length - 1);
+		dash.commonLogic.showState(this.states.length - 1);
 	}
 
 	if (!this.extractedCameraTranslator) {
@@ -1133,14 +1267,14 @@ Dash.UI.prototype.showState = function(index) {
 	var state = this.states[index];
 
 	// disable slider
-	this.currentStateIndexWrap.val(index + 1);
-	this.stateSlider.slider('val',index + 1);
+	//this.currentStateIndexWrap.val(index + 1);
+	//this.stateSlider.slider('val',index + 1);
 	
 	this.currentStateIndex = index;
 	
 	// @TODO show alive wheels..
 	
-	dash.renderer.renderState(state);
+	//dash.renderer.renderState(state);
 	
 	this.showTasksQueue(state);
 	this.showStateStats(state); // @TEMP
@@ -1259,7 +1393,7 @@ Dash.UI.prototype.showStateStats = function(state) {
 };
 
 Dash.UI.prototype.showControllerState = function(state) {
-	var wrap = $('#controller-state'),
+	var wrap = $('#controller-state-' + this.robotId),
 		entries = [],
 		key,
 		value,
