@@ -62,27 +62,26 @@ void ParticleFilterLocalizer::setPosition(float x, float y, float orientation) {
 		particles[i]->orientation = orientation;
         particles[i]->location.x = x;
         particles[i]->location.y = y;
-		particles[i]->probability = 1;
+		particles[i]->probability = 1.0f;
     }
 }
 
 void ParticleFilterLocalizer::move(float velocityX, float velocityY, float velocityOmega, float dt, bool exact) {
-	float particleVelocityX, particleVelocityY, particleVelocityOmega;
-
 	for (unsigned int i = 0; i < particles.size(); i++) {
-		if (exact) {
-			particleVelocityX = velocityX;
-			particleVelocityY = velocityY;
-			particleVelocityOmega = velocityOmega;
-		} else {
-			// TODO Add noise in FORWARD direction
-			particleVelocityX = velocityX + Math::randomGaussian(forwardNoise);
-			particleVelocityY = velocityY + Math::randomGaussian(forwardNoise);
-			particleVelocityOmega = velocityOmega + Math::randomGaussian(turnNoise);
+		float particleVelocityX		= velocityX;
+		float particleVelocityY		= velocityY;
+		float particleVelocityOmega = velocityOmega;
+		
+		if (!exact)
+		{
+			particleVelocityX		+= Math::randomGaussian(forwardNoise);
+			particleVelocityY		+= Math::randomGaussian(forwardNoise);
+			particleVelocityOmega	+= Math::randomGaussian(turnNoise);
 		}
 
 		float particleVelocityXLocal = particleVelocityX * Math::cos(particles[i]->orientation) - particleVelocityY * Math::sin(particles[i]->orientation);
 		float particleVelocityYLocal = particleVelocityX * Math::sin(particles[i]->orientation) + particleVelocityY * Math::cos(particles[i]->orientation);
+		
 		particles[i]->orientation += particleVelocityOmega * dt;
 		particles[i]->location.x += particleVelocityXLocal * dt;
 		particles[i]->location.y += particleVelocityYLocal * dt;
@@ -146,11 +145,16 @@ float ParticleFilterLocalizer::getMeasurementProbability(Particle* particle, con
 void ParticleFilterLocalizer::resample() {
     ParticleList resampledParticles;
 	int particleCount = (int)particles.size();
+	int randomParticleCount = particleCount / 10;
+	int resampledParticleCount = particleCount - randomParticleCount;
+
     int index = Math::randomInt(0, particleCount - 1);
     float beta = 0.0f;
     float maxProbability = 1.0f;
 
-    for (int i = 0; i < particleCount; i++) {
+	generateRandomParticles(randomParticleCount);
+
+    for (int i = 0; i < resampledParticleCount; i++) {
         beta += Math::randomFloat() * 2.0f * maxProbability;
 
         while (beta > particles[index]->probability) {
@@ -179,26 +183,28 @@ Math::Position ParticleFilterLocalizer::getPosition() {
     float xSum = 0.0f;
     float ySum = 0.0f;
     float orientationSum = 0.0f;
+	float weightSum = 0.0f;
     unsigned int particleCount = particles.size();
     Particle* particle;
 
 	if (particleCount == 0) {
 		std::cout << "@ NO PARTICLES FOR POSITION" << std::endl;
-
 		return Math::Position();
 	}
 
     for (unsigned int i = 0; i < particleCount; i++) {
         particle = particles[i];
+		float weight = particle->probability;
 
-        xSum += particle->location.x;
-        ySum += particle->location.y;
-        orientationSum += particle->orientation;
+        xSum += particle->location.x * weight;
+        ySum += particle->location.y * weight;
+        orientationSum += particle->orientation * weight;
+		weightSum += weight;
     }
 
-	x = xSum / (float)particleCount;
-	y = ySum / (float)particleCount;
-	orientation = Math::floatModulus(orientationSum / (float)particleCount, Math::TWO_PI);
+	x = xSum / weightSum;
+	y = ySum / weightSum;
+	orientation = Math::floatModulus(orientationSum / weightSum, Math::TWO_PI);
 
 	//Util::confineField(x, y);
 
