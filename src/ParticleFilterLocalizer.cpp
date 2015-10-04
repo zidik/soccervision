@@ -19,28 +19,27 @@ ParticleFilterLocalizer::ParticleFilterLocalizer(
 	particleCount(particleCount),
 	forwardNoise(forwardNoise), 
 	turnNoise(turnNoise) {
-	generateRandomParticles(particleCount);
+	generateRandomParticles(particles, particleCount);
 	json = "null";
 }
 
 ParticleFilterLocalizer::~ParticleFilterLocalizer() {
-    for (ParticleList::const_iterator it = particles.begin(); it != particles.end(); it++) {
+    for (ParticleList::const_iterator it = particles.begin(); it != particles.end(); ++it) {
         delete *it;
     }
 
     particles.clear();
 
-    for (LandmarkMap::const_iterator it = landmarks.begin(); it != landmarks.end(); it++) {
+    for (LandmarkMap::const_iterator it = landmarks.begin(); it != landmarks.end(); ++it) {
         delete it->second;
     }
 
     landmarks.clear();
 }
 
-void ParticleFilterLocalizer::generateRandomParticles(int particleCount)
-{
+void ParticleFilterLocalizer::generateRandomParticles(std::vector<Particle*>& particleVector, int particleCount) {
 	for (int i = 0; i < particleCount; i++) {
-		particles.push_back(new Particle(
+		particleVector.push_back(new Particle(
 			Math::randomFloat(0.0f, Config::fieldWidth),
 			Math::randomFloat(0.0f, Config::fieldHeight),
 			Math::randomFloat(0.0f, Math::TWO_PI),
@@ -116,7 +115,7 @@ void ParticleFilterLocalizer::update(const Measurements& measurements) {
 float ParticleFilterLocalizer::getMeasurementProbability(Particle* particle, const Measurements& measurements) {
     float probability = 1.0f;
 
-    for (Measurements::const_iterator it = measurements.begin(); it != measurements.end(); it++) {
+    for (Measurements::const_iterator it = measurements.begin(); it != measurements.end(); ++it) {
 		std::string landmarkName = it->first;
 		Measurement measurement = it->second;
 
@@ -143,7 +142,7 @@ float ParticleFilterLocalizer::getMeasurementProbability(Particle* particle, con
 }
 
 void ParticleFilterLocalizer::resample() {
-    ParticleList resampledParticles;
+    ParticleList newParticles;
 	int particleCount = (int)particles.size();
 	int randomParticleCount = particleCount / 10;
 	int resampledParticleCount = particleCount - randomParticleCount;
@@ -152,7 +151,7 @@ void ParticleFilterLocalizer::resample() {
     float beta = 0.0f;
     float maxProbability = 1.0f;
 
-	generateRandomParticles(randomParticleCount);
+	generateRandomParticles(newParticles, randomParticleCount);
 
     for (int i = 0; i < resampledParticleCount; i++) {
         beta += Math::randomFloat() * 2.0f * maxProbability;
@@ -162,21 +161,16 @@ void ParticleFilterLocalizer::resample() {
             index = (index + 1) % particleCount;
         }
 
-        resampledParticles.push_back(new Particle(
-            particles[index]->location.x,
-            particles[index]->location.y,
-            particles[index]->orientation,
-            particles[index]->probability
-        ));
+		newParticles.push_back(new Particle(*particles[index]));
     }
 
-    for (ParticleList::const_iterator it = particles.begin(); it != particles.end(); it++) {
+    for (ParticleList::const_iterator it = particles.begin(); it != particles.end(); ++it) {
         delete *it;
     }
 
     particles.clear();
 
-    particles = resampledParticles;
+    particles = newParticles;
 }
 
 Math::Position ParticleFilterLocalizer::getPosition() {

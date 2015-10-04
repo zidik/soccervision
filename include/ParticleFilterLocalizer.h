@@ -23,7 +23,7 @@ public:
 	};
 
 	struct Particle {
-		Particle(float x, float y, float orientation, float probability) : location(x, y), orientation(orientation), probability(probability) {}
+		Particle(float x, float y, float orientation, float probability) : location(x, y), orientation(orientation), probability(probability) {};
 		
 		Math::Vector location;
 		float orientation;
@@ -42,7 +42,6 @@ public:
 	typedef std::vector<Particle*> ParticleList;
 	typedef std::map<std::string, Measurement> Measurements;
 
-	void generateRandomParticles(int particleCount);
 	ParticleFilterLocalizer(
 		CameraTranslator* frontCameraTranslator,
 		CameraTranslator* rearCameraTranslator,
@@ -52,6 +51,7 @@ public:
 	);
     ~ParticleFilterLocalizer();
 
+	void generateRandomParticles(std::vector<Particle*>& particleVector, int particleCount);
     void addLandmark(Landmark* landmark);
     void addLandmark(std::string name, float x, float y);
 	void move(float velocityX, float velocityY, float omega, float dt) { move(velocityX, velocityY, omega, dt, false); }
