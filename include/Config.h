@@ -238,10 +238,8 @@ namespace Config {
 
 	// particle filter robot localizer parameters
 	const int robotLocalizerParticleCount = 1000;
-	const float robotLocalizerForwardNoise = 0.25f;
-	const float robotLocalizerTurnNoise = 0.3f; // 45deg
-	const float robotLocalizerDistanceNoise = 0.35f;
-	const float robotLocalizerAngleNoise = 0.2f; // ~~11deg
+	const float robotLocalizerForwardNoise = 0.75f;
+	const float robotLocalizerTurnNoise = 1.57f; //90deg
 
 	// maximum acceleration/deacceleration the robot should attempt
 	const float robotMaxAcceleration = 2.0f;

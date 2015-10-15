@@ -146,7 +146,7 @@ float Vector::getLength() const {
 }
 
 float Vector::distanceTo(const Vector& b) const {
-	return Math::distanceBetween(x, y, b.x, b.y);
+	return sqrt(pow(x - b.x, 2) + pow(y - b.y, 2));
 }
 
 float Vector::dotProduct(const Vector& b) const {
@@ -187,16 +187,10 @@ Vector Vector::getSummed(const Vector& b) const {
     );
 }
 
-// 2D Point
-Point Point::getRotated(float angle) const {
-    return Point(
-        x * Math::cos(angle) - y * Math::sin(angle),
-        x * Math::sin(angle) + y * Math::cos(angle)
-    );
-}
-
-float Point::getDistanceTo(Point other) const {
-    return Math::sqrt(Math::pow(x - other.x, 2.0f) + Math::pow(y - other.y, 2.0f));
+Vector& Vector::operator-=(const Vector& other) {
+	x -= other.x;
+	y -= other.y;
+	return *this;
 }
 
 // 2D Polygon
@@ -207,10 +201,10 @@ Polygon::Polygon(const PointList& points) {
 }
 
 void Polygon::addPoint(float x, float y) {
-    points.push_back(Point(x, y));
+    points.push_back(Vector(x, y));
 }
 
-void Polygon::addPoint(Point point) {
+void Polygon::addPoint(Vector point) {
     points.push_back(point);
 }
 
@@ -248,13 +242,13 @@ Polygon Polygon::getScaled(float sx, float sy) const {
 }
 
 Polygon Polygon::getRotated(float angle) const {
-    Polygon rotated;
+	Polygon rotated;
 
-    for(unsigned int i = 0; i < points.size(); i++) {
-        rotated.addPoint(points[i].getRotated(angle));
+	for(unsigned int i = 0; i < points.size(); i++) {
+		rotated.addPoint(points[i].getRotated(angle));
 	}
 
-    return rotated;
+	return rotated;
 }
 
 std::string Polygon::toJSON() {
@@ -262,7 +256,7 @@ std::string Polygon::toJSON() {
 
 	stream << "[";
 
-	Point point;
+	Vector point;
 	bool first = true;
 
 	for (PointListIt it = points.begin(); it != points.end(); it++) {

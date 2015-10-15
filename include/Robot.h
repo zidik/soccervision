@@ -24,7 +24,7 @@ class OdometerLocalizer;
 class Robot : public AbstractCommunication::Listener, public Command::Listener {
 
 public:
-	Robot(AbstractCommunication* com);
+	Robot(AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator);
     ~Robot();
 
     void setup();
@@ -129,6 +129,8 @@ private:
 	Math::Polygon cameraFOV;
 
 	AbstractCommunication* com;
+	CameraTranslator* frontCameraTranslator;
+	CameraTranslator* rearCameraTranslator;
 	Vision::Results* visionResults;
 	Odometer* odometer;
 	Odometer::Movement movement;

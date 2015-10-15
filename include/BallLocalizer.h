@@ -20,8 +20,7 @@ public:
         double createdTime;
         double updatedTime;
         double removeTime;
-        float x;
-        float y;
+		Math::Vector location;
         float velocityX;
         float velocityY;
         bool visible;

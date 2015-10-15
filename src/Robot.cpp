@@ -4,6 +4,7 @@
 #include "Coilgun.h"
 #include "Odometer.h"
 #include "OdometerLocalizer.h"
+#include "ParticleFilterLocalizer.h"
 #include "Util.h"
 #include "Tasks.h"
 #include "Config.h"
@@ -12,7 +13,7 @@
 #include <map>
 #include <sstream>
 
-Robot::Robot(AbstractCommunication* com) : com(com), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f) {
+Robot::Robot(AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f) {
     targetOmega = 0;
     targetDir = Math::Vector(0, 0);
    
@@ -77,19 +78,19 @@ void Robot::setup() {
 void Robot::setupCameraFOV() {
 	Math::PointList points;
 
-	points.push_back(Math::Point(0, 0));
-	points.push_back(Math::Point(Config::cameraFovDistance, -Config::cameraFovWidth / 2.0f));
-	points.push_back(Math::Point(Config::cameraFovDistance, Config::cameraFovWidth / 2.0f));
-	points.push_back(Math::Point(0, 0));
-	points.push_back(Math::Point(-Config::cameraFovDistance, -Config::cameraFovWidth / 2.0f));
-	points.push_back(Math::Point(-Config::cameraFovDistance, Config::cameraFovWidth / 2.0f));
-	points.push_back(Math::Point(0, 0));
+	points.push_back(Math::Vector(0, 0));
+	points.push_back(Math::Vector(Config::cameraFovDistance, -Config::cameraFovWidth / 2.0f));
+	points.push_back(Math::Vector(Config::cameraFovDistance, Config::cameraFovWidth / 2.0f));
+	points.push_back(Math::Vector(0, 0));
+	points.push_back(Math::Vector(-Config::cameraFovDistance, -Config::cameraFovWidth / 2.0f));
+	points.push_back(Math::Vector(-Config::cameraFovDistance, Config::cameraFovWidth / 2.0f));
+	points.push_back(Math::Vector(0, 0));
 
 	cameraFOV = Math::Polygon(points);
 }
 
 void Robot::setupRobotLocalizer() {
-	robotLocalizer = new ParticleFilterLocalizer();
+	robotLocalizer = new ParticleFilterLocalizer(frontCameraTranslator, rearCameraTranslator);
 
 	robotLocalizer->addLandmark(
 		"yellow-center",
@@ -199,15 +200,15 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	handleQueuedChipKickRequest();
 
 	robotLocalizer->update(measurements);
-	robotLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt, measurements.size() == 0 ? true : false);
+	robotLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt);
 	odometerLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt);
 
 	Math::Position localizerPosition = robotLocalizer->getPosition();
 	Math::Position odometerPosition = odometerLocalizer->getPosition();
 
 	// use localizer position
-	x = localizerPosition.x;
-	y = localizerPosition.y;
+	x = localizerPosition.location.x;
+	y = localizerPosition.location.y;
 	orientation = localizerPosition.orientation;
 
 	// use odometer position
@@ -217,11 +218,11 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 
 	std::stringstream stream;
 
-	stream << "\"localizerX\":" << localizerPosition.x << ",";
-    stream << "\"localizerY\":" << localizerPosition.y << ",";
+	stream << "\"localizerX\":" << localizerPosition.location.x << ",";
+    stream << "\"localizerY\":" << localizerPosition.location.y << ",";
     stream << "\"localizerOrientation\":" << localizerPosition.orientation << ",";
-	stream << "\"odometerX\":" << odometerPosition.x << ",";
-    stream << "\"odometerY\":" << odometerPosition.y << ",";
+	stream << "\"odometerX\":" << odometerPosition.location.x << ",";
+    stream << "\"odometerY\":" << odometerPosition.location.y << ",";
     stream << "\"odometerOrientation\":" << odometerPosition.orientation << ",";
     stream << "\"gotBall\":" << (dribbler->gotBall() ? "true" : "false") << ",";
 
@@ -314,11 +315,11 @@ void Robot::updateMeasurements() {
 	Object* blueGoal = visionResults->getLargestGoal(Side::BLUE);
 
 	if (yellowGoal != NULL) {
-		measurements["yellow-center"] = ParticleFilterLocalizer::Measurement(yellowGoal->distance, yellowGoal->angle);
+		measurements["yellow-center"] = ParticleFilterLocalizer::Measurement(Math::Vector(yellowGoal->x, yellowGoal->y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
 	}
 
 	if (blueGoal != NULL) {
-		measurements["blue-center"] = ParticleFilterLocalizer::Measurement(blueGoal->distance, blueGoal->angle);
+		measurements["blue-center"] = ParticleFilterLocalizer::Measurement(Math::Vector(blueGoal->x, blueGoal->y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
 	}
 }
 
@@ -655,8 +656,8 @@ void Robot::debugBallList(std::string name, std::stringstream& stream, BallLocal
         }
 
 		stream << "{";
-		stream << "\"x\": " << ball->x << ",";
-		stream << "\"y\": " << ball->y << ",";
+		stream << "\"x\": " << ball->location.x << ",";
+		stream << "\"y\": " << ball->location.y << ",";
 		stream << "\"velocityX\": " << ball->velocityX << ",";
 		stream << "\"velocityY\": " << ball->velocityY << ",";
 		stream << "\"createdTime\": " << ball->createdTime << ",";

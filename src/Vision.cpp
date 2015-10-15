@@ -975,8 +975,8 @@ CameraTranslator::CameraPosition Vision::getPixelAt(float distanceX, float dista
 }
 
 // TODO Implement..
-Math::Point Vision::getScreenCoords(float distanceX, float distanceY) {
-	return Math::Point(0, 0);
+Math::Vector Vision::getScreenCoords(float distanceX, float distanceY) {
+	return Math::Vector(0, 0);
 }
 
 Vision::Distance Vision::getDistance(int x, int y) {
@@ -1164,7 +1164,7 @@ Vision::PathMetric Vision::getPathMetric(int x1, int y1, int x2, int y2, std::ve
 
 	//for (int i = start; (originalX1 < originalX2 ? i < senseCounter : i >= 0); i += step) {
 	for (Math::PointListIt it = sensePointsWorld.begin(); it != sensePointsWorld.end(); it++) {
-		Math::Point worldPoint = *it;
+		Math::Vector worldPoint = *it;
 
 		CameraTranslator::CameraPosition camPos = cameraTranslator->getCameraPosition(worldPoint.x, worldPoint.y);
    

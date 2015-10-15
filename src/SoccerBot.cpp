@@ -551,7 +551,7 @@ void SoccerBot::setupCameras() {
 }
 
 void SoccerBot::setupRobot() {
-	robot = new Robot(com);
+	robot = new Robot(com, frontCameraTranslator, rearCameraTranslator);
 
 	robot->setup();
 }

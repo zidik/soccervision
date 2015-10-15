@@ -52,19 +52,20 @@ std::string TurnByTask::toString() {
 // DriveTo coordinates task
 void DriveToTask::onStart(Robot& robot, float dt) {
     Math::Position pos = robot.getPosition();
+	Math::Vector target(targetX, targetY);
 
-    startX = pos.x;
-    startY = pos.y;
+    startX = pos.location.x;
+    startY = pos.location.y;
     startOrientation = pos.orientation;
 
-    startDistance = Math::distanceBetween(pos.x, pos.y, targetX, targetY);
+	startDistance = pos.location.distanceTo(target);
 }
 
 bool DriveToTask::onStep(Robot& robot, float dt) {
     Math::Position pos = robot.getPosition();
-    Math::Vector target(targetX, targetY);
+	Math::Vector target(targetX, targetY);
 
-    currentDistance = Math::distanceBetween(pos.x, pos.y, targetX, targetY);
+    currentDistance = pos.location.distanceTo(target);
 
     float currentOrientation = pos.orientation;
     float orientationDiff = Math::getAngleDiff(currentOrientation, targetOrientation);
@@ -80,7 +81,7 @@ bool DriveToTask::onStep(Robot& robot, float dt) {
         useSpeed = speed * currentDistance * 5.0f;
     }
 
-    Math::Vector globalDir = Math::Vector::createDirVec(target, pos).getNormalized().getScaled(useSpeed);
+    Math::Vector globalDir = Math::Vector::createDirVec(target, pos.location).getNormalized().getScaled(useSpeed);
     Math::Vector localDir = globalDir.getRotated(-currentOrientation);
 
     //std::cout << "[" << Util::round(Math::radToDeg(currentOrientation)) << "] " << Util::round(globalDir.x, 1) << "x" << Util::round(globalDir.y) << " > " << Util::round(localDir.x, 1) << "x" << Util::round(localDir.y) << std::endl;
@@ -119,8 +120,8 @@ std::string DriveToTask::toString() {
 void DrivePathTask::onStart(Robot& robot, float dt) {
     Math::Position pos = robot.getPosition();
 
-    startX = pos.x;
-    startY = pos.y;
+    startX = pos.location.x;
+    startY = pos.location.y;
     startOrientation = pos.orientation;
 }
 
@@ -132,7 +133,7 @@ bool DrivePathTask::onStep(Robot& robot, float dt) {
     Math::Position currentPos = robot.getPosition();
     Math::Position targetPos = positions.front();
 
-    float currentDistance = Math::distanceBetween(currentPos.x, currentPos.y, targetPos.x, targetPos.y);
+	float currentDistance = currentPos.location.distanceTo(targetPos.location);
     float orientationDiff = Math::getAngleDiff(currentPos.orientation, targetPos.orientation);
 
     if (currentDistance <= positionThreshold && Math::abs(orientationDiff) < orientationThreshold) {
@@ -152,7 +153,7 @@ bool DrivePathTask::onStep(Robot& robot, float dt) {
         useSpeed = speed * currentDistance * 5.0f;
     }
 
-    Math::Vector globalDir = Math::Vector::createDirVec(targetPos, currentPos).getNormalized().getScaled(useSpeed);
+    Math::Vector globalDir = Math::Vector::createDirVec(targetPos.location, currentPos.location).getNormalized().getScaled(useSpeed);
     Math::Vector localDir = globalDir.getRotated(-currentPos.orientation);
 
     if (omega < -3.0f) {
@@ -185,28 +186,30 @@ std::string DrivePathTask::toString() {
 
     Math::Position targetPos = positions.front();
 
-    return "DrivePath " + Util::toString(startPositionCount - positions.size()) + "/" + Util::toString(startPositionCount) + " - " + Util::toString(targetPos.x) + "x" + Util::toString(targetPos.y) + " @ " + Util::toString(Math::round(Math::radToDeg(targetPos.orientation), 1)) + " deg";
+    return "DrivePath " + Util::toString(startPositionCount - positions.size()) + "/" + Util::toString(startPositionCount) + " - " + Util::toString(targetPos.location.x) + "x" + Util::toString(targetPos.location.y) + " @ " + Util::toString(Math::round(Math::radToDeg(targetPos.orientation), 1)) + " deg";
 }
 
 
 // drive to coordinates facing some other coordinates
 void DriveFacingTask::onStart(Robot& robot, float dt) {
     Math::Position pos = robot.getPosition();
+	Math::Vector target(targetX, targetY);
 
-    startX = pos.x;
-    startY = pos.y;
+
+    startX = pos.location.x;
+    startY = pos.location.y;
     startOrientation = pos.orientation;
 
-    startDistance = Math::distanceBetween(pos.x, pos.y, targetX, targetY);
+	startDistance = pos.location.distanceTo(target);
 }
 
 bool DriveFacingTask::onStep(Robot& robot, float dt) {
     Math::Position pos = robot.getPosition();
     Math::Vector target(targetX, targetY);
 
-    currentDistance = Math::distanceBetween(pos.x, pos.y, targetX, targetY);
+    currentDistance = pos.location.distanceTo(target);
 
-    Math::Vector targetVec = Math::Vector::createDirVec(pos, Math::Vector(targetX, targetY));
+    Math::Vector targetVec = Math::Vector::createDirVec(pos.location, Math::Vector(targetX, targetY));
     float targetOrientation = Math::floatModulus(targetVec.getAngleBetween(Math::Vector(1.0f, 0.0f)) + Math::PI, Math::TWO_PI);
     float currentOrientation = pos.orientation;
     float orientationDiff = Math::getAngleDiff(currentOrientation, targetOrientation);
@@ -222,7 +225,7 @@ bool DriveFacingTask::onStep(Robot& robot, float dt) {
         useSpeed = speed * currentDistance * 5.0f;
     }
 
-    Math::Vector globalDir = Math::Vector::createDirVec(target, pos).getNormalized().getScaled(useSpeed);
+    Math::Vector globalDir = Math::Vector::createDirVec(target, pos.location).getNormalized().getScaled(useSpeed);
     Math::Vector localDir = globalDir.getRotated(-currentOrientation);
 
     //std::cout << "[" << Util::round(Math::radToDeg(currentOrientation)) << "] " << Util::round(globalDir.x, 1) << "x" << Util::round(globalDir.y) << " > " << Util::round(localDir.x, 1) << "x" << Util::round(localDir.y) << std::endl;

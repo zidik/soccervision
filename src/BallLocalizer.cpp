@@ -16,13 +16,11 @@ BallLocalizer::~BallLocalizer() {
 
 int BallLocalizer::Ball::instances = 0;
 
-BallLocalizer::Ball::Ball(float px, float py) {
+BallLocalizer::Ball::Ball(float px, float py) : location(px, py) {
     id = instances++;
     createdTime = Util::millitime();
     updatedTime = createdTime;
-    removeTime = -1.0,
-	x = px;
-	y = py;
+	removeTime = -1.0;
 	velocityX = 0.0f;
 	velocityY = 0.0f;
 	visible = true;
@@ -35,8 +33,8 @@ void BallLocalizer::Ball::updateVisible(float newX, float newY, float dt) {
     double timeSinceLastUpdate = currentTime - updatedTime;
 
     if (timeSinceLastUpdate <= Config::velocityUpdateMaxTime) {
-		float newVelocityX = (newX - x) / dt;
-		float newVelocityY = (newY - y) / dt;
+		float newVelocityX = (newX - location.x) / dt;
+		float newVelocityY = (newY - location.y) / dt;
 
 		if (Math::abs(newVelocityX) <= Config::objectMaxVelocity && Math::abs(newVelocityY) <= Config::objectMaxVelocity) {
 			velocityX = newVelocityX;
@@ -48,8 +46,8 @@ void BallLocalizer::Ball::updateVisible(float newX, float newY, float dt) {
         applyDrag(dt);
     }
 
-    x = newX;
-    y = newY;
+    location.x = newX;
+    location.y = newY;
     updatedTime = currentTime;
     
     visible = true;
@@ -60,8 +58,8 @@ void BallLocalizer::Ball::updateVisible(float newX, float newY, float dt) {
 }
 
 void BallLocalizer::Ball::updateInvisible(float dt) {
-    x += velocityX * dt;
-    y += velocityY * dt;
+    location.x += velocityX * dt;
+    location.y += velocityY * dt;
 
     applyDrag(dt);
 
@@ -129,14 +127,14 @@ void BallLocalizer::update(const BallList& visibleBalls, const Math::Polygon& ca
         visibleBalls[i]->x = robotPosition.x + Math::cos(globalAngle) * visibleBalls[i]->distance;
         visibleBalls[i]->y = robotPosition.y + Math::sin(globalAngle) * visibleBalls[i]->distance;*/
 
-        closestBall = getBallAround(visibleBalls[i]->x, visibleBalls[i]->y);
+        closestBall = getBallAround(visibleBalls[i]->location.x, visibleBalls[i]->location.y);
 
         if (closestBall != NULL) {
-            closestBall->updateVisible(visibleBalls[i]->x, visibleBalls[i]->y, dt);
+            closestBall->updateVisible(visibleBalls[i]->location.x, visibleBalls[i]->location.y, dt);
 
             handledBalls.push_back(closestBall->id);
         } else {
-            Ball* newBall = new Ball(visibleBalls[i]->x, visibleBalls[i]->y);
+            Ball* newBall = new Ball(visibleBalls[i]->location.x, visibleBalls[i]->location.y);
 
             balls.push_back(newBall);
 
@@ -156,6 +154,7 @@ void BallLocalizer::update(const BallList& visibleBalls, const Math::Polygon& ca
 }
 
 BallLocalizer::Ball* BallLocalizer::getBallAround(float x, float y) {
+	Math::Vector target(x, y);
     float distance;
     float minDistance = -1;
     Ball* ball;
@@ -164,7 +163,7 @@ BallLocalizer::Ball* BallLocalizer::getBallAround(float x, float y) {
     for (unsigned int i = 0; i < balls.size(); i++) {
         ball = balls[i];
 
-        distance = Math::distanceBetween(ball->x, ball->y, x, y);
+		distance = ball->location.distanceTo(target);
 
         if (
             distance <= Config::objectIdentityDistanceThreshold
@@ -205,13 +204,13 @@ void BallLocalizer::purge(const BallList& visibleBalls, const Math::Polygon& cam
 			keep = false;
 		}
 
-		if (cameraFOV.containsPoint(ball->x, ball->y)) {
+		if (cameraFOV.containsPoint(ball->location.x, ball->location.y)) {
 			ball->inFOV = true;
 
 			bool ballNear = false;
 
 			for (unsigned int i = 0; i < visibleBalls.size(); i++) {
-				float distance = Math::distanceBetween(ball->x, ball->y, visibleBalls[i]->x, visibleBalls[i]->y);
+				float distance = ball->location.distanceTo(visibleBalls[i]->location);
 
 				if (distance <= Config::objectFovCloseEnough) {
 					ballNear = true;

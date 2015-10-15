@@ -277,7 +277,7 @@ void DebugRenderer::renderGrid(unsigned char* image, Vision* vision, int width, 
 	int counter = 0;
 	int lastTextY = -1;
 	int xOverflow = 500;
-	Math::Point screenCoords;
+	Math::Vector screenCoords;
 	CameraTranslator::CameraPosition pos;
 	CameraTranslator::CameraPosition distorted;
 	CameraTranslator::CameraPosition undistorted;
