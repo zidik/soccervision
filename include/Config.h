@@ -53,6 +53,9 @@ namespace Config {
 	const int cameraGain = 1;
 	//const int cameraGain = 6;
 	const int cameraExposure = 10000;
+	const float cameraWBkR = 1.33f;
+	const float cameraWBkG = 1.00f;
+	const float cameraWBkB = 1.99f;
 
 	// default startup controller name
 	const std::string defaultController = "test";

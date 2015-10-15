@@ -21,7 +21,7 @@ bool XimeaCamera::open(int serial) {
 
     DWORD deviceCount = 0;
     xiGetNumberDevices(&deviceCount);
-
+	std::cout << "  > found " << deviceCount << " available devices" << std::endl;
     if (deviceCount == 0) {
         return false;
     }

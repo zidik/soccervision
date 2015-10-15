@@ -567,12 +567,31 @@ void SoccerBot::setupControllers() {
 }
 
 void SoccerBot::setupXimeaCamera(std::string name, XimeaCamera* camera) {
+	/*
+	camera->setWhiteBalanceRed(Config::cameraWBkR);
+	camera->setWhiteBalanceGreen(Config::cameraWBkG);
+	camera->setWhiteBalanceBlue(Config::cameraWBkB);
+	*/
+	
 	camera->setGain(Config::cameraGain);
+	//camera->setGain(10);
 	//camera->setGain(4);
+
+	float wbkr = camera->getFloatParam(XI_PRM_WB_KR);
+	std::cout << "WB R 1: " << wbkr << std::endl;
+
 	camera->setExposure(Config::cameraExposure);
 	camera->setFormat(XI_RAW8);
 	camera->setAutoWhiteBalance(false);
 	camera->setAutoExposureGain(false);
+
+	//camera->setManualWhiteBalance();
+
+	//camera->setGain(10);	
+	
+	wbkr = camera->getFloatParam(XI_PRM_WB_KR);
+	std::cout << "WB R 2: " << wbkr << std::endl;
+
 	//camera->setLuminosityGamma(1.0f);
 	//camera->setWhiteBalanceBlue(1.0f); // TODO check
 	//camera->setQueueSize(12); // TODO Affects anything?
