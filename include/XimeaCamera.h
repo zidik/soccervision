@@ -9,15 +9,15 @@
 //#include "m3Ext.h"
 
 #include <string>
+#include <vector>
 
 class XimeaCamera : public BaseCamera {
 
 public:
-    XimeaCamera();
+    XimeaCamera(int serial);
     ~XimeaCamera();
-
-    bool open(int serial = 0);
-	int getSerial() { return getSerialNumber(); }
+	void open();
+	int getSerial() { return serialNumber; }
 	bool isOpened() { return opened; };
 	bool isAcquisitioning() { return acquisitioning; };
 	void startAcquisition();
@@ -25,6 +25,9 @@ public:
     void close();
     Frame* getFrame();
     
+	std::vector<int> getAvailableSerials();
+	static unsigned long getNumberDevices();
+
     std::string getName() { return getStringParam(XI_PRM_DEVICE_NAME); }
     std::string getDeviceType() { return getStringParam(XI_PRM_DEVICE_TYPE); }
     std::string getApiVersion() { return getStringParam(XI_PRM_API_VERSION XI_PRM_INFO); }

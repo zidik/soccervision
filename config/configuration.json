@@ -1,0 +1,28 @@
+{
+    "camera": {
+        "serial": {
+            "front": 374363729,
+            "rear": 857735761
+        },
+        "resolution": {
+            "width": 1280,
+            "height": 1024,
+            "_comment": "Is only partially migrated - some of the code still uses values in Conf.h - Also change there!"
+        },
+        "settings": {
+            "gain": 1,
+            "exposure": 10000
+        }
+    },
+
+    "mBed": {
+        "ethernet": {
+            "ip": "192.168.4.1",
+            "port": 8042
+        },
+        "serial": {
+            "identificationString": "Mbed Virtual",
+            "baud": 115200
+        }
+    }
+}

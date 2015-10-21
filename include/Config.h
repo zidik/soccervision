@@ -2,6 +2,62 @@
 #define CONFIG_H
 
 #include <string>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
+class ConfTreeLoader
+{
+public:
+	ConfTreeLoader(std::string configFileName) : pt{}
+	{
+		boost::property_tree::read_json(configFileName, pt);
+	}
+protected:
+	boost::property_tree::ptree pt;
+};
+
+struct Configuration : protected ConfTreeLoader
+{
+	Configuration(std::string configFileName) :
+		ConfTreeLoader{ configFileName },
+		camera{ pt.get_child("camera") },
+		mBed{ pt.get_child("mBed") } {}
+	
+
+	struct CameraConfiguration
+	{
+		CameraConfiguration(boost::property_tree::ptree pt):
+			frontSerial{ pt.get<int>("serial.front") },
+			rearSerial{ pt.get<int>("serial.rear") },
+			width{ pt.get<int>("resolution.width") },
+			height{ pt.get<int>("resolution.height") },
+			gain{ pt.get<int>("settings.gain") },
+			exposure{ pt.get<int>("settings.exposure") }
+			
+		{}
+		const int frontSerial;
+		const int rearSerial;
+		const int width;
+		const int height;
+		const int gain;
+		const int exposure;
+	} camera;
+
+	struct MBedConfiguration
+	{
+		MBedConfiguration(boost::property_tree::ptree pt) :
+			ethernetIp(pt.get<std::string>("ethernet.ip")),
+			ethernetPort{ pt.get<int>("ethernet.port") },
+			serialIdentificatonString(pt.get<std::string>("serial.identificationString")),
+			serialBaud{ pt.get<int>("serial.baud") }
+		{}
+		const std::string ethernetIp;
+		const int ethernetPort;
+		const std::string serialIdentificatonString;
+		const int serialBaud;
+	} mBed;
+	
+};
 
 namespace Config {
 	enum CommunicationMode {
@@ -11,19 +67,6 @@ namespace Config {
 	};
 
 	const CommunicationMode communicationMode = ETHERNET;
-	//const CommunicationMode communicationMode = SERIAL;
-	//const CommunicationMode communicationMode = COM;
-
-	// camera serials
-	//telliskivi kaamerad
-	//const int frontCameraSerial = 857769553;
-	const int rearCameraSerial = 857735761;
-
-	//Oskari kodus olev kaamera
-	//const int frontCameraSerial = 391119441;
-
-	//Üks laboris olevatest kaameratest, mille oskar kokku pani
-	const int frontCameraSerial = 374363729;
 
 	// indexes of motors according to the communication messages
 	const int wheelFLId = 0;
@@ -32,39 +75,22 @@ namespace Config {
 	const int wheelRRId = 3;
 	const int dribblerId = 4;
 
-	// ethernet communication host and port
-	const std::string communicationHost = "192.168.4.1";
-	const int communicationPort = 8042;
-
-	// serial device and baud
-	//const std::string serialDeviceContains = "mbed";
-	const std::string serialDeviceContains = "Mbed Virtual";
-	//const int serialBaud = 230400;
-	const int serialBaud = 115200;
-	//const int serialBaud = 57600;
-
 	// camera resolution
+	//Partially migrated to configuration JSON file - also change there!
 	const int cameraWidth = 1280;
 	const int cameraHeight = 1024;
+
+
 	const float cameraFovDistance = 5.0f;
-	//const float cameraFovAngle = 56.0f * 3.14f / 180.0f;
 	const float cameraFovAngle = 100.0f * 3.14f / 180.0f;
 	const float cameraFovWidth = tan(cameraFovAngle / 2.0f) * cameraFovDistance * 2.0f;
-	const int cameraGain = 1;
-	//const int cameraGain = 6;
-	const int cameraExposure = 10000;
+
 
 	// default startup controller name
 	const std::string defaultController = "test";
 
 	// how big of a buffer to allocate for generating jpeg images
 	const int jpegBufferSize = 5000 * 1024;
-
-	// constants for camera correction
-	//const float cameraCorrectionK = 0.00000049f;
-	//const float cameraCorrectionZoom = 0.969f;
-	//const float cameraCorrectionK = -0.00000013f;
-	//const float cameraCorrectionZoom = 1.100f;
 
 	// field dimensions
 	const float fieldWidth = 4.5f;
@@ -104,7 +130,6 @@ namespace Config {
 	const int goalCertainArea = 10000;
 
 	// if a goal starts lower than this value then it's not considered valid
-	//const int goalTopMaxY = 10;
 	const int goalTopMaxY = 165; // the wide-angle lens is very distorted..
 
 	// goal top corners should be at least this far away
@@ -276,14 +301,6 @@ namespace Config {
 
 	// configuration filenames
 	const std::string blobberConfigFilename = "config/blobber.cfg";
-	const std::string frontDistanceLookupFilename = "config/distance-front.cfg";
-	const std::string rearDistanceLookupFilename = "config/distance-rear.cfg";
-	const std::string frontAngleLookupFilename = "config/angle-front.cfg";
-	const std::string rearAngleLookupFilename = "config/angle-rear.cfg";
-	const std::string undistortMappingFilenameFrontX = "config/undistort-mapping-front-x.csv";
-	const std::string undistortMappingFilenameFrontY = "config/undistort-mapping-front-y.csv";
-	const std::string undistortMappingFilenameRearX = "config/undistort-mapping-rear-x.csv";
-	const std::string undistortMappingFilenameRearY = "config/undistort-mapping-rear-y.csv";
 	const std::string distortMappingFilenameFrontX = "config/distort-mapping-front-x.csv";
 	const std::string distortMappingFilenameFrontY = "config/distort-mapping-front-y.csv";
 	const std::string distortMappingFilenameRearX = "config/distort-mapping-rear-x.csv";

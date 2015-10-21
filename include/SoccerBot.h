@@ -27,6 +27,7 @@ public:
 	void setup();
 	void run();
 
+	void loadConfiguration();
 	void setupVision();
 	void setupProcessors();
 	void setupFpsCounter();
@@ -72,6 +73,7 @@ private:
 	void broadcastFrame(unsigned char* rgb, unsigned char* classification);
 	void broadcastScreenshots();
 
+	Configuration* config;
 	BaseCamera* frontCamera;
 	BaseCamera* rearCamera;
 	XimeaCamera* ximeaFrontCamera;

@@ -1,14 +1,13 @@
 #include "XimeaCamera.h"
 
 #include <iostream>
+#include <vector>
 
-XimeaCamera::XimeaCamera() : opened(false), acquisitioning(false) {
+XimeaCamera::XimeaCamera(int serial) : opened(false), acquisitioning(false), serialNumber(serial){
     image.size = sizeof(XI_IMG);
     image.bp = NULL;
     image.bp_size = 0;
     device = NULL;
-	serialNumber = 0;
-
     frame.data = NULL;
 }
 
@@ -16,22 +15,20 @@ XimeaCamera::~XimeaCamera() {
     close();
 }
 
-bool XimeaCamera::open(int serial) {
+unsigned long XimeaCamera::getNumberDevices()
+{
+	DWORD deviceCount = 0;
+	xiGetNumberDevices(&deviceCount);
+	return deviceCount;
+}
+
+void XimeaCamera::open() {
 	//std::cout << "! Searching for a camera with serial: " << serial << std::endl;
 
-    DWORD deviceCount = 0;
-    xiGetNumberDevices(&deviceCount);
-
-    if (deviceCount == 0) {
-        return false;
-    }
-
-	if (serial != 0) {
-		//std::cout << "  > found " << deviceCount << " available devices" << std::endl;
-	}
+	unsigned long deviceCount = getNumberDevices();
+	//std::cout << "  > found " << deviceCount << " available devices" << std::endl;
 
     int sn = 0;
-
     bool found = false;
 
     for (unsigned int i = 0; i < deviceCount; i++) {
@@ -42,50 +39,61 @@ bool XimeaCamera::open(int serial) {
         xiGetParamInt(device, XI_PRM_DEVICE_SN, &sn);
        // std::cout << "  > found camera with serial number: " << sn << ".. ";
 
-        if (serial == 0 || serial == sn) {
+        if (serialNumber == sn) {
             found = true;
-
 			//std::cout << "match found!" << std::endl;
-
 			break;
-        } else {
-			//std::cout << "not the right one, closing it" << std::endl;
-
-            xiCloseDevice(device);
         }
+		
+		//std::cout << "not the right one, closing it" << std::endl;
+        xiCloseDevice(device);
     }
 
-    if (!found) {
-        return false;
-    }
-
-    //xiSetParamInt(device, XI_PRM_EXPOSURE, 16000);
-    //xiSetParamInt(device, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
-    //xiSetParamInt(device, XI_PRM_IMAGE_DATA_FORMAT, XI_RGB24);
-    //xiSetParamInt(device, XI_PRM_BUFFER_POLICY, XI_BP_UNSAFE);
-    //xiSetParamInt(device, XI_PRM_FRAMERATE, 60);
-    //xiSetParamInt(device, XI_PRM_DOWNSAMPLING, 2); // @TEMP
-    //xiSetParamInt(device, XI_PRM_DOWNSAMPLING_TYPE, XI_BINNING);
-    //xiSetParamFloat(device, XI_PRM_GAIN, 5.0f);
-    //xiSetParamInt(device, XI_PRM_ACQ_BUFFER_SIZE, 70*1000*1000);
-    //xiSetParamInt(device, XI_PRM_BUFFERS_QUEUE_SIZE, 1);
-    //xiSetParamInt(device, XI_PRM_RECENT_FRAME, 1);
-    //xiSetParamInt(device, XI_PRM_AUTO_WB, 0);
-    //xiSetParamFloat(device, XI_PRM_WB_KR, 1.0f);
-    //xiSetParamFloat(device, XI_PRM_WB_KG, 1.0f);
-    //xiSetParamFloat(device, XI_PRM_WB_KB, 1.0f);
-    //xiSetParamFloat(device, XI_PRM_GAMMAY, 1.0f);
-    //xiSetParamFloat(device, XI_PRM_GAMMAC, 1.0f);
-    //xiSetParamFloat(device, XI_PRM_SHARPNESS, 0.0f);
-    //xiSetParamInt(device, XI_PRM_AEAG, 0);
-    //xiSetParamInt(device, XI_PRM_BPC, 1); // fixes bad pixel
-    //xiSetParamInt(device, XI_PRM_HDR, 1);
-
-    opened = true;
-	serialNumber = serial;
-
-    return true;
+	if (found)
+	{
+		opened = true;
+		//xiSetParamInt(device, XI_PRM_EXPOSURE, 16000);
+		//xiSetParamInt(device, XI_PRM_IMAGE_DATA_FORMAT, XI_MONO8);
+		//xiSetParamInt(device, XI_PRM_IMAGE_DATA_FORMAT, XI_RGB24);
+		//xiSetParamInt(device, XI_PRM_BUFFER_POLICY, XI_BP_UNSAFE);
+		//xiSetParamInt(device, XI_PRM_FRAMERATE, 60);
+		//xiSetParamInt(device, XI_PRM_DOWNSAMPLING, 2); // @TEMP
+		//xiSetParamInt(device, XI_PRM_DOWNSAMPLING_TYPE, XI_BINNING);
+		//xiSetParamFloat(device, XI_PRM_GAIN, 5.0f);
+		//xiSetParamInt(device, XI_PRM_ACQ_BUFFER_SIZE, 70*1000*1000);
+		//xiSetParamInt(device, XI_PRM_BUFFERS_QUEUE_SIZE, 1);
+		//xiSetParamInt(device, XI_PRM_RECENT_FRAME, 1);
+		//xiSetParamInt(device, XI_PRM_AUTO_WB, 0);
+		//xiSetParamFloat(device, XI_PRM_WB_KR, 1.0f);
+		//xiSetParamFloat(device, XI_PRM_WB_KG, 1.0f);
+		//xiSetParamFloat(device, XI_PRM_WB_KB, 1.0f);
+		//xiSetParamFloat(device, XI_PRM_GAMMAY, 1.0f);
+		//xiSetParamFloat(device, XI_PRM_GAMMAC, 1.0f);
+		//xiSetParamFloat(device, XI_PRM_SHARPNESS, 0.0f);
+		//xiSetParamInt(device, XI_PRM_AEAG, 0);
+		//xiSetParamInt(device, XI_PRM_BPC, 1); // fixes bad pixel
+		//xiSetParamInt(device, XI_PRM_HDR, 1);
+		
+	}
 }
+
+std::vector<int> XimeaCamera::getAvailableSerials() {
+	std::vector<int> serials;
+
+	unsigned long deviceCount = getNumberDevices();
+
+	for (unsigned int i = 0; i < deviceCount; i++) {
+		int sn;
+		xiOpenDevice(i, &device);
+		xiGetParamInt(device, XI_PRM_DEVICE_SN, &sn);
+		serials.push_back(sn);
+		xiCloseDevice(device);
+	}
+
+	return serials;
+}
+
+
 
 XimeaCamera::Frame* XimeaCamera::getFrame() {
 	if (!opened) {
@@ -157,6 +165,8 @@ void XimeaCamera::close() {
 
 	opened = false;
 }
+
+
 
 std::string XimeaCamera::getStringParam(const char* name) {
 	if (!opened) {
