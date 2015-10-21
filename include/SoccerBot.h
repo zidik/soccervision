@@ -17,6 +17,7 @@ class FpsCounter;
 class Robot;
 class AbstractCommunication;
 class CameraTranslator;
+struct Configuration;
 
 class SoccerBot {
 

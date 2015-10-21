@@ -14,6 +14,7 @@
 
 #include <string>
 
+struct Configuration;
 class Wheel;
 class Dribbler;
 class Coilgun;
@@ -24,7 +25,7 @@ class OdometerLocalizer;
 class Robot : public AbstractCommunication::Listener, public Command::Listener {
 
 public:
-	Robot(AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator);
+	Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator);
     ~Robot();
 
     void setup();
@@ -128,6 +129,7 @@ private:
 	bool frameTargetSpeedSet;
 	Math::Polygon cameraFOV;
 
+	Configuration* conf;
 	AbstractCommunication* com;
 	CameraTranslator* frontCameraTranslator;
 	CameraTranslator* rearCameraTranslator;

@@ -233,6 +233,9 @@
     <ClInclude Include="include\PID.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Configuration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\DisplayWindow.cpp">

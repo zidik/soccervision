@@ -22,6 +22,7 @@
 #include "TestController.h"
 #include "OffensiveAI.h"
 #include "ImageProcessor.h"
+#include "Configuration.h"
 
 #include <iostream>
 #include <algorithm>
@@ -590,7 +591,7 @@ void SoccerBot::setupCameras() {
 }
 
 void SoccerBot::setupRobot() {
-	robot = new Robot(com, frontCameraTranslator, rearCameraTranslator);
+	robot = new Robot(config, com, frontCameraTranslator, rearCameraTranslator);
 
 	robot->setup();
 }
@@ -607,7 +608,6 @@ void SoccerBot::setupControllers() {
 
 void SoccerBot::setupXimeaCamera(std::string name, XimeaCamera* camera) {
 	camera->setGain(config->camera.gain);
-	//camera->setGain(4);
 	camera->setExposure(config->camera.exposure);
 	camera->setFormat(XI_RAW8);
 	camera->setAutoWhiteBalance(false);
