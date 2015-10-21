@@ -37,8 +37,8 @@
         "wheel": {
             "angle1": -135.0,
             "angle2": -45.0,
-            "angle3": -45.0,
-            "angle4": -135.0,
+            "angle3": 45.0,
+            "angle4": 135.0,
             "diagonalOffset": 0.1167,
             "radius": 0.035
         }
