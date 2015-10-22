@@ -1,5 +1,6 @@
 #ifndef WEBSOCKETSERVER_H
 #define WEBSOCKETSERVER_H
+#define _WEBSOCKETPP_CPP11_CHRONO_
 
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>

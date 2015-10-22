@@ -113,6 +113,65 @@ void DebugRenderer::renderBalls(unsigned char* image, Vision* vision, const Obje
     }*/
 }
 
+void DebugRenderer::renderRobots(unsigned char* image, const ObjectList& robots, int width, int height) {
+	Canvas canvas = Canvas();
+
+	canvas.data = image;
+	canvas.width = width;
+	canvas.height = height;
+
+	Object* robot = NULL;
+	char buf[256];
+	int r, g, b;
+
+	for (ObjectListItc it = robots.begin(); it != robots.end(); it++) {
+		robot = *it;
+
+		if (robot->type == RobotColor::YELLOWHIGH) {
+			r = 50;
+			g = 200;
+			b = 0;
+			sprintf(buf, "yellowHigh");
+		}
+		else if (robot->type == RobotColor::BLUEHIGH) {
+			r = 100;
+			g = 0;
+			b = 200;
+			sprintf(buf, "blueHigh");
+		}
+		else {
+			r = 255;
+			g = 0;
+			b = 0;
+			sprintf(buf, "UNKNOWN");
+		}
+
+		canvas.drawBoxCentered(robot->x, robot->y, robot->width, robot->height, r, g, b);
+		canvas.drawCircle(robot->x, robot->y, std::min(robot->width / 2, robot->height / 2), r, g, b);
+		canvas.drawLine(robot->x - robot->width / 2, robot->y - robot->height / 2, robot->x + robot->width / 2, robot->y + robot->height / 2, r, g, b);
+		canvas.drawLine(robot->x - robot->width / 2, robot->y + robot->height / 2, robot->x + robot->width / 2, robot->y - robot->height / 2, r, g, b);
+
+		canvas.drawText(robot->x + robot->width / 2, robot->y - 8, buf, r, g, b);
+
+		sprintf(buf, "%.2fm %.1f deg", robot->distance, Math::radToDeg(robot->angle));
+		canvas.drawText(robot->x + robot->width / 2, robot->y + 2, buf, r, g, b);
+
+		sprintf(buf, "%d x %d, %d", robot->x, robot->y + robot->height / 2, robot->area);
+		canvas.drawText(robot->x + robot->width / 2, robot->y + 12, buf, r, g, b);
+
+		/*int boxArea = robot->width * robot->height;
+
+		if (boxArea == 0) {
+		continue;
+		}
+
+		int density = robot->area * 100 / boxArea;
+
+		sprintf(buf, "%d - %d%%", robot->area, density);
+		canvas.drawText(robot->x + robot->width / 2, robot->y + 22, buf);*/
+	}
+}
+
 void DebugRenderer::renderGoals(unsigned char* image, const ObjectList& goals, int width, int height) {
 	Canvas canvas = Canvas();
 

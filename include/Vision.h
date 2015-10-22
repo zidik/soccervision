@@ -79,6 +79,7 @@ public:
 		Result() : vision(NULL) {}
 
 		ObjectList balls;
+		ObjectList robots;
 		ObjectList goals;
 		ObjectList fieldCorners;
 		ColorList colorOrder;
@@ -150,7 +151,7 @@ public:
 	Obstruction getGoalPathObstruction(float goalDistance);
 
 private:
-    ObjectList processGoals(Dir dir);
+	std::pair<ObjectList, ObjectList> processGoalsAndRobots(Dir dir);
 	ObjectList processBalls(Dir dir, ObjectList& goals);
 	float getSurroundMetric(int x, int y, int radius, std::vector<std::string> validColors, std::string requiredColor = "", int side = 0, bool allowNone = false);
     PathMetric getPathMetric(int x1, int y1, int x2, int y2, std::vector<std::string> validColors, std::string requiredColor = "");
@@ -161,9 +162,14 @@ private:
 	float getColorDistance(std::string colorName, int x1, int y1, int x2, int y2);
 	ColorDistance getColorDistance(std::string colorName);
 	ColorList getViewColorOrder();
-	Object* Vision::mergeGoals(Object* goal1, Object* goal2);
+	Object* mergeGoals(Object* goal1, Object* goal2);
+	bool findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots);
+	ObjectList mergeRobotBlobs(Dir dir, ObjectList blobs);
+	float getColorMatchRatio(std::vector<std::pair<int, int>>* scanPoints, std::string colorName);
+	Distance getRobotDistance(int x, int y, int iterations, Dir dir);
 	bool isValidBall(Object* ball, Dir dir, ObjectList& goals);
     bool isValidGoal(Object* goal, Side side);
+	bool isValidRobot(Object* robot);
 	bool isBallInGoal(Object* ball, Dir dir, ObjectList& goals);
 	int getBallRadius(int width, int height);
 	int getBallSenseRadius(int ballRadius, float distance);

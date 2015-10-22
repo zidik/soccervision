@@ -15,8 +15,15 @@ namespace Config {
 	//const CommunicationMode communicationMode = COM;
 
 	// camera serials
-	const int frontCameraSerial = 857769553;
+	//telliskivi kaamerad
+	//const int frontCameraSerial = 857769553;
 	const int rearCameraSerial = 857735761;
+
+	//Oskari kodus olev kaamera
+	//const int frontCameraSerial = 391119441;
+
+	//Üks laboris olevatest kaameratest, mille oskar kokku pani
+	const int frontCameraSerial = 374363729;
 
 	// indexes of motors according to the communication messages
 	const int wheelFLId = 0;
@@ -80,6 +87,18 @@ namespace Config {
 
 	// maximum width/height ratio for objects to be considered valid
 	const float maxBallSizeRatio = 5.0f;
+
+	//minimum width of robot blob
+	const float robotMinWidth = 0.04f;
+
+	//Minimum density of merged robot blob
+	const float robotMinDensity = 0.05f;
+
+	//Maximum valid distance of robot, taken from field size
+	const float robotMaxDistance = 5.5f;
+
+	//Maximum ratio for valid pixels to scanned pixels when searching for robot markers
+	const float robotScanMinMatchRatio = 0.15f;
 
 	// goals with area over this value are definately considered to be valid
 	const int goalCertainArea = 10000;
@@ -277,6 +296,12 @@ enum Side {
 	BLUE = 0,
     YELLOW = 1,
 	UNKNOWN = 2
+};
+
+enum RobotColor {
+	YELLOWHIGH = 0,
+	BLUEHIGH = 1,
+	WHATEVER = 2
 };
 
 enum Dir {
