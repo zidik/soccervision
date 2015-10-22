@@ -80,6 +80,7 @@ public:
 
 		ObjectList balls;
 		ObjectList goals;
+		ObjectList fieldCorners;
 		ColorList colorOrder;
 		ColorDistance whiteDistance;
 		ColorDistance blackDistance;
@@ -146,7 +147,6 @@ public:
     float getAngle(int x, int y);
 	//int getPixelRowAt(float distance);
 	CameraTranslator::CameraPosition getPixelAt(float distanceX, float distanceY);
-	Math::Vector getScreenCoords(float distanceX, float distanceY);
 	Obstruction getGoalPathObstruction(float goalDistance);
 
 private:

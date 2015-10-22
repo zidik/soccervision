@@ -6,28 +6,25 @@
 #include "Config.h"
 
 #include <string>
-#include <map>
 #include <vector>
 #include "CameraTranslator.h"
+#include <unordered_map>
 
 // TODO Move this into the actual class
 
 class ParticleFilterLocalizer : public Localizer {
 
 public:
-	struct Landmark {
-		Landmark(std::string name, float x, float y) : name(name), location(x, y) {}
-		
-		std::string name;
-		Math::Vector location;
-	};
+	typedef Math::Vector Location;
+	typedef std::vector<Location> Locations;
 
-	struct Particle {
-		Particle(float x, float y, float orientation, float probability) : location(x, y), orientation(orientation), probability(probability) {};
+	struct Landmark {
+		enum class Type { YellowGoalCenter, BlueGoalCenter, FieldCorner};
+		Landmark(Type type, const Location& location) : type(type), locations(1, location) {}
+		Landmark(Type type, const Locations& locations) : type(type), locations(locations) {}
 		
-		Math::Vector location;
-		float orientation;
-		float probability;
+		Type type;
+		Locations locations;
 	};
 
 	struct Measurement
@@ -38,9 +35,18 @@ public:
 		Dir cameraDirection;
 	};
 
-	typedef std::map<std::string, Landmark*> LandmarkMap;
+	struct Particle {
+		Particle(float x, float y, float orientation, float probability) : location(x, y), orientation(orientation), probability(probability) {};
+
+		Location location;
+		float orientation;
+		float probability;
+	};
+
+	typedef std::unordered_map<Landmark::Type, Landmark*> LandmarkMap;
+	typedef std::unordered_map<Landmark::Type, Measurement> MeasurementMap;
 	typedef std::vector<Particle*> ParticleList;
-	typedef std::map<std::string, Measurement> Measurements;
+	
 
 	ParticleFilterLocalizer(
 		CameraTranslator* frontCameraTranslator,
@@ -53,12 +59,15 @@ public:
 
 	void generateRandomParticles(std::vector<Particle*>& particleVector, int particleCount);
     void addLandmark(Landmark* landmark);
-    void addLandmark(std::string name, float x, float y);
+	void addLandmark(Landmark::Type type, const Location& location);
+	void addLandmark(Landmark::Type type, const Locations& locations);
+
 	void move(float velocityX, float velocityY, float omega, float dt) { move(velocityX, velocityY, omega, dt, false); }
     void move(float velocityX, float velocityY, float omega, float dt, bool exact);
-    float getMeasurementProbability(Particle* particle, const Measurements& measurements);
+    float evaluateParticleProbability(Particle* particle, const MeasurementMap& measurements);
+	float evaluateParticleProbabilityPart(const Particle& particle, const Landmark& landmark, const Measurement& measurement);
 	void setPosition(float x, float y, float orientation);
-    void update(const Measurements& measurements);
+    void update(const MeasurementMap& measurements);
     void resample();
     Math::Position getPosition();
 	const ParticleList& getParticles() const { return particles; }

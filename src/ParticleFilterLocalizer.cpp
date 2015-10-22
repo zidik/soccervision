@@ -49,11 +49,15 @@ void ParticleFilterLocalizer::generateRandomParticles(std::vector<Particle*>& pa
 }
 
 void ParticleFilterLocalizer::addLandmark(Landmark* landmark) {
-    landmarks[landmark->name] = landmark;
+    landmarks[landmark->type] = landmark;
 }
 
-void ParticleFilterLocalizer::addLandmark(std::string name, float x, float y) {
-	addLandmark(new Landmark(name, x, y));
+void ParticleFilterLocalizer::addLandmark(Landmark::Type type, const Math::Vector& location) {
+	addLandmark(new Landmark(type, location));
+}
+
+void ParticleFilterLocalizer::addLandmark(Landmark::Type type, const std::vector<Math::Vector>& locations) {
+	addLandmark(new Landmark(type, locations));
 }
 
 void ParticleFilterLocalizer::setPosition(float x, float y, float orientation) {
@@ -87,14 +91,11 @@ void ParticleFilterLocalizer::move(float velocityX, float velocityY, float veloc
 	}
 }
 
-void ParticleFilterLocalizer::update(const Measurements& measurements) {
-    Particle* particle;
+void ParticleFilterLocalizer::update(const MeasurementMap& measurements) {
     float maxProbability = -1;
 
-    for (unsigned int i = 0; i < particles.size(); i++) {
-        particle = particles[i];
-
-        particle->probability = getMeasurementProbability(particle, measurements);
+	for (Particle* particle : particles){
+        particle->probability = evaluateParticleProbability(particle, measurements);
 
         if (maxProbability == -1 || particle->probability > maxProbability) {
             maxProbability = particle->probability;
@@ -112,33 +113,47 @@ void ParticleFilterLocalizer::update(const Measurements& measurements) {
     resample();
 }
 
-float ParticleFilterLocalizer::getMeasurementProbability(Particle* particle, const Measurements& measurements) {
+float ParticleFilterLocalizer::evaluateParticleProbability(Particle* particle, const MeasurementMap& measurementMap) {
     float probability = 1.0f;
 
-    for (Measurements::const_iterator it = measurements.begin(); it != measurements.end(); ++it) {
-		std::string landmarkName = it->first;
-		Measurement measurement = it->second;
+	for (const std::pair<Landmark::Type, Measurement> pair : measurementMap)
+	{
+		Landmark::Type landmarkType = pair.first;
+		Measurement measurement = pair.second;
 
-		LandmarkMap::iterator landmarkSearch = landmarks.find(landmarkName);
+		LandmarkMap::iterator landmarkSearch = landmarks.find(landmarkType);
         if (landmarkSearch == landmarks.end()) {
-            std::cout << "- Didnt find landmark '" << landmarkName << "', this should not happen" << std::endl;
+            std::cout << "- Didnt find landmark, this should not happen" << std::endl;
             continue;
         }
 
 		Landmark* landmark = landmarkSearch->second;
-
-
-		Math::Vector landmarkPositionFromParticle = landmark->location - particle->location;
-		landmarkPositionFromParticle.getRotated(-particle->orientation);
-
-		CameraTranslator* translator = (measurement.cameraDirection == Dir::FRONT ? frontCameraTranslator : rearCameraTranslator);
-		CameraTranslator::CameraPosition excpectedCamPos = translator->getCameraPosition(landmarkPositionFromParticle.x, landmarkPositionFromParticle.y);
-		Math::Vector expectation(excpectedCamPos.x, excpectedCamPos.y);
-		float error = measurement.bottomPixel.distanceTo(expectation);
-		probability *= Math::getGaussian(0, 10.0, error);
+		probability *= evaluateParticleProbabilityPart(*particle, *landmark, measurement);
+		
     }
 
     return probability;
+}
+
+float ParticleFilterLocalizer::evaluateParticleProbabilityPart(const Particle& particle, const Landmark& landmark, const Measurement& measurement)
+{
+	float maximumProbability = 0.0f;
+	for (Location landmarkLocation : landmark.locations)
+	{
+		Location landmarkPositionFromParticle = landmarkLocation - particle.location;
+		landmarkPositionFromParticle.getRotated(-particle.orientation);
+
+		CameraTranslator* translator = (measurement.cameraDirection == Dir::FRONT ? frontCameraTranslator : rearCameraTranslator);
+		//TODO!!!!!! - Currently if position is "out of" particles camera: it is brought inside - is it good or bad?..
+		//translator never returns "not in view"
+		CameraTranslator::CameraPosition excpectedCamPos = translator->getCameraPosition(landmarkPositionFromParticle.x, landmarkPositionFromParticle.y);
+		Location expectation(excpectedCamPos.x, excpectedCamPos.y);
+		float error = measurement.bottomPixel.distanceTo(expectation);
+		float probability = Math::getGaussian(0, 10.0, error);
+
+		maximumProbability = Math::max(maximumProbability, probability);
+	}
+	return maximumProbability; //TODO:Maybe this should not find the maximum but just multiply them all together? (would cause reallly small numbers, but maybe better represetation?)
 }
 
 void ParticleFilterLocalizer::resample() {

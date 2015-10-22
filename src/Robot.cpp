@@ -13,6 +13,8 @@
 #include <map>
 #include <sstream>
 
+typedef ParticleFilterLocalizer::Landmark::Type LandmarkType;
+
 Robot::Robot(AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f) {
     targetOmega = 0;
     targetDir = Math::Vector(0, 0);
@@ -93,15 +95,24 @@ void Robot::setupRobotLocalizer() {
 	robotLocalizer = new ParticleFilterLocalizer(frontCameraTranslator, rearCameraTranslator);
 
 	robotLocalizer->addLandmark(
-		"yellow-center",
-		0.0f,
-		Config::fieldHeight / 2.0f
+		LandmarkType::YellowGoalCenter,
+		Math::Vector(0.0f, Config::fieldHeight / 2.0f)
 	);
 
 	robotLocalizer->addLandmark(
-		"blue-center",
-		Config::fieldWidth,
-		Config::fieldHeight / 2.0f
+		LandmarkType::BlueGoalCenter,
+		Math::Vector(Config::fieldWidth, Config::fieldHeight / 2.0f)
+	);
+
+	std::vector<Math::Vector> locations = {
+		Math::Vector(Config::fieldWidth, Config::fieldHeight / 2.0f),
+		Math::Vector(Config::fieldWidth, Config::fieldHeight / 2.0f),
+		Math::Vector(Config::fieldWidth, Config::fieldHeight / 2.0f),
+		Math::Vector(Config::fieldWidth, Config::fieldHeight / 2.0f)
+	};
+	robotLocalizer->addLandmark(
+		LandmarkType::FieldCorner,
+		locations
 	);
 }
 
@@ -315,11 +326,26 @@ void Robot::updateMeasurements() {
 	Object* blueGoal = visionResults->getLargestGoal(Side::BLUE);
 
 	if (yellowGoal != NULL) {
-		measurements["yellow-center"] = ParticleFilterLocalizer::Measurement(Math::Vector(yellowGoal->x, yellowGoal->y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
+		measurements[LandmarkType::YellowGoalCenter] = ParticleFilterLocalizer::Measurement(Math::Vector(yellowGoal->x, yellowGoal->y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
 	}
 
 	if (blueGoal != NULL) {
-		measurements["blue-center"] = ParticleFilterLocalizer::Measurement(Math::Vector(blueGoal->x, blueGoal->y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
+		measurements[LandmarkType::BlueGoalCenter] = ParticleFilterLocalizer::Measurement(Math::Vector(blueGoal->x, blueGoal->y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
+	}
+
+	if(visionResults->front != NULL)
+	{
+		for( Object* corner : visionResults->front->fieldCorners)
+		{
+			measurements[LandmarkType::FieldCorner] = ParticleFilterLocalizer::Measurement(Math::Vector(corner->x, corner->y), (corner->behind ? Dir::REAR : Dir::FRONT));
+		}
+	}
+	if (visionResults->rear != NULL)
+	{
+		for (Object* corner : visionResults->rear->fieldCorners)
+		{
+			measurements[LandmarkType::FieldCorner] = ParticleFilterLocalizer::Measurement(Math::Vector(corner->x, corner->y), (corner->behind ? Dir::REAR : Dir::FRONT));
+		}
 	}
 }
 
