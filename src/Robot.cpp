@@ -105,10 +105,10 @@ void Robot::setupRobotLocalizer() {
 	);
 
 	std::vector<Math::Vector> locations = {
-		Math::Vector(Config::fieldWidth, Config::fieldHeight / 2.0f),
-		Math::Vector(Config::fieldWidth, Config::fieldHeight / 2.0f),
-		Math::Vector(Config::fieldWidth, Config::fieldHeight / 2.0f),
-		Math::Vector(Config::fieldWidth, Config::fieldHeight / 2.0f)
+		Math::Vector(0.0f, 0.0f),
+		Math::Vector(0.0f, Config::fieldHeight),
+		Math::Vector(Config::fieldWidth, 0.0f),
+		Math::Vector(Config::fieldWidth, Config::fieldHeight)
 	};
 	robotLocalizer->addLandmark(
 		LandmarkType::FieldCorner,
