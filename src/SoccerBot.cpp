@@ -572,6 +572,7 @@ void SoccerBot::setupCameras() {
 		//Display debug information - if atleast one camera is not opened
 		XimeaCamera debugCamera(0);
 		std::vector<int> serials = debugCamera.getAvailableSerials();
+		std::cout << "! Atleast one camera was not opened - debug information:" << std::endl;
 		std::cout << "  > available devices: " << XimeaCamera::getNumberDevices() << std::endl;
 		std::vector<int>::iterator it;
 		for (it = serials.begin(); it != serials.end(); ++it) {
