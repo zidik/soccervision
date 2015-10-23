@@ -1,5 +1,6 @@
 #include "ComPortCommunication.h"
 #include "enumser.h"
+#include <iostream>
 
 ComPortCommunication::ComPortCommunication(std::string portName, int baud) :
 portName(portName),
