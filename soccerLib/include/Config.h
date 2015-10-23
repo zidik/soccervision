@@ -275,19 +275,19 @@ namespace Config {
 	const float objectFovCloseEnough = 0.5f;
 
 	// configuration filenames
-	const std::string blobberConfigFilename = "config/blobber.cfg";
-	const std::string frontDistanceLookupFilename = "config/distance-front.cfg";
-	const std::string rearDistanceLookupFilename = "config/distance-rear.cfg";
-	const std::string frontAngleLookupFilename = "config/angle-front.cfg";
-	const std::string rearAngleLookupFilename = "config/angle-rear.cfg";
-	const std::string undistortMappingFilenameFrontX = "config/undistort-mapping-front-x.csv";
-	const std::string undistortMappingFilenameFrontY = "config/undistort-mapping-front-y.csv";
-	const std::string undistortMappingFilenameRearX = "config/undistort-mapping-rear-x.csv";
-	const std::string undistortMappingFilenameRearY = "config/undistort-mapping-rear-y.csv";
-	const std::string distortMappingFilenameFrontX = "config/distort-mapping-front-x.csv";
-	const std::string distortMappingFilenameFrontY = "config/distort-mapping-front-y.csv";
-	const std::string distortMappingFilenameRearX = "config/distort-mapping-rear-x.csv";
-	const std::string distortMappingFilenameRearY = "config/distort-mapping-rear-y.csv";
+	const std::string blobberConfigFilename = "../Config/blobber.cfg";
+	const std::string frontDistanceLookupFilename = "../Config/distance-front.cfg";
+	const std::string rearDistanceLookupFilename = "../Config/distance-rear.cfg";
+	const std::string frontAngleLookupFilename = "../Config/angle-front.cfg";
+	const std::string rearAngleLookupFilename = "../Config/angle-rear.cfg";
+	const std::string undistortMappingFilenameFrontX = "../Config/undistort-mapping-front-x.csv";
+	const std::string undistortMappingFilenameFrontY = "../Config/undistort-mapping-front-y.csv";
+	const std::string undistortMappingFilenameRearX = "../Config/undistort-mapping-rear-x.csv";
+	const std::string undistortMappingFilenameRearY = "../Config/undistort-mapping-rear-y.csv";
+	const std::string distortMappingFilenameFrontX = "../Config/distort-mapping-front-x.csv";
+	const std::string distortMappingFilenameFrontY = "../Config/distort-mapping-front-y.csv";
+	const std::string distortMappingFilenameRearX = "../Config/distort-mapping-rear-x.csv";
+	const std::string distortMappingFilenameRearY = "../Config/distort-mapping-rear-y.csv";
 	const std::string screenshotsDirectory = "screenshots";
 
 } // namespace Config
