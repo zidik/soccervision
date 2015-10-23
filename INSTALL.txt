@@ -15,5 +15,5 @@ INSTALL BOOST
 1. download latest (1.59.0) http://www.boost.org/users/download/
 2. in boost folder execute
    > bootstrap
-   > .\b2 runtime-link=static --with-date_time --with-thread --with-regex
+   > .\b2 runtime-link=static --with-date_time --with-thread --with-regex --with-test
 3. create BOOSTROOT environment variable pointing to the library path (C:\boost etc)
