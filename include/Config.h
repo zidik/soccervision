@@ -4,13 +4,6 @@
 #include <string>
 
 namespace Config {
-	enum CommunicationMode {
-		ETHERNET,
-		SERIAL,
-		COM
-	};
-
-	const CommunicationMode communicationMode = ETHERNET;
 
 	// indexes of motors according to the communication messages
 	const int wheelFLId = 0;

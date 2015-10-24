@@ -16,6 +16,7 @@
     },
 
     "mBed": {
+        "communicationMode":  "???",
         "ethernet": {
             "ip": "192.168.4.1",
             "port": 8042

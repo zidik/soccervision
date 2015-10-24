@@ -2,32 +2,64 @@
 #define CONFIGURATION_H
 
 #include <string>
+#include <unordered_map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-class ConfTreeLoader
+
+struct Configuration
 {
 public:
-	ConfTreeLoader(std::string configFileName) : pt{}
-	{
-		boost::property_tree::read_json(configFileName, pt);
-	}
-protected:
-	boost::property_tree::ptree pt;
-};
+	enum CommunicationMode {
+		ETHERNET,
+		SERIAL,
+		COM
+	};
 
-struct Configuration : protected ConfTreeLoader
-{
-	Configuration(std::string configFileName) :
-		ConfTreeLoader{ configFileName },
+protected:
+	typedef std::unordered_map<std::string, CommunicationMode> CommunicationModeMap;
+	typedef boost::property_tree::ptree PropertyTree;
+
+	Configuration(PropertyTree& pt, CommunicationModeMap communicationModeMap) :
 		camera	{ pt.get_child("camera") },
-		mBed	{ pt.get_child("mBed") },
+		mBed	{ pt.get_child("mBed"), communicationModeMap },
 		field	{ pt.get_child("field") },
 		robot	{ pt.get_child("robot") } {}
 
+public:
+	static Configuration* newInstance(std::string configFileName)
+	{
+		PropertyTree propertyTree;
+		boost::property_tree::read_json(configFileName, propertyTree);
+		CommunicationModeMap communicationModeMap = CommunicationModeMap({
+			{ "ETHERNET", ETHERNET },
+			{ "SERIAL", SERIAL },
+			{ "COM", COM }
+		});
+		try {
+			return new Configuration(propertyTree, communicationModeMap);
+		}
+		catch (const std::out_of_range& e) {
+			std::ostringstream message;
+			message
+				<< e.what() << std::endl
+				<< "Could not translate string from configuration to enum - check configuratin file.";
+			throw std::runtime_error(message.str());
+		}
+		catch (const boost::property_tree::ptree_bad_path& e)
+		{
+			std::ostringstream message;
+			message
+				<< e.what() << std::endl
+				<< "Probably a key is missing from configuration file";
+			throw std::runtime_error(message.str());
+		}
+	}
+
+
 	struct CameraConfiguration
 	{
-		CameraConfiguration(boost::property_tree::ptree pt) :
+		CameraConfiguration(PropertyTree pt) :
 			frontSerial{ pt.get<int>("serial.front") },
 			rearSerial{ pt.get<int>("serial.rear") },
 			width{ pt.get<int>("resolution.width") },
@@ -46,12 +78,14 @@ struct Configuration : protected ConfTreeLoader
 
 	struct MBedConfiguration
 	{
-		MBedConfiguration(boost::property_tree::ptree pt) :
+		MBedConfiguration(PropertyTree pt, CommunicationModeMap communicationModeMap) :
+			communicationMode(communicationModeMap.at(pt.get<std::string>("communicationMode"))),
 			ethernetIp(pt.get<std::string>("ethernet.ip")),
 			ethernetPort{ pt.get<int>("ethernet.port") },
 			serialIdentificatonString(pt.get<std::string>("serial.identificationString")),
 			serialBaud{ pt.get<int>("serial.baud") }
 		{}
+		const CommunicationMode communicationMode;
 		const std::string ethernetIp;
 		const int ethernetPort;
 		const std::string serialIdentificatonString;
@@ -92,7 +126,7 @@ struct Configuration : protected ConfTreeLoader
 	private:
 		float _wheelAngles[4];
 	}robot;
-
+	
 };
 
 

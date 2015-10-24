@@ -74,9 +74,11 @@ SoccerBot::~SoccerBot() {
 	if (rearBlobber != NULL) delete rearBlobber; rearBlobber = NULL;
 	if (com != NULL) delete com; com = NULL;
 	if (jpegBuffer != NULL) delete jpegBuffer; jpegBuffer = NULL;
+	if (config != NULL) delete config; config = NULL;
 
 	frontCamera = NULL;
 	rearCamera = NULL;
+
 
 	std::cout << "! Resources freed" << std::endl;
 }
@@ -397,23 +399,14 @@ void SoccerBot::broadcastScreenshots() {
 void SoccerBot::loadConfiguration()
 {
 	std::cout << "! Loading configuration file.. " << std::endl;
-	try
-	{
-		config = new Configuration("config\\configuration.json");
+	try{
+		config = Configuration::newInstance("config\\configuration.json");
 	}
-	catch(boost::property_tree::ptree_bad_path e)
+	catch(const runtime_error& e)
 	{
 		std::cout
-			<< "ptree_bad_path exception whas thrown while loading configuration file:\n"
-			<< "\tWhat:" << e.what() << "\n"
-			<< "\tProbably a key is missing from configuration file\n";
-		throw;
-	}
-	catch(boost::property_tree::ptree_error e)
-	{
-		std::cout
-			<< "ptree_error exception whas thrown while loading configuration file:\n"
-			<< "\tWhat:" << e.what() << "\n";
+			<< "Exception whas thrown while loading configuration file:" << std::endl
+			<< e.what();
 		throw;
 	}
 }
@@ -637,15 +630,16 @@ void SoccerBot::setupServer() {
 }
 
 void SoccerBot::setupCommunication() {
+
 	try {
-		switch (Config::communicationMode) {
-			case Config::ETHERNET:
+		switch (config->mBed.communicationMode) {
+			case Configuration::ETHERNET:
 				std::cout << "! Using ethernet communication" << std::endl;
 
 				com = new EthernetCommunication(config->mBed.ethernetIp, config->mBed.ethernetPort);
 			break;
 
-			case Config::SERIAL: {
+			case Configuration::SERIAL: {
 				std::cout << "! Using serial communication" << std::endl;
 
 				int serialPortNumber = -1;
@@ -682,7 +676,7 @@ void SoccerBot::setupCommunication() {
 				std::cout << "! Opened serial COM" << serialPortNumber << " at " << config->mBed.serialBaud << " baud" << std::endl;
 			} break;
 
-			case Config::COM: {
+			case Configuration::COM: {
 				std::cout << "! Using com port communication" << std::endl;
 
 				int serialPortNumber = -1;
