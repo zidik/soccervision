@@ -1,7 +1,6 @@
 #include "Vision.h"
 #include "Config.h"
 #include "Util.h"
-#include <utility>
 
 #include <iostream>
 #include <algorithm>
@@ -121,6 +120,8 @@ ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
 			distance.x,
 			distance.y,
             distance.angle,
+			movementVector(0.0f, 0.0f),
+			movementVector(0.0f, 0.0f),
 			3,
 			dir == Dir::FRONT ? false : true
         );
@@ -220,6 +221,8 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 				distance.x,
 				distance.y,
 				distance.angle,
+				movementVector(0.0f, 0.0f),
+				movementVector(0.0f, 0.0f),
 				i == 0 ? Side::YELLOW : Side::BLUE,
 				dir == Dir::FRONT ? false : true
 			);
@@ -376,6 +379,8 @@ bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
 				goal->distanceX,
 				goal->distanceY,
 				goal->angle,
+				goal->relativeMovement,
+				goal->absoluteMovement,
 				goal->type == Side::BLUE ? RobotColor::BLUEHIGH : RobotColor::YELLOWHIGH,
 				dir == Dir::FRONT ? false : true
 				);
@@ -408,6 +413,8 @@ bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
 					goal->distanceX,
 					goal->distanceY,
 					goal->angle,
+					goal->relativeMovement,
+					goal->absoluteMovement,
 					goal->type == Side::BLUE ? RobotColor::YELLOWHIGH : RobotColor::BLUEHIGH,
 					dir == Dir::FRONT ? false : true
 					);
