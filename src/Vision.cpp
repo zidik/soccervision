@@ -58,14 +58,14 @@ void Vision::setDebugImage(unsigned char* image, int width, int height) {
 
 Vision::Result* Vision::process() {
 	Result* result = new Result();
-	std::pair<ObjectList, ObjectList> goalsAndRobots;
+	ObjectList goals;
 
 	result->vision = this;
-
-	goalsAndRobots = processGoalsAndRobots(dir);
-	result->robots = goalsAndRobots.second;
-	result->goals = goalsAndRobots.first;
-	result->balls = processBalls(dir, result->goals);
+	
+	result->goals = processGoalsUpdateRobots(dir);
+	result->robots = this->persistentRobots;
+	updateBalls(dir, result->goals);
+	result->balls = this->persistentBalls;
 
 	updateColorDistances();
 	updateColorOrder();
@@ -75,6 +75,17 @@ Vision::Result* Vision::process() {
 	result->blackDistance = blackDistance;
 
 	return result;
+}
+
+ObjectList Vision::processGoalsUpdateRobots(Dir dir) {
+	std::pair<ObjectList, ObjectList> goalsAndRobots;
+
+	goalsAndRobots = processGoalsAndRobots(dir);
+
+	//temporary hack until real code is written here
+	this->persistentRobots = goalsAndRobots.second;
+
+	return goalsAndRobots.first;
 }
 
 ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
@@ -172,6 +183,17 @@ ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
 	}	
 
 	return filteredBalls;
+}
+
+bool Vision::updateBalls(Dir dir, ObjectList& goals) {
+	ObjectList newBalls;
+
+	newBalls = processBalls(dir, goals);
+
+	//temporary hack until real code is written here
+	this->persistentBalls = newBalls;
+
+	return true;
 }
 
 std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {

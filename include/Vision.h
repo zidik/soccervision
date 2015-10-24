@@ -153,7 +153,9 @@ public:
 
 private:
 	std::pair<ObjectList, ObjectList> processGoalsAndRobots(Dir dir);
+	ObjectList processGoalsUpdateRobots(Dir dir);
 	ObjectList processBalls(Dir dir, ObjectList& goals);
+	bool updateBalls(Dir dir, ObjectList& goals);
 	float getSurroundMetric(int x, int y, int radius, std::vector<std::string> validColors, std::string requiredColor = "", int side = 0, bool allowNone = false);
     PathMetric getPathMetric(int x1, int y1, int x2, int y2, std::vector<std::string> validColors, std::string requiredColor = "");
 	EdgeDistanceMetric getEdgeDistanceMetric(int x, int y, int width, int height, std::string color1, std::string color2);
@@ -196,6 +198,8 @@ private:
 	ColorList colorOrder;
 	ColorDistance whiteDistance;
 	ColorDistance blackDistance;
+	ObjectList persistentBalls;
+	ObjectList persistentRobots;
 
 };
 
