@@ -16,14 +16,14 @@ namespace Config {
 
 	// camera serials
 	//telliskivi kaamerad
-	//const int frontCameraSerial = 857769553;
+	const int frontCameraSerial = 857769553;
 	const int rearCameraSerial = 857735761;
 
 	//Oskari kodus olev kaamera
 	//const int frontCameraSerial = 391119441;
 
 	//Üks laboris olevatest kaameratest, mille oskar kokku pani
-	const int frontCameraSerial = 374363729;
+	//const int frontCameraSerial = 374363729;
 
 	// indexes of motors according to the communication messages
 	const int wheelFLId = 0;

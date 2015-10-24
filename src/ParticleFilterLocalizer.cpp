@@ -211,11 +211,11 @@ Math::Position ParticleFilterLocalizer::getPosition() {
 		weightSum += weight;
     }
 
-	x = xSum / weightSum;
-	y = ySum / weightSum;
-	orientation = Math::floatModulus(orientationSum / weightSum, Math::TWO_PI);
-
-	//Util::confineField(x, y);
+	if (weightSum != 0.0f) {
+		x = xSum / weightSum;
+		y = ySum / weightSum;
+		orientation = Math::floatModulus(orientationSum / weightSum, Math::TWO_PI);
+	}
 
 	// generate the state JSON
 	std::stringstream stream;
