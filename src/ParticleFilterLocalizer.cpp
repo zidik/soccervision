@@ -43,7 +43,7 @@ void ParticleFilterLocalizer::generateRandomParticles(std::vector<Particle*>& pa
 			Math::randomFloat(0.0f, Config::fieldWidth),
 			Math::randomFloat(0.0f, Config::fieldHeight),
 			Math::randomFloat(0.0f, Math::TWO_PI),
-			0.0f
+			0.0
 			));
 	}
 }
@@ -65,7 +65,7 @@ void ParticleFilterLocalizer::setPosition(float x, float y, float orientation) {
 		particles[i]->orientation = orientation;
         particles[i]->location.x = x;
         particles[i]->location.y = y;
-		particles[i]->probability = 1.0f;
+		particles[i]->probability = 1.0;
     }
 }
 
@@ -92,7 +92,7 @@ void ParticleFilterLocalizer::move(float velocityX, float velocityY, float veloc
 }
 
 void ParticleFilterLocalizer::update(const MeasurementMap& measurements) {
-    float maxProbability = -1;
+    double maxProbability = -1;
 
 	for (Particle* particle : particles){
         particle->probability = evaluateParticleProbability(particle, measurements);
@@ -113,8 +113,9 @@ void ParticleFilterLocalizer::update(const MeasurementMap& measurements) {
     resample();
 }
 
-float ParticleFilterLocalizer::evaluateParticleProbability(Particle* particle, const MeasurementMap& measurementMap) {
-    float probability = 1.0f;
+double ParticleFilterLocalizer::evaluateParticleProbability(Particle* particle, const MeasurementMap& measurementMap)
+{
+    double probability = 1.0f;
 
 	for (const std::pair<Landmark::Type, Measurement> pair : measurementMap)
 	{
@@ -135,9 +136,9 @@ float ParticleFilterLocalizer::evaluateParticleProbability(Particle* particle, c
     return probability;
 }
 
-float ParticleFilterLocalizer::evaluateParticleProbabilityPart(const Particle& particle, const Landmark& landmark, const Measurement& measurement)
+double ParticleFilterLocalizer::evaluateParticleProbabilityPart(const Particle& particle, const Landmark& landmark, const Measurement& measurement)
 {
-	float maximumProbability = 0.0f;
+	double maximumProbability = 0.0f;
 	for (Location landmarkLocation : landmark.locations)
 	{
 		Location landmarkPositionFromParticle = landmarkLocation - particle.location;
@@ -149,7 +150,7 @@ float ParticleFilterLocalizer::evaluateParticleProbabilityPart(const Particle& p
 		CameraTranslator::CameraPosition excpectedCamPos = translator->getCameraPosition(landmarkPositionFromParticle.x, landmarkPositionFromParticle.y);
 		Location expectation(excpectedCamPos.x, excpectedCamPos.y);
 		float error = measurement.bottomPixel.distanceTo(expectation);
-		float probability = Math::getGaussian(0, 10.0, error);
+		double probability = Math::getGaussian(0.0, 10.0, (double)error);
 
 		maximumProbability = Math::max(maximumProbability, probability);
 	}
@@ -163,13 +164,13 @@ void ParticleFilterLocalizer::resample() {
 	int resampledParticleCount = particleCount - randomParticleCount;
 
     int index = Math::randomInt(0, particleCount - 1);
-    float beta = 0.0f;
-    float maxProbability = 1.0f;
+    double beta = 0.0f;
+    double maxProbability = 1.0;
 
 	generateRandomParticles(newParticles, randomParticleCount);
 
     for (int i = 0; i < resampledParticleCount; i++) {
-        beta += Math::randomFloat() * 2.0f * maxProbability;
+        beta += Math::randomFloat() * 2.0 * maxProbability;
 
         while (beta > particles[index]->probability) {
             beta -= particles[index]->probability;
@@ -192,7 +193,7 @@ Math::Position ParticleFilterLocalizer::getPosition() {
     float xSum = 0.0f;
     float ySum = 0.0f;
     float orientationSum = 0.0f;
-	float weightSum = 0.0f;
+	double weightSum = 0.0f;
     unsigned int particleCount = particles.size();
     Particle* particle;
 
@@ -203,18 +204,18 @@ Math::Position ParticleFilterLocalizer::getPosition() {
 
     for (unsigned int i = 0; i < particleCount; i++) {
         particle = particles[i];
-		float weight = particle->probability;
+		double weight = particle->probability;
 
-        xSum += particle->location.x * weight;
-        ySum += particle->location.y * weight;
-        orientationSum += particle->orientation * weight;
+        xSum += (float)(particle->location.x * weight);
+        ySum += (float)(particle->location.y * weight);
+        orientationSum += (float)(particle->orientation * weight);
 		weightSum += weight;
     }
 
 	if (weightSum != 0.0f) {
-		x = xSum / weightSum;
-		y = ySum / weightSum;
-		orientation = Math::floatModulus(orientationSum / weightSum, Math::TWO_PI);
+		x = (float)(xSum / weightSum);
+		y = (float)(ySum / weightSum);
+		orientation = Math::floatModulus((float)(orientationSum / weightSum), Math::TWO_PI);
 	}
 
 	// generate the state JSON

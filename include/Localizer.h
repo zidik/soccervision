@@ -12,9 +12,9 @@ public:
 	virtual void move(float velocityX, float velocityY, float omega, float dt) = 0;
 	virtual std::string getJSON() { return "null"; }
 
-	float x;
-	float y;
-	float orientation;
+	float x=0;
+	float y=0;
+	float orientation=0;
 
 };
 

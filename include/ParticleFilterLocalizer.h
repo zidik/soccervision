@@ -36,11 +36,11 @@ public:
 	};
 
 	struct Particle {
-		Particle(float x, float y, float orientation, float probability) : location(x, y), orientation(orientation), probability(probability) {};
+		Particle(float x, float y, float orientation, double probability) : location(x, y), orientation(orientation), probability(probability) {};
 
 		Location location;
 		float orientation;
-		float probability;
+		double probability;
 	};
 
 	typedef std::unordered_map<Landmark::Type, Landmark*> LandmarkMap;
@@ -64,8 +64,8 @@ public:
 
 	void move(float velocityX, float velocityY, float omega, float dt) { move(velocityX, velocityY, omega, dt, false); }
     void move(float velocityX, float velocityY, float omega, float dt, bool exact);
-    float evaluateParticleProbability(Particle* particle, const MeasurementMap& measurements);
-	float evaluateParticleProbabilityPart(const Particle& particle, const Landmark& landmark, const Measurement& measurement);
+    double evaluateParticleProbability(Particle* particle, const MeasurementMap& measurements);
+	double evaluateParticleProbabilityPart(const Particle& particle, const Landmark& landmark, const Measurement& measurement);
 	void setPosition(float x, float y, float orientation);
     void update(const MeasurementMap& measurements);
     void resample();
