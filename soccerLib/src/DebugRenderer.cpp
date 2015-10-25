@@ -81,7 +81,7 @@ void DebugRenderer::renderBalls(unsigned char* image, Vision* vision, const Obje
 		//correctedX = ball->x;
 		//correctedY = ball->y + ball->height / 2;
 
-		CameraTranslator::CameraPosition undistortedPos = vision->getCameraTranslator()->undistort(ball->x, ball->y + ball->height / 2);
+		CameraTranslator::CameraPosition undistortedPos = vision->getCameraTranslator()->undistort(CameraTranslator::CameraPosition(ball->x, ball->y + ball->height / 2));
 
 		//Util::correctCameraPoint(correctedX, correctedY);
 
@@ -355,7 +355,7 @@ void DebugRenderer::renderMapping(unsigned char* image, Vision* vision, int widt
 
 	for (x = 0; x < Config::cameraWidth; x += step) {
 		for (y = 0; y < Config::cameraHeight; y += step) {
-			pos = translator->undistort(x, y);
+			pos = translator->undistort(CameraTranslator::CameraPosition(x, y));
 			//pos = translator->distort(x, y);
 
 			canvas.setPixelAt(pos.x, pos.y, 0, 0, 0);
