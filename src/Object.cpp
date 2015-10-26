@@ -3,8 +3,44 @@
 #include "Maths.h"
 #include "Config.h"
 
+movementVector::movementVector(float dX, float dY, ObjectLocationList locationBuffer) : dX(dX), dY(dY), locationBuffer(locationBuffer) {
+	speed = sqrt(pow(dX, 2) + pow(dY, 2));
+	angle = atan2(dX, dY);
+}
+
+bool movementVector::addLocation(float posX, float posY) {
+	ObjectLocation* newLocation = new ObjectLocation(posX, posY);
+	this->locationBuffer.push_back(newLocation);
+	return true;
+}
+
+bool movementVector::incrementLocationsAge() {
+	for (ObjectLocationList::iterator it = this->locationBuffer.begin(); it != this->locationBuffer.end(); it++) {
+		ObjectLocation* currentLocation = *it;
+		currentLocation->age++;
+	}
+	return true;
+}
+
+bool movementVector::removeOldLocations() {
+	for (ObjectLocationList::iterator it = this->locationBuffer.begin(); it != this->locationBuffer.end(); it++) {
+		ObjectLocation* currentLocation = *it;
+		if (currentLocation->age > Config::objectLocationMaxAge) {
+			this->locationBuffer.erase(it);
+		}
+	}
+	return true;
+}
+
+bool movementVector::updateSpeedAndAngle() {
+	this->speed = sqrt(pow(this->dX, 2) + pow(this->dY, 2));
+	this->angle = atan2(this->dX, this->dY);
+	return true;
+}
+
 Object::Object(int x, int y, int width, int height, int area, float distance, float distanceX, float distanceY, float angle, movementVector relativeMovement, movementVector absoluteMovement, int type, bool behind) : x(x), y(y), width(width), height(height), area(area), distance(distance), distanceX(distanceX), distanceY(distanceY), angle(angle), relativeMovement(relativeMovement), absoluteMovement(absoluteMovement), type(type), behind(behind), processed(false) {
 	lastSeenTime = Util::millitime();
+	notSeenFrames = 0;
 }
 
 void Object::copyFrom(const Object* other) {
@@ -21,6 +57,24 @@ void Object::copyFrom(const Object* other) {
 	absoluteMovement = other->absoluteMovement;
 	type = other->type;
 	lastSeenTime = other->lastSeenTime;
+	notSeenFrames = other->notSeenFrames;
+	behind = other->behind;
+	processed = other->processed;
+}
+
+void Object::copyWithoutMovement(const Object* other) {
+	x = other->x;
+	y = other->y;
+	width = other->width;
+	height = other->height;
+	area = other->area;
+	distance = other->distance;
+	distanceX = other->distanceX;
+	distanceY = other->distanceY;
+	angle = other->angle;
+	type = other->type;
+	lastSeenTime = other->lastSeenTime;
+	notSeenFrames = other->notSeenFrames;
 	behind = other->behind;
 	processed = other->processed;
 }
