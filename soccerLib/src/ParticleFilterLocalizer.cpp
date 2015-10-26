@@ -128,8 +128,8 @@ float ParticleFilterLocalizer::getMeasurementProbability(Particle* particle, con
 		Landmark* landmark = landmarkSearch->second;
 
 
-		Math::Vector landmarkPositionFromParticle = landmark->location - particle->location;
-		landmarkPositionFromParticle.getRotated(-particle->orientation);
+		Math::Vector landmarkPositionFromParticle;
+		calculateRelativePosition(landmarkPositionFromParticle, *particle, landmark->location);
 
 		CameraTranslator* translator = (measurement.cameraDirection == Dir::FRONT ? frontCameraTranslator : rearCameraTranslator);
 		CameraTranslator::CameraPosition excpectedCamPos = translator->getCameraPosition(landmarkPositionFromParticle.x, landmarkPositionFromParticle.y);
@@ -139,6 +139,12 @@ float ParticleFilterLocalizer::getMeasurementProbability(Particle* particle, con
     }
 
     return probability;
+}
+
+void ParticleFilterLocalizer::calculateRelativePosition(Math::Vector &relativePosition, const ParticleFilterLocalizer::Particle &particle, const Math::Vector &absolutePosition)
+{
+	relativePosition = absolutePosition - particle.location;
+	relativePosition = relativePosition.getRotated(-particle.orientation);
 }
 
 void ParticleFilterLocalizer::resample() {
