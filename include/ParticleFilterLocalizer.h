@@ -18,8 +18,8 @@ public:
 	struct Landmark {
 		Landmark(std::string name, float x, float y) : name(name), location(x, y) {}
 		
-		std::string name;
-		Math::Vector location;
+		const std::string name;
+		const Math::Vector location;
 	};
 
 	struct Particle {

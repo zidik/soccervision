@@ -89,10 +89,21 @@ void ParticleFilterLocalizer::move(float velocityX, float velocityY, float veloc
 
 void ParticleFilterLocalizer::update(const Measurements& measurements) {
     Particle* particle;
-    float maxProbability = -1;
+    float maxProbability = 0.0;
 
     for (unsigned int i = 0; i < particles.size(); i++) {
         particle = particles[i];
+
+		if (
+			particle->location.x - 3 > Config::fieldWidth ||
+			particle->location.y - 3 > Config::fieldHeight ||
+			particle->location.x + 3 < 0 ||
+			particle->location.y + 3 < 0
+		) {
+			particle->probability = 0;
+			continue;
+		}
+
 
         particle->probability = getMeasurementProbability(particle, measurements);
 
@@ -127,15 +138,28 @@ float ParticleFilterLocalizer::getMeasurementProbability(Particle* particle, con
 
 		Landmark* landmark = landmarkSearch->second;
 
+		Math::Vector diff = (landmark->location - particle->location);
 
-		Math::Vector landmarkPositionFromParticle = landmark->location - particle->location;
-		landmarkPositionFromParticle.getRotated(-particle->orientation);
+		//FIX!!!
+		diff = Math::Vector(diff.x, -diff.y);
+
+		diff = diff.getRotated(particle->orientation);
 
 		CameraTranslator* translator = (measurement.cameraDirection == Dir::FRONT ? frontCameraTranslator : rearCameraTranslator);
-		CameraTranslator::CameraPosition excpectedCamPos = translator->getCameraPosition(landmarkPositionFromParticle.x, landmarkPositionFromParticle.y);
+		if(measurement.cameraDirection == Dir::FRONT)
+		{
+			translator = frontCameraTranslator;
+		}
+		else
+		{
+			translator = rearCameraTranslator;
+			diff.x = -diff.x;
+			diff.y = -diff.y;
+		}
+		CameraTranslator::CameraPosition excpectedCamPos = translator->getCameraPosition(diff);
 		Math::Vector expectation(excpectedCamPos.x, excpectedCamPos.y);
 		float error = measurement.bottomPixel.distanceTo(expectation);
-		probability *= Math::getGaussian(0, 10.0, error);
+		probability *= Math::getGaussian(0, 50.0, error);
     }
 
     return probability;
