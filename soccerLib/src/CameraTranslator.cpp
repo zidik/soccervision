@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-CameraTranslator::WorldPosition CameraTranslator::DEPRECATEDgetWorldPosition(int cameraX, int cameraY) {
-	CameraPosition undistorted = undistort(cameraX, cameraY);
+CameraTranslator::DEPRECATEDWorldPosition CameraTranslator::DEPRECATEDgetWorldPosition(int cameraX, int cameraY) {
+	CameraPosition undistorted = undistort(CameraPosition(cameraX, cameraY));
 
 	//std::cout << "UNDISTORT " << cameraX << "x" << cameraY << " to " << undistorted.x << "x" << undistorted.y << std::endl;
 
@@ -23,12 +23,13 @@ CameraTranslator::WorldPosition CameraTranslator::DEPRECATEDgetWorldPosition(int
 	float worldDistance = sqrt(pow(worldX, 2) + pow(worldY, 2));
 	float worldAngle = atan2(worldX, worldY);
 
-	return WorldPosition(worldX, worldY, worldDistance, worldAngle, isValid);
+	return DEPRECATEDWorldPosition(worldX, worldY, worldDistance, worldAngle, isValid);
 }
 
-Math::Vector CameraTranslator::getWorldPosition(CameraPosition cameraPosition)
+Math::Vector CameraTranslator::getWorldPosition(const CameraPosition &distorted, bool distortion) const
 {
-	cameraPosition = undistort(cameraPosition.x, cameraPosition.y);
+	CameraPosition cameraPosition = distorted;
+	if (distortion) { cameraPosition = undistort(distorted); }
 
 	float pixelVerticalCoord = cameraPosition.y - this->horizon;
 	int pixelLeft = this->cameraWidth / 2 - cameraPosition.x;
@@ -46,17 +47,21 @@ CameraTranslator::CameraPosition CameraTranslator::DEPRECATEDgetCameraPosition(f
 	float cameraY = pixelVerticalCoord + this->horizon;
 	float cameraX = pixelRight + this->cameraWidth / 2;
 
-	return distort((int)Math::round(cameraX, 0), (int)Math::round(cameraY, 0));
+	CameraPosition cameraPosition((int)Math::round(cameraX, 0), (int)Math::round(cameraY, 0));
+
+	return distort(cameraPosition);
 }
 
-CameraTranslator::CameraPosition CameraTranslator::getCameraPosition(Math::Vector worldPosition) {
+CameraTranslator::CameraPosition CameraTranslator::getCameraPosition(const Math::Vector &worldPosition, bool distortion) const {
 	float pixelVerticalCoord = this->A / (worldPosition.x - this->B);
 	float pixelLeft = worldPosition.y * pixelVerticalCoord / this->C;
 
 	float cameraX = this->cameraWidth / 2 - pixelLeft;
 	float cameraY = pixelVerticalCoord + this->horizon;
-
-	return distort((int)Math::round(cameraX, 0), (int)Math::round(cameraY, 0));
+	CameraPosition cameraPosition((int)Math::round(cameraX, 0), (int)Math::round(cameraY, 0));
+	if (distortion) { cameraPosition = distort(cameraPosition); }
+	return cameraPosition;
+	
 }
 
 void CameraTranslator::setConstants(
@@ -77,7 +82,7 @@ void CameraTranslator::setConstants(
 	this->cameraHeight = cameraHeight;
 }
 
-CameraTranslator::CameraPosition CameraTranslator::getMappingPosition(int x, int y, CameraMap& mapX, CameraMap& mapY) {
+CameraTranslator::CameraPosition CameraTranslator::getMappingPosition(int x, int y, const CameraMap& mapX, const CameraMap& mapY) const {
 	if (x < 0) x = 0;
 	if (x > cameraWidth - 1) x = cameraWidth - 1;
 	if (y < 0) y = 0;
@@ -111,12 +116,12 @@ CameraTranslator::CameraPosition CameraTranslator::getMappingPosition(int x, int
 	);
 }*/
 
-CameraTranslator::CameraPosition CameraTranslator::undistort(CameraPosition distorted) {
+CameraTranslator::CameraPosition CameraTranslator::undistort(const CameraPosition &distorted) const{
 	return getMappingPosition(distorted.x, distorted.y, undistortMapX, undistortMapY);
 	//return getAvgMappingPosition(distortedX, distortedY, undistortMapX, undistortMapY);
 }
 
-CameraTranslator::CameraPosition CameraTranslator::distort(CameraPosition undistorted) {
+CameraTranslator::CameraPosition CameraTranslator::distort(const CameraPosition &undistorted) const{
 	return getMappingPosition(undistorted.x, undistorted.y, distortMapX, distortMapY);
 }
 

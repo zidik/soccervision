@@ -57,7 +57,6 @@ public:
 	void move(float velocityX, float velocityY, float omega, float dt) { move(velocityX, velocityY, omega, dt, false); }
     void move(float velocityX, float velocityY, float omega, float dt, bool exact);
     float getMeasurementProbability(Particle* particle, const Measurements& measurements);
-	static void calculateRelativePosition(Math::Vector & relativePosition, const ParticleFilterLocalizer::Particle & particle, const Math::Vector & absolutePosition);
 	void setPosition(float x, float y, float orientation);
     void update(const Measurements& measurements);
     void resample();

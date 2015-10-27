@@ -995,7 +995,7 @@ Vision::Distance Vision::getDistance(int x, int y) {
 
 	return Math::max(distance + Config::distanceCorrection, 0.01f);*/
 
-	CameraTranslator::WorldPosition pos = cameraTranslator->DEPRECATEDgetWorldPosition(x, y);
+	CameraTranslator::DEPRECATEDWorldPosition pos = cameraTranslator->DEPRECATEDgetWorldPosition(x, y);
 
 	//if (pos.dx < -20.0f || pos.dx > 20.0f) std::cout << "- Invalid distance dx: " << pos.dx << " for " << x << "x" << y << ", dir: " << (dir == Dir::FRONT ? "front" : "rear") << std::endl;
 	//if (pos.dy < 0.0f || pos.dy > 20.0f) std::cout << "- Invalid distance dy: " << pos.dy << " for " << x << "x" << y << ", dir: " << (dir == Dir::FRONT ? "front" : "rear") << std::endl;
@@ -1024,7 +1024,7 @@ float Vision::getAngle(int x, int y) {
 
 	return angle;*/
 
-	CameraTranslator::WorldPosition pos = cameraTranslator->DEPRECATEDgetWorldPosition(x, y);
+	CameraTranslator::DEPRECATEDWorldPosition pos = cameraTranslator->DEPRECATEDgetWorldPosition(x, y);
 
 	float angle = pos.angle;
 
@@ -1145,8 +1145,8 @@ Vision::PathMetric Vision::getPathMetric(int x1, int y1, int x2, int y2, std::ve
 	float distanceStep = 0.05f;
 	//float distance1, distance2;
 
-	CameraTranslator::WorldPosition worldPos1 = cameraTranslator->DEPRECATEDgetWorldPosition(x1, y1);
-	CameraTranslator::WorldPosition worldPos2 = cameraTranslator->DEPRECATEDgetWorldPosition(x2, y2);
+	CameraTranslator::DEPRECATEDWorldPosition worldPos1 = cameraTranslator->DEPRECATEDgetWorldPosition(x1, y1);
+	CameraTranslator::DEPRECATEDWorldPosition worldPos2 = cameraTranslator->DEPRECATEDgetWorldPosition(x2, y2);
 
 	if (!worldPos1.isValid || !worldPos2.isValid) {
 		// fake very bad path metrix

@@ -36,9 +36,9 @@ public:
 
 	typedef std::vector <CameraMapChange> CameraMapChangeSet;
 
-	struct WorldPosition {
-		WorldPosition() : dx(0.0f), dy(0.0f), distance(0.0f), angle(0.0f), isValid(false) {}
-		WorldPosition(float dx, float dy, float distance, float angle, bool isValid = true) : dx(dx), dy(dy), distance(distance), angle(angle), isValid(isValid) {}
+	struct DEPRECATEDWorldPosition {
+		DEPRECATEDWorldPosition() : dx(0.0f), dy(0.0f), distance(0.0f), angle(0.0f), isValid(false) {}
+		DEPRECATEDWorldPosition(float dx, float dy, float distance, float angle, bool isValid = true) : dx(dx), dy(dy), distance(distance), angle(angle), isValid(isValid) {}
 
 		float dx;
 		float dy;
@@ -69,14 +69,14 @@ public:
 	bool loadUndistortionMapping(std::string xFilename, std::string yFilename);
 	bool loadDistortionMapping(std::string xFilename, std::string yFilename);
 	CameraMapSet generateInverseMap(CameraMap& mapX, CameraMap& mapY);
-	WorldPosition DEPRECATEDgetWorldPosition(int cameraX, int cameraY);
-	Math::Vector getWorldPosition(CameraPosition cameraPosition);
+	DEPRECATEDWorldPosition DEPRECATEDgetWorldPosition(int cameraX, int cameraY);
+	Math::Vector getWorldPosition(const CameraPosition &cameraPosition, bool distortion=true) const;
 	CameraPosition DEPRECATEDgetCameraPosition(float dx, float dy);
-	CameraPosition getCameraPosition(Math::Vector worldPosition);
+	CameraPosition getCameraPosition(const Math::Vector &worldPosition, bool distortion=true) const;
 
-	CameraPosition undistort(CameraPosition distorted);
-	CameraPosition distort(CameraPosition undistorted);
-	CameraPosition getMappingPosition(int x, int y, CameraMap& mapX, CameraMap& mapY);
+	CameraPosition undistort(const CameraPosition &distorted) const;
+	CameraPosition distort(const CameraPosition &undistorted) const;
+	CameraPosition getMappingPosition(int x, int y, const CameraMap& mapX, const CameraMap& mapY) const;
 	//CameraPosition getAvgMappingPosition(int x, int y, CameraMap& mapX, CameraMap& mapY);
 	CameraPositionSet CameraTranslator::getSpiral(int width, int height);
 	Math::PointList getPointsBetween(float x1, float y1, float x2, float y2, float distanceStepMeters);
