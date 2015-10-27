@@ -61,11 +61,14 @@ void DebugRenderer::renderBalls(unsigned char* image, Vision* vision, const Obje
 	Object* ball = NULL;
 	float ballFutureX, ballFutureY;
 	CameraTranslator::CameraPosition futureBallPos, realBallPos;
+	size_t ballNumber;
     char buf[256];
 	//int correctedX, correctedY;
 
     for (ObjectListItc it = balls.begin(); it != balls.end(); it++) {
         ball = *it;
+
+		ballNumber = it - balls.begin();
 
 		//calculate estimated future ball position based on movement vector
 		ballFutureX = ball->distanceX + 6 * ball->relativeMovement.dX;
@@ -80,7 +83,7 @@ void DebugRenderer::renderBalls(unsigned char* image, Vision* vision, const Obje
         //canvas.drawLine(ball->x - ball->width / 2, ball->y + ball->height / 2, ball->x + ball->width / 2, ball->y - ball->height / 2);
 
 		//sprintf(buf, "%.2fm x %.2fm  %.1f deg", ball->distanceX, ball->distanceY, Math::radToDeg(ball->angle));
-		sprintf(buf, "%.2fm %.2fm  %.1f deg, future %.2fm %.2fm", ball->distanceX, ball->distanceY, Math::radToDeg(ball->angle), ballFutureX, ballFutureY);
+		sprintf(buf, "%d : %.2fm %.2fm  %.1f deg, future %.2fm %.2fm", ballNumber, ball->distanceX, ball->distanceY, Math::radToDeg(ball->angle), ballFutureX, ballFutureY);
 
 		if (ball->y + ball->height / 2 < Config::cameraHeight - 50) {
 			canvas.drawText(ball->x - ball->width / 2 + 2, ball->y + ball->height / 2 + 4, buf);
