@@ -23,10 +23,13 @@ bool movementVector::incrementLocationsAge() {
 }
 
 bool movementVector::removeOldLocations() {
-	for (ObjectLocationList::iterator it = this->locationBuffer.begin(); it != this->locationBuffer.end(); it++) {
+	for (ObjectLocationList::iterator it = this->locationBuffer.begin(); it != this->locationBuffer.end(); ) {
 		ObjectLocation* currentLocation = *it;
 		if (currentLocation->age > Config::objectLocationMaxAge) {
 			this->locationBuffer.erase(it);
+		}
+		else {
+			it++;
 		}
 	}
 	return true;

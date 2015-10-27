@@ -59,24 +59,41 @@ void DebugRenderer::renderBalls(unsigned char* image, Vision* vision, const Obje
 	canvas.height = height;
 
 	Object* ball = NULL;
+	float ballFutureX, ballFutureY;
+	CameraTranslator::CameraPosition futureBallPos, realBallPos;
     char buf[256];
 	//int correctedX, correctedY;
 
     for (ObjectListItc it = balls.begin(); it != balls.end(); it++) {
         ball = *it;
 
+		//calculate estimated future ball position based on movement vector
+		ballFutureX = ball->distanceX + 6 * ball->relativeMovement.dX;
+		ballFutureY = ball->distanceY + 6 * ball->relativeMovement.dY;
+
+		//get pixel on screen where ball should be
+		futureBallPos = vision->getCameraTranslator()->getCameraPosition(ballFutureX, ballFutureY);
+		realBallPos = vision->getCameraTranslator()->getCameraPosition(ball->distanceX, ball->distanceY);
+
         canvas.drawBoxCentered(ball->x, ball->y, ball->width, ball->height);
 		//canvas.drawLine(ball->x - ball->width / 2, ball->y - ball->height / 2, ball->x + ball->width / 2, ball->y + ball->height / 2);
         //canvas.drawLine(ball->x - ball->width / 2, ball->y + ball->height / 2, ball->x + ball->width / 2, ball->y - ball->height / 2);
 
 		//sprintf(buf, "%.2fm x %.2fm  %.1f deg", ball->distanceX, ball->distanceY, Math::radToDeg(ball->angle));
-		sprintf(buf, "%.2fm %.2fm  %.1f deg", ball->distanceX, ball->distanceY, Math::radToDeg(ball->angle));
+		sprintf(buf, "%.2fm %.2fm  %.1f deg, future %.2fm %.2fm", ball->distanceX, ball->distanceY, Math::radToDeg(ball->angle), ballFutureX, ballFutureY);
 
 		if (ball->y + ball->height / 2 < Config::cameraHeight - 50) {
 			canvas.drawText(ball->x - ball->width / 2 + 2, ball->y + ball->height / 2 + 4, buf);
 		} else {
 			canvas.drawText(ball->x - ball->width / 2 + 2, ball->y - ball->height / 2 - 10, buf);
 		}
+
+		//draw future ball position on screen as orange circle and a line leading to it
+		canvas.fillCircle(futureBallPos.x, futureBallPos.y, 3, 255, 155, 0);
+		canvas.drawLine(realBallPos.x, realBallPos.y, futureBallPos.x, futureBallPos.y, 255, 155, 0);
+
+		//add marker to mark balls that are not visible
+		if (ball->notSeenFrames > 0) canvas.fillBox(ball->x, ball->y, 10, 10, 255, 155, 0);
 
 		//correctedX = ball->x;
 		//correctedY = ball->y + ball->height / 2;

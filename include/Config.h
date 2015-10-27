@@ -16,14 +16,14 @@ namespace Config {
 
 	// camera serials
 	//telliskivi kaamerad
-	//const int frontCameraSerial = 857769553;
+	const int frontCameraSerial = 857769553;
 	const int rearCameraSerial = 857735761;
 
 	//Oskari kodus olev kaamera
 	//const int frontCameraSerial = 391119441;
 
 	//Üks laboris olevatest kaameratest, mille oskar kokku pani
-	const int frontCameraSerial = 374363729;
+	//const int frontCameraSerial = 374363729;
 
 	// indexes of motors according to the communication messages
 	const int wheelFLId = 0;
@@ -98,7 +98,7 @@ namespace Config {
 	const float robotMaxDistance = 5.5f;
 
 	//Maximum distance delta between estimated position and new found ball position for it to be considered the same ball
-	const float ballPersistenceMinDistance = 0.1f;
+	const float ballPersistenceMinDistance = 0.2f;
 
 	//Maximum ratio for valid pixels to scanned pixels when searching for robot markers
 	const float robotScanMinMatchRatio = 0.15f;

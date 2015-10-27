@@ -190,48 +190,69 @@ bool Vision::updateBalls(Dir dir, ObjectList& goals) {
 
 	newBalls = processBalls(dir, goals);
 
-	//temporary hack until real code is written here
-	//this->persistentBalls = newBalls;
+	//std::cout << "Number of new balls : " << newBalls.size() << std::endl;
+	//std::cout << "Number of persistent balls : " << this->persistentBalls.size() << std::endl;
 
-	//actual code starts here
 	for (ObjectListItc it = this->persistentBalls.begin(); it != this->persistentBalls.end(); it++) {
 		Object* persistentBall = *it;
 
 		persistentBall->notSeenFrames++;
+	}
 
-		float estimateX = persistentBall->distanceX + persistentBall->relativeMovement.dX * persistentBall->notSeenFrames;
-		float estimateY = persistentBall->distanceY + persistentBall->relativeMovement.dY * persistentBall->notSeenFrames;
+	while (!newBalls.empty()) {
+		Object* newBall = newBalls.back();
+		newBalls.pop_back();
 
-		for (ObjectListItc jt = newBalls.begin(); jt != newBalls.end(); jt++) {
-			Object* newBall = *jt;
+		size_t bestBallIndex = NULL;
+		float bestDistance = 999.0f;
+		bool matched = false;
+
+		for (ObjectListItc it = this->persistentBalls.begin(); it != this->persistentBalls.end(); it++) {
+			Object* persistentBall = *it;
+
+			if (persistentBall->notSeenFrames <= 0) continue;
+
+			float estimateX = persistentBall->distanceX + persistentBall->relativeMovement.dX * persistentBall->notSeenFrames;
+			float estimateY = persistentBall->distanceY + persistentBall->relativeMovement.dY * persistentBall->notSeenFrames;
 
 			float deltaX = estimateX - newBall->distanceX;
 			float deltaY = estimateY - newBall->distanceY;
 			float distance = Math::sqrt(Math::pow(deltaX, 2.0f) + Math::pow(deltaY, 2.0f));
-			if (distance < Config::ballPersistenceMinDistance) {
-				persistentBall->notSeenFrames = 0;
-				persistentBall->relativeMovement.addLocation(newBall->distanceX, newBall->distanceY);
-				persistentBall->copyWithoutMovement(newBall);
-				newBalls.erase(jt);
-				break;
+
+			if (distance < Config::ballPersistenceMinDistance && distance < bestDistance) {
+
+				bestBallIndex = it - this->persistentBalls.begin();
+				matched = true;
 			}
-			//old ball was not found again
 		}
+
+		if (matched) {
+			Object* matchBall = *(this->persistentBalls.begin() + bestBallIndex);
+
+			matchBall->relativeMovement.addLocation(newBall->distanceX, newBall->distanceY);
+			matchBall->copyWithoutMovement(newBall);
+
+		}
+		else {
+			newBall->relativeMovement.addLocation(newBall->distanceX, newBall->distanceY);
+
+			persistentBalls.push_back(newBall);
+		}
+
+	}
+
+	for (ObjectListItc it = this->persistentBalls.begin(); it != this->persistentBalls.end(); ) {
+		Object* persistentBall = *it;
+
 		persistentBall->relativeMovement.incrementLocationsAge();
 		persistentBall->relativeMovement.removeOldLocations();
-	}
-	for (ObjectListItc jt = newBalls.begin(); jt != newBalls.end(); jt++) {
-		Object* newBall = *jt;
 
-		newBall->relativeMovement.addLocation(newBall->distanceX, newBall->distanceY);
-		newBall->relativeMovement.incrementLocationsAge();
-
-		persistentBalls.push_back(newBall);
-		newBalls.erase(jt);
-	}
-	for (ObjectListItc it = this->persistentBalls.begin(); it != this->persistentBalls.end(); it++) {
-		Object* persistentBall = *it;
-		if (persistentBall->relativeMovement.locationBuffer.size() <= 0) persistentBalls.erase(it);
+		if (persistentBall->relativeMovement.locationBuffer.size() <= 0) {
+			this->persistentBalls.erase(it);
+		}
+		else {
+			it++;
+		}
 	}
 
 	//update movement vectors
@@ -260,16 +281,6 @@ bool Vision::updateBalls(Dir dir, ObjectList& goals) {
 		persistentBall->relativeMovement.dY = deltaYsum / (float)weightSum;
 		persistentBall->relativeMovement.updateSpeedAndAngle();
 	}
-
-	//***take old ball
-	//***calculate estimated ball position
-	//***match new ball to old
-	//***add set of coordinates
-	//calculate new ball vector
-	//***increment location age
-	//***clear old locations
-	//***clear missing balls
-	
 
 	return true;
 }
