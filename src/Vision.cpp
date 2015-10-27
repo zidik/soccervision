@@ -193,62 +193,66 @@ bool Vision::updateBalls(Dir dir, ObjectList& goals) {
 	//std::cout << "Number of new balls : " << newBalls.size() << std::endl;
 	//std::cout << "Number of persistent balls : " << this->persistentBalls.size() << std::endl;
 
-	for (ObjectListItc it = this->persistentBalls.begin(); it != this->persistentBalls.end(); it++) {
-		Object* persistentBall = *it;
+	return updatePersistentObjects(&(this->persistentBalls), newBalls);
+}
 
-		persistentBall->notSeenFrames++;
+bool Vision::updatePersistentObjects(ObjectList* persistentObjects, ObjectList newObjects) {
+	for (ObjectListItc it = persistentObjects->begin(); it != this->persistentBalls.end(); it++) {
+		Object* persistentObject = *it;
+
+		persistentObject->notSeenFrames++;
 	}
 
-	while (!newBalls.empty()) {
-		Object* newBall = newBalls.back();
-		newBalls.pop_back();
+	while (!newObjects.empty()) {
+		Object* newObject = newObjects.back();
+		newObjects.pop_back();
 
-		size_t bestBallIndex = NULL;
+		size_t bestMatchIndex = NULL;
 		float bestDistance = 999.0f;
 		bool matched = false;
 
-		for (ObjectListItc it = this->persistentBalls.begin(); it != this->persistentBalls.end(); it++) {
-			Object* persistentBall = *it;
+		for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end(); it++) {
+			Object* persistentObject = *it;
 
-			if (persistentBall->notSeenFrames <= 0) continue;
+			if (persistentObject->notSeenFrames <= 0) continue;
 
-			float estimateX = persistentBall->distanceX + persistentBall->relativeMovement.dX * persistentBall->notSeenFrames;
-			float estimateY = persistentBall->distanceY + persistentBall->relativeMovement.dY * persistentBall->notSeenFrames;
+			float estimateX = persistentObject->distanceX + persistentObject->relativeMovement.dX * persistentObject->notSeenFrames;
+			float estimateY = persistentObject->distanceY + persistentObject->relativeMovement.dY * persistentObject->notSeenFrames;
 
-			float deltaX = estimateX - newBall->distanceX;
-			float deltaY = estimateY - newBall->distanceY;
+			float deltaX = estimateX - newObject->distanceX;
+			float deltaY = estimateY - newObject->distanceY;
 			float distance = Math::sqrt(Math::pow(deltaX, 2.0f) + Math::pow(deltaY, 2.0f));
 
-			if (distance < Config::ballPersistenceMinDistance && distance < bestDistance) {
+			if (distance < Config::objectPersistenceMinDistance && distance < bestDistance) {
 
-				bestBallIndex = it - this->persistentBalls.begin();
+				bestMatchIndex = it - persistentObjects->begin();
 				matched = true;
 			}
 		}
 
 		if (matched) {
-			Object* matchBall = *(this->persistentBalls.begin() + bestBallIndex);
+			Object* matchObject = *(persistentObjects->begin() + bestMatchIndex);
 
-			matchBall->relativeMovement.addLocation(newBall->distanceX, newBall->distanceY);
-			matchBall->copyWithoutMovement(newBall);
+			matchObject->relativeMovement.addLocation(newObject->distanceX, newObject->distanceY);
+			matchObject->copyWithoutMovement(newObject);
 
 		}
 		else {
-			newBall->relativeMovement.addLocation(newBall->distanceX, newBall->distanceY);
+			newObject->relativeMovement.addLocation(newObject->distanceX, newObject->distanceY);
 
-			persistentBalls.push_back(newBall);
+			persistentObjects->push_back(newObject);
 		}
 
 	}
 
-	for (ObjectListItc it = this->persistentBalls.begin(); it != this->persistentBalls.end(); ) {
-		Object* persistentBall = *it;
+	for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end();) {
+		Object* persistentObject = *it;
 
-		persistentBall->relativeMovement.incrementLocationsAge();
-		persistentBall->relativeMovement.removeOldLocations();
+		persistentObject->relativeMovement.incrementLocationsAge();
+		persistentObject->relativeMovement.removeOldLocations();
 
-		if (persistentBall->relativeMovement.locationBuffer.size() <= 0) {
-			this->persistentBalls.erase(it);
+		if (persistentObject->relativeMovement.locationBuffer.size() <= 0) {
+			persistentObjects->erase(it);
 		}
 		else {
 			it++;
@@ -256,30 +260,30 @@ bool Vision::updateBalls(Dir dir, ObjectList& goals) {
 	}
 
 	//update movement vectors
-	for (ObjectListItc it = this->persistentBalls.begin(); it != this->persistentBalls.end(); it++) {
-		Object* persistentBall = *it;
+	for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end(); it++) {
+		Object* persistentObject = *it;
 
 		//check if there is new data
-		if (persistentBall->notSeenFrames > 0) continue;
+		if (persistentObject->notSeenFrames > 0) continue;
 
 		float deltaXsum = 0;
 		float deltaYsum = 0;
 		int weightSum = 0;
-		for (ObjectLocationList::iterator jt = persistentBall->relativeMovement.locationBuffer.begin(); jt != persistentBall->relativeMovement.locationBuffer.end(); jt++) {
+		for (ObjectLocationList::iterator jt = persistentObject->relativeMovement.locationBuffer.begin(); jt != persistentObject->relativeMovement.locationBuffer.end(); jt++) {
 			ObjectLocation* currentViewedLocation = *jt;
 			//check if location is newest inserted (current)
 			if (currentViewedLocation->age <= 1) continue;
 
-			deltaXsum += (persistentBall->distanceX - currentViewedLocation->locationX) / ((float)currentViewedLocation->age - 1.0f) * (Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
-			deltaYsum += (persistentBall->distanceY - currentViewedLocation->locationY) / ((float)currentViewedLocation->age - 1.0f) * (Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
+			deltaXsum += (persistentObject->distanceX - currentViewedLocation->locationX) / ((float)currentViewedLocation->age - 1.0f) * (Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
+			deltaYsum += (persistentObject->distanceY - currentViewedLocation->locationY) / ((float)currentViewedLocation->age - 1.0f) * (Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
 			weightSum += (Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
 		}
 
 		if (weightSum == 0) continue;
 
-		persistentBall->relativeMovement.dX = deltaXsum / (float)weightSum;
-		persistentBall->relativeMovement.dY = deltaYsum / (float)weightSum;
-		persistentBall->relativeMovement.updateSpeedAndAngle();
+		persistentObject->relativeMovement.dX = deltaXsum / (float)weightSum;
+		persistentObject->relativeMovement.dY = deltaYsum / (float)weightSum;
+		persistentObject->relativeMovement.updateSpeedAndAngle();
 	}
 
 	return true;

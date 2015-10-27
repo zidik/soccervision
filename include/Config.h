@@ -97,9 +97,6 @@ namespace Config {
 	//Maximum valid distance of robot, taken from field size
 	const float robotMaxDistance = 5.5f;
 
-	//Maximum distance delta between estimated position and new found ball position for it to be considered the same ball
-	const float ballPersistenceMinDistance = 0.2f;
-
 	//Maximum ratio for valid pixels to scanned pixels when searching for robot markers
 	const float robotScanMinMatchRatio = 0.15f;
 
@@ -279,6 +276,9 @@ namespace Config {
 
 	// maximum number of frames after which a persistent object location is deletied
 	const int objectLocationMaxAge = 5;
+
+	//Maximum distance delta between estimated position and new found object position for it to be considered the same object
+	const float objectPersistenceMinDistance = 0.2f;
 
 	// configuration filenames
 	const std::string blobberConfigFilename = "config/blobber.cfg";

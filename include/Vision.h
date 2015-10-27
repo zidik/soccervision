@@ -156,6 +156,7 @@ private:
 	ObjectList processGoalsUpdateRobots(Dir dir);
 	ObjectList processBalls(Dir dir, ObjectList& goals);
 	bool updateBalls(Dir dir, ObjectList& goals);
+	bool updatePersistentObjects(ObjectList* persistentObjects, ObjectList newObjects);
 	float getSurroundMetric(int x, int y, int radius, std::vector<std::string> validColors, std::string requiredColor = "", int side = 0, bool allowNone = false);
     PathMetric getPathMetric(int x1, int y1, int x2, int y2, std::vector<std::string> validColors, std::string requiredColor = "");
 	EdgeDistanceMetric getEdgeDistanceMetric(int x, int y, int width, int height, std::string color1, std::string color2);
