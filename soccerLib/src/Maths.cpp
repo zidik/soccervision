@@ -180,16 +180,24 @@ Vector Vector::getScaled(float magnitude) const {
     );
 }
 
-Vector Vector::getSummed(const Vector& b) const {
-    return Vector(
-        x + b.x,
-        y + b.y
-    );
+Vector& Vector::operator+=(const Vector& other) {
+	x += other.x;
+	y += other.y;
+	return *this;
 }
-
 Vector& Vector::operator-=(const Vector& other) {
 	x -= other.x;
 	y -= other.y;
+	return *this;
+}
+Vector& Vector::operator*=(float magnitude) {
+	x *= magnitude;
+	y *= magnitude;
+	return *this;
+}
+Vector& Vector::operator/=(float magnitude) {
+	x /= magnitude;
+	y /= magnitude;
 	return *this;
 }
 

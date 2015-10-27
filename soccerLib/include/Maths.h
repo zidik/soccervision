@@ -266,30 +266,40 @@ class Matrix4x1 {
 };
 
 class Vector {
-    public:
-		Vector() = default;
-        Vector(float x, float y) : x(x), y(y) {}
+public:
+	Vector() = default;
+	Vector(float x, float y) : x(x), y(y) {}
 
-        float getLength() const;
-		float distanceTo(const Vector& b) const;
-        float dotProduct(const Vector& b) const;
-        float getAngleBetween(const Vector& b) const;
-        Vector getRotated(float angle) const;
-        Vector getNormalized() const;
-        Vector getScaled(float magnitude) const;
-        Vector getSummed(const Vector& b) const;
+	float getLength() const;
+	float distanceTo(const Vector& b) const;
+	float dotProduct(const Vector& b) const;
+	float getAngleBetween(const Vector& b) const;
+	Vector getRotated(float angle) const;
+	Vector getNormalized() const;
+	Vector getScaled(float magnitude) const;
 
-		Vector& operator-=(const Vector& other);
+	Vector& operator-=(const Vector& other);
+	Vector& operator+=(const Vector& other);
+	Vector& operator*=(float magnitude);
+	Vector& operator/=(float divisor);
+	static Vector createForwardVec(float dir, float magnitude = 1.0f);
+	static Vector createDirVec(const Vector& from, const Vector& to);
 
-        static Vector createForwardVec(float dir, float magnitude = 1.0f);
-        static Vector createDirVec(const Vector& from, const Vector& to);
-
-        float x = 0.0f;
-        float y = 0.0f;
+	float x = 0.0f;
+	float y = 0.0f;
 };
 
 inline Vector operator-(Vector left, const Vector& right) {
 	return left -= right;
+}
+inline Vector operator+(Vector left, const Vector& right) {
+	return left += right;
+}
+inline Vector operator*(Vector left, float magnitude) {
+	return left *= magnitude;
+}
+inline Vector operator/(Vector left, float divisor) {
+	return left /= divisor;
 }
 
 struct Position {
