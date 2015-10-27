@@ -284,7 +284,7 @@ void DebugRenderer::renderGrid(unsigned char* image, Vision* vision, int width, 
 
 	for (distanceY = distanceStartY; distanceY <= maxDistanceY; distanceY *= 2.0f) {
 		for (distanceX = minDistanceX; distanceX <= maxDistanceX; distanceX += stepX) {
-			pos = vision->getCameraTranslator()->getCameraPosition(distanceX, distanceY);
+			pos = vision->getCameraTranslator()->DEPRECATEDgetCameraPosition(distanceX, distanceY);
 
 			canvas.setPixelAt(pos.x, pos.y, 0, 0, 128);
 
@@ -320,7 +320,7 @@ void DebugRenderer::renderGrid(unsigned char* image, Vision* vision, int width, 
 
 		int x = Config::cameraWidth / 2 - 15;
 
-		distorted = vision->getCameraTranslator()->getCameraPosition(0, distanceY);
+		distorted = vision->getCameraTranslator()->DEPRECATEDgetCameraPosition(0, distanceY);
 
 		//if (lastTextY == -1 || lastTextY - distorted.y >= 8) {
 			canvas.drawText(distorted.x, distorted.y, Util::toString(distanceY) + "m", 0, 0, 0);
@@ -332,7 +332,7 @@ void DebugRenderer::renderGrid(unsigned char* image, Vision* vision, int width, 
 	// draw vertical dots at each 10x increment
 	for (distanceX = minDistanceX; distanceX <= maxDistanceX; distanceX += stepX * 10.0f) {
 		for (distanceY = 0.0f; distanceY < maxDistanceY; distanceY += stepX) {
-			pos = vision->getCameraTranslator()->getCameraPosition(distanceX, distanceY);
+			pos = vision->getCameraTranslator()->DEPRECATEDgetCameraPosition(distanceX, distanceY);
 
 			canvas.setPixelAt(pos.x, pos.y, 0, 0, 128);
 		}

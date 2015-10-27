@@ -69,9 +69,11 @@ public:
 	bool loadUndistortionMapping(std::string xFilename, std::string yFilename);
 	bool loadDistortionMapping(std::string xFilename, std::string yFilename);
 	CameraMapSet generateInverseMap(CameraMap& mapX, CameraMap& mapY);
-	WorldPosition getWorldPosition(int cameraX, int cameraY, bool withDistortion = true);
-	CameraPosition getCameraPosition(Math::Vector worldPos, bool withDistortion=true);
-	CameraPosition getCameraPosition(float dx, float dy, bool withDistortion = true);
+	WorldPosition DEPRECATEDgetWorldPosition(int cameraX, int cameraY);
+	Math::Vector getWorldPosition(CameraPosition cameraPosition);
+	CameraPosition DEPRECATEDgetCameraPosition(float dx, float dy);
+	CameraPosition getCameraPosition(Math::Vector worldPosition);
+
 	CameraPosition undistort(CameraPosition distorted);
 	CameraPosition distort(CameraPosition undistorted);
 	CameraPosition getMappingPosition(int x, int y, CameraMap& mapX, CameraMap& mapY);
