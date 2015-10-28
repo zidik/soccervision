@@ -61,22 +61,24 @@ public:
 	int notSeenFrames;
 	bool behind;
 	bool processed;
+
+	enum property {
+		ANGLE = 9,
+	};
+
+	struct EntityComp {
+		int property;
+		EntityComp(int property) : property(property) {}
+		bool operator()(Object* s1, Object* s2) const {
+			if (property == ANGLE)
+				return s1->angle < s2->angle;
+			else
+				return s1->area < s2->area;
+		}
+	};
 };
 
-enum property {
-	ANGLE = 9,
-};
 
-struct EntityComp {
-	int property;
-	EntityComp(int property) { this->property = property; }
-	bool operator()(Object* s1, Object* s2) const {
-		if (property == ANGLE)
-			return s1->angle < s2->angle;
-		else
-			return s1->area < s2->area;
-	}
-};
 
 typedef std::vector<Object*> ObjectList;
 typedef ObjectList::iterator ObjectListIt;

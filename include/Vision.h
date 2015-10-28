@@ -135,6 +135,35 @@ public:
 		int newWidth;
 	};
 
+	struct PersistenceMatchPair {
+		PersistenceMatchPair(size_t persistentIndex, size_t newIndex, float distance) : persistentIndex(persistentIndex), newIndex(newIndex), distance(distance) {}
+
+		size_t persistentIndex;
+		size_t newIndex;
+		float distance;
+
+		enum property {
+			PERSISTENTINDEX = 1,
+			NEWINDEX = 2,
+			DISTANCE = 3
+		};
+
+		struct EntityComp {
+			int property;
+			EntityComp(int property) : property(property) {}
+			bool operator()(PersistenceMatchPair* s1, PersistenceMatchPair* s2) const {
+				if (property == PERSISTENTINDEX)
+					return s1->persistentIndex < s2->persistentIndex;
+				else if (property == NEWINDEX)
+					return s1->newIndex < s2->newIndex;
+				else if (property == DISTANCE)
+					return s1->distance < s2->distance;
+				else
+					return s1->distance < s2->distance;
+			}
+		};
+	};
+
     Vision(Blobber* blobber, CameraTranslator* cameraTranslator, Dir dir, int width, int height);
     ~Vision();
 

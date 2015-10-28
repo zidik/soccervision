@@ -203,50 +203,73 @@ bool Vision::updatePersistentObjects(ObjectList* persistentObjects, ObjectList n
 		persistentObject->notSeenFrames++;
 	}
 
-	while (!newObjects.empty()) {
-		Object* newObject = newObjects.back();
-		newObjects.pop_back();
+	//vector for holding pairs close enough to each other
+	std::vector<PersistenceMatchPair*> matchList;
 
-		size_t bestMatchIndex = NULL;
-		float bestDistance = 999.0f;
-		bool matched = false;
+	//find close enough pairs of old and new objects
+	for (ObjectListItc it = newObjects.begin(); it != newObjects.end(); it++) {
+		Object* newObject = *it;
 
-		for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end(); it++) {
-			Object* persistentObject = *it;
-
-			//check if object was already updated or created newly
-			if (persistentObject->notSeenFrames <= 0) continue;
+		for (ObjectListItc jt = persistentObjects->begin(); jt != persistentObjects->end(); jt++) {
+			Object* persistentObject = *jt;
 
 			//check if objects are the same type
 			if (persistentObject->type != newObject->type) continue;
 
+			//calculate estimated position of persistent object
 			float estimateX = persistentObject->distanceX + persistentObject->relativeMovement.dX * persistentObject->notSeenFrames;
 			float estimateY = persistentObject->distanceY + persistentObject->relativeMovement.dY * persistentObject->notSeenFrames;
 
+			//calculate distance between estimated persistent object and new object
 			float deltaX = estimateX - newObject->distanceX;
 			float deltaY = estimateY - newObject->distanceY;
 			float distance = Math::sqrt(Math::pow(deltaX, 2.0f) + Math::pow(deltaY, 2.0f));
 
-			if (distance < Config::objectPersistenceMinDistance && distance < bestDistance) {
-
-				bestMatchIndex = it - persistentObjects->begin();
-				matched = true;
+			if (distance < Config::objectPersistenceMinDistance) {
+				PersistenceMatchPair* matchPair = new PersistenceMatchPair(jt - persistentObjects->begin(), it - newObjects.begin(), distance);
+				matchList.push_back(matchPair);
 			}
 		}
+	}
 
-		if (matched) {
-			Object* matchObject = *(persistentObjects->begin() + bestMatchIndex);
+	//sort matchlist by distance, smallest elements at the back
+	std::sort(matchList.begin(), matchList.end(), PersistenceMatchPair::EntityComp(PersistenceMatchPair::property::DISTANCE));
+	std::reverse(matchList.begin(), matchList.end());
 
-			matchObject->relativeMovement.addLocation(newObject->distanceX, newObject->distanceY);
-			matchObject->copyWithoutMovement(newObject);
 
-		}
-		else {
-			newObject->relativeMovement.addLocation(newObject->distanceX, newObject->distanceY);
+	//std::cout << "starting matchlist loop" << std::endl;
+	//go through matchlist until empty
+	while (!matchList.empty()) {
+		PersistenceMatchPair* currentPair = matchList.back();
+		matchList.pop_back();
 
-			persistentObjects->push_back(newObject);
-		}
+		//std::cout << "current match distance : " << currentPair->distance << std::endl;
 
+		//check if persistent object has already been updated
+		Object* persistentObject = *(persistentObjects->begin() + currentPair->persistentIndex);
+		if (persistentObject->notSeenFrames == 0) continue;
+
+		//check if new object has already been used
+		Object* newObject = *(newObjects.begin() + currentPair->newIndex);
+		if (newObject->notSeenFrames < 0) continue;
+
+		//update persistent object with new information
+		persistentObject->relativeMovement.addLocation(newObject->distanceX, newObject->distanceY);
+		persistentObject->copyWithoutMovement(newObject);
+
+		//mark new object as used
+		newObject->notSeenFrames = -1;
+	}
+
+	//add other new objects to persistent objects
+	while (!newObjects.empty()) {
+		Object* newObject = newObjects.back();
+		newObjects.pop_back();
+		
+		if (newObject->notSeenFrames < 0) continue;
+
+		newObject->relativeMovement.addLocation(newObject->distanceX, newObject->distanceY);
+		persistentObjects->push_back(newObject);
 	}
 
 	for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end();) {
@@ -567,7 +590,7 @@ ObjectList Vision::mergeRobotBlobs(Dir dir, ObjectList blobs) {
 		if (focusBlob->angle < (Math::PI / -2.0f)) focusBlob->angle += (2.0f * Math::PI);
 	}
 
-	std::sort(blobs.begin(), blobs.end(), EntityComp(property::ANGLE));
+	std::sort(blobs.begin(), blobs.end(), Object::EntityComp(Object::property::ANGLE));
 
 	while (!blobs.empty()) {
 		focusBlob = blobs.back();
