@@ -79,3 +79,26 @@ BOOST_AUTO_TEST_CASE(VectorLength)
 	BOOST_TEST(b.getLength()== 5.0f);
 	BOOST_TEST(c.getLength() == 5.0f);
 }
+
+BOOST_AUTO_TEST_CASE(VectorRotation)
+{
+	Vector a(0.0f, 0.0f);
+	Vector b = a.getRotated(PI/3);
+	BOOST_TEST(b.x == 0);
+	BOOST_TEST(b.y == 0);
+
+	Vector c(1.0f, 0.0f);
+	Vector d = c.getRotated(PI / 4);
+	BOOST_TEST(d.x == 1/Math::sqrt(2));
+	BOOST_TEST(d.y == 1/Math::sqrt(2));
+
+	Vector e(0.0f, 2.0f);
+	Vector f = e.getRotated(PI / 4);
+	BOOST_TEST(f.x == -Math::sqrt(2));
+	BOOST_TEST(f.y ==  Math::sqrt(2));
+
+	Vector g(-2.0f, -2.0f);
+	Vector h = g.getRotated(PI / 4);
+	BOOST_TEST(h.x == 0);
+	BOOST_TEST(h.y == -2*Math::sqrt(2));
+}
