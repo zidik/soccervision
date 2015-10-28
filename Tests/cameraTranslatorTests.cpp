@@ -1,7 +1,6 @@
 
 #include <CameraTranslator.h>
 #include <ParticleFilterLocalizer.h>
-#include <Hacks.h>
 #include <boost/test/unit_test.hpp>
 
 
@@ -71,59 +70,52 @@ void testMultipleTranslationLoopback(const CameraTranslator &cameraTranslator, b
 	testTranslationLoopback(cameraTranslator, CameraPosition(1073, 1000), distortion);
 }
 
-
 BOOST_AUTO_TEST_CASE(cameraTranslationLoopbackTest)
 {
 	testMultipleTranslationLoopback(cameraTranslator, false);
 }
+
 BOOST_AUTO_TEST_CASE(cameraTranslationDistortedLoopbackTest)
 {
 	ensureDistortionMapLoaded();
 	testMultipleTranslationLoopback(cameraTranslator, true);
 }
 
-void testFourAdjecentPixelsSanity(const CameraTranslator &cameraTranslator, const Math::Vector &position, bool distortion = true)
+void testGetCameraPositionSanity(const CameraTranslator &cameraTranslator, const Math::Vector &centerPosition, bool distortion = true)
 {
-	CameraPosition pixel;
-	Math::Vector newPosition;
+	Math::Vector leftPostition = centerPosition + Math::Vector(0.0f, 0.2f);
+	Math::Vector rightPostition = centerPosition + Math::Vector(0.0f, -0.2f);
+	Math::Vector forwardPostition = centerPosition + Math::Vector(0.2f, 0.0f);
+	Math::Vector backPostition = centerPosition + Math::Vector(-0.2f, 0.0f);
 
-	pixel = cameraTranslator.getCameraPosition(position, distortion);
-	pixel.x += 5;
-	newPosition = cameraTranslator.getWorldPosition(pixel, distortion);
-	BOOST_TEST(newPosition.y < position.y);
+	CameraPosition centerPixel = cameraTranslator.getCameraPosition(centerPosition, distortion);
+	CameraPosition leftPixel = cameraTranslator.getCameraPosition(leftPostition, distortion);
+	CameraPosition rightPixel = cameraTranslator.getCameraPosition(rightPostition, distortion);
+	CameraPosition forwardPixel = cameraTranslator.getCameraPosition(forwardPostition, distortion);
+	CameraPosition backPixel = cameraTranslator.getCameraPosition(backPostition, distortion);
 
-	pixel = cameraTranslator.getCameraPosition(position, distortion);
-	pixel.x -= 5;
-	newPosition = cameraTranslator.getWorldPosition(pixel, distortion);
-	BOOST_TEST(newPosition.y > position.y);
-
-	pixel = cameraTranslator.getCameraPosition(position, distortion);
-	pixel.y += 5;
-	newPosition = cameraTranslator.getWorldPosition(pixel, distortion);
-	BOOST_TEST(newPosition.x < position.x);
-
-	pixel = cameraTranslator.getCameraPosition(position, distortion);
-	pixel.y -= 5;
-	newPosition = cameraTranslator.getWorldPosition(pixel, distortion);
-	BOOST_TEST(newPosition.x > position.x);
+	BOOST_TEST(leftPixel.x < centerPixel.x);
+	BOOST_TEST(rightPixel.x > centerPixel.x);
+	BOOST_TEST(forwardPixel.y < centerPixel.y);
+	BOOST_TEST(backPixel.y > centerPixel.y);
 }
 
-void testMultipleFourAdjecentPixelsSanity(const CameraTranslator &cameraTranslator, bool distortion = true)
+void testMultipleGetCameraPositionSanity(const CameraTranslator &cameraTranslator, bool distortion = true)
 {
-	testFourAdjecentPixelsSanity(cameraTranslator, Math::Vector(2.0f, 0.5f), distortion);
-	testFourAdjecentPixelsSanity(cameraTranslator, Math::Vector(1.0f, -0.5f), distortion);
-	testFourAdjecentPixelsSanity(cameraTranslator, Math::Vector(5.0f, -2.0f), distortion);
+	testGetCameraPositionSanity(cameraTranslator, Math::Vector(2.0f, 0.5f), distortion);
+	testGetCameraPositionSanity(cameraTranslator, Math::Vector(1.0f, -0.5f), distortion);
+	testGetCameraPositionSanity(cameraTranslator, Math::Vector(5.0f, -2.0f), distortion);
 }
 
 BOOST_AUTO_TEST_CASE(cameraTranslationSanityTest)
 {
-	testMultipleFourAdjecentPixelsSanity(cameraTranslator, false);
+	testMultipleGetCameraPositionSanity(cameraTranslator, false);
 }
 
 BOOST_AUTO_TEST_CASE(cameraTranslationDistortedSanityTest)
 {
 	ensureDistortionMapLoaded();
-	testMultipleFourAdjecentPixelsSanity(cameraTranslator, true);
+	testMultipleGetCameraPositionSanity(cameraTranslator, true);
 }
 //____________________________________________________________________________//
 BOOST_AUTO_TEST_SUITE_END()

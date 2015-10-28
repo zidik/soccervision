@@ -56,24 +56,23 @@ public:
     void addLandmark(std::string name, float x, float y);
 	void move(float velocityX, float velocityY, float omega, float dt) { move(velocityX, velocityY, omega, dt, false); }
     void move(float velocityX, float velocityY, float omega, float dt, bool exact);
-    float getMeasurementProbability(Particle* particle, const Measurements& measurements);
+    float getMeasurementProbability(Particle* particle, const Measurements& measurements) const;
 	void setPosition(float x, float y, float orientation);
     void update(const Measurements& measurements);
     void resample();
-    Math::Position getPosition();
+	void calculatePosition();
+	Math::Position getPosition() const;
 	const ParticleList& getParticles() const { return particles; }
-	std::string getJSON() { return json; }
+	std::string getJSON() const;
 
 private:
 	CameraTranslator* frontCameraTranslator;
 	CameraTranslator* rearCameraTranslator;
-    const int particleCount;
+	const int particleCount;
     float forwardNoise;
     float turnNoise;
     LandmarkMap landmarks;
     ParticleList particles;
-	std::string json;
-
 };
 
 #endif // PARTICLEFILTERLOCALIZER_H

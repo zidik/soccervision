@@ -21,13 +21,13 @@
     <ClCompile Include="Tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Tests1.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleTests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="cameraTranslatorTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VectorTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleFilterTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

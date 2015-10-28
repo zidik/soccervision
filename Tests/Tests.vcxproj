@@ -157,9 +157,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cameraTranslatorTests.cpp" />
-    <ClCompile Include="ParticleTests.cpp" />
+    <ClCompile Include="VectorTests.cpp" />
     <ClCompile Include="Tests.cpp" />
-    <ClCompile Include="Tests1.cpp" />
+    <ClCompile Include="ParticleFilterTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\soccerLib\soccerLib.vcxproj">

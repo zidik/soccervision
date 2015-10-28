@@ -165,7 +165,6 @@
     <ClInclude Include="include\EthernetCommunication.h" />
     <ClInclude Include="include\FpsCounter.h" />
     <ClInclude Include="include\Gui.h" />
-    <ClInclude Include="include\Hacks.h" />
     <ClInclude Include="include\ImageProcessor.h" />
     <ClInclude Include="include\Localizer.h" />
     <ClInclude Include="include\LookupTable.h" />
