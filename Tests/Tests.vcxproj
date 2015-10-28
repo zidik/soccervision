@@ -157,6 +157,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cameraTranslatorTests.cpp" />
+    <ClCompile Include="IntegrationTests.cpp" />
     <ClCompile Include="VectorTests.cpp" />
     <ClCompile Include="Tests.cpp" />
     <ClCompile Include="ParticleFilterTests.cpp" />

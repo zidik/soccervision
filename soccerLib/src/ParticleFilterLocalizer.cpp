@@ -21,20 +21,19 @@ ParticleFilterLocalizer::ParticleFilterLocalizer(
 	particleCount(particleCount),
 	forwardNoise(forwardNoise), 
 	turnNoise(turnNoise) {
-	generateRandomParticles(particles, particleCount);
-}
+		particles.reserve(particleCount);
+		generateRandomParticles(particles, particleCount);
+	}
 
 ParticleFilterLocalizer::~ParticleFilterLocalizer() {
-    for (ParticleList::const_iterator it = particles.begin(); it != particles.end(); ++it) {
-        delete *it;
+	for (Particle* particle : particles){
+        delete particle;
     }
-
     particles.clear();
 
-    for (LandmarkMap::const_iterator it = landmarks.begin(); it != landmarks.end(); ++it) {
-        delete it->second;
+    for (std::pair<std::string, Landmark*> pair : landmarks) {
+        delete pair.second;
     }
-
     landmarks.clear();
 }
 
@@ -162,32 +161,21 @@ float ParticleFilterLocalizer::getMeasurementProbability(Particle* particle, con
 }
 
 void ParticleFilterLocalizer::resample() {
-	auto hasZeroProb = [](Particle* particle) {return particle->probability == 0.0f; };
-	particles.erase(std::remove_if(particles.begin(), particles.end(), hasZeroProb), particles.end());
+	removeZeroProbabilityParticles();
 
-	int randomParticleCount = particleCount / 10;
-	int resampledParticleCount = particleCount - randomParticleCount;
-	
 	ParticleList newParticles;
-	generateRandomParticles(newParticles, randomParticleCount);
-
-	float beta = 0.0f;
-	float maxProbability = 1.0f;
-	int index = Math::randomInt(0, particles.size() - 1);
-	
+	newParticles.reserve(particleCount);
 	if (particles.size() > 0) {
-		for (int i = 0; i < resampledParticleCount; i++) {
-			beta += Math::randomFloat() * 2.0f * maxProbability;
-
-			while (beta > particles[index]->probability) {
-				beta -= particles[index]->probability;
-				index = (index + 1) % particles.size();
-			}
-
-			newParticles.push_back(new Particle(*particles[index]));
-		}
+		int randomParticleCount = particleCount / 10;
+		int resampledParticleCount = particleCount - randomParticleCount;
+		generateRandomParticles(newParticles, randomParticleCount);
+		sampleParticles(newParticles, resampledParticleCount);
 	}
-
+	else {
+		//All particles had probability 0.0
+		generateRandomParticles(newParticles, particleCount);
+	}
+	
 	for (Particle* particle : particles){
         delete particle;
     }
@@ -195,6 +183,34 @@ void ParticleFilterLocalizer::resample() {
     particles.clear();
 
     particles = newParticles;
+}
+
+void ParticleFilterLocalizer::removeZeroProbabilityParticles(){
+	for (ParticleList::iterator it = particles.begin(); it != particles.end(); ) {
+		if ((*it)->probability == 0.0f) {
+			delete *it;
+			it = particles.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
+}
+
+void ParticleFilterLocalizer::sampleParticles(ParticleList& newParticles, int resampledParticleCount){
+	float beta = 0.0f;
+	float maxProbability = 1.0f;
+	int index = Math::randomInt(0, particles.size() - 1);
+	for (int i = 0; i < resampledParticleCount; i++) {
+		beta += Math::randomFloat() * 2.0f * maxProbability;
+
+		while (beta > particles[index]->probability) {
+			beta -= particles[index]->probability;
+			index = (index + 1) % particles.size();
+		}
+
+		newParticles.push_back(new Particle(*particles[index]));
+	}
 }
 
 

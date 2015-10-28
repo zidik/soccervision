@@ -66,18 +66,13 @@ CameraTranslator::CameraPosition CameraTranslator::getCameraPosition(const Math:
 
 void CameraTranslator::setConstants(
 	float A, float B, float C,
-	float k1, float k2, float k3,
-	float horizon, float distortionFocus,
+	float horizon,
 	int cameraWidth, int cameraHeight
 ) {
 	this->A = A;
 	this->B = B;
 	this->C = C;
-	this->k1 = k1;
-	this->k2 = k2;
-	this->k3 = k3;
 	this->horizon = horizon;
-	this->distortionFocus = distortionFocus;
 	this->cameraWidth = cameraWidth;
 	this->cameraHeight = cameraHeight;
 }
@@ -94,62 +89,13 @@ CameraTranslator::CameraPosition CameraTranslator::getMappingPosition(int x, int
 	);
 }
 
-/*CameraTranslator::CameraPosition CameraTranslator::getAvgMappingPosition(int x, int y, CameraMap& mapX, CameraMap& mapY) {
-	int brushSize = 10;
-	int xSum = 0;
-	int ySum = 0;
-	int sampleCount = 0;
-
-	for (int dx = -brushSize / 2; dx < brushSize / 2; dx++) {
-		for (int dy = -brushSize / 2; dy < brushSize / 2; dy++) {
-			CameraPosition sample = getMappingPosition(x + dx, y + dy, mapX, mapY);
-
-			xSum += sample.x;
-			ySum += sample.y;
-			sampleCount++;
-		}
-	}
-
-	return CameraPosition(
-		xSum / sampleCount,
-		ySum / sampleCount
-	);
-}*/
-
 CameraTranslator::CameraPosition CameraTranslator::undistort(const CameraPosition &distorted) const{
 	return getMappingPosition(distorted.x, distorted.y, undistortMapX, undistortMapY);
-	//return getAvgMappingPosition(distortedX, distortedY, undistortMapX, undistortMapY);
 }
 
 CameraTranslator::CameraPosition CameraTranslator::distort(const CameraPosition &undistorted) const{
 	return getMappingPosition(undistorted.x, undistorted.y, distortMapX, distortMapY);
 }
-
-// equasion-based solution
-/*CameraTranslator::CameraPosition CameraTranslator::distort(int undistortedX, int undistortedY) {
-	// conversion for distorting  (normalization?)
-	float x = ((float)undistortedX - (float)cameraWidth / 2.0f) / distortionFocus;
-	float y = ((float)undistortedY - (float)cameraHeight / 2.0f) / distortionFocus;
-
-	// distort
-	float r2 = x * x + y * y; // distance squared
-	float multipler = 1 + 
-		k1 *  r2 +
-		k2 *  r2 * r2 + 
-		k3 *  r2 * r2 * r2;
-
-	x *= multipler;
-	y *= multipler;
-
-	// convert back
-	int distortedX = (int)(x * distortionFocus + cameraWidth / 2.0f);
-	int distortedY = (int)(y * distortionFocus + cameraHeight / 2.0f);
-
-	return CameraPosition(
-		distortedX,
-		distortedY
-	);
-}*/
 
 bool CameraTranslator::loadUndistortionMapping(std::string xFilename, std::string yFilename){
 	return loadMapping(xFilename, yFilename, undistortMapX, undistortMapY);
@@ -394,11 +340,7 @@ std::string CameraTranslator::getJSON() {
 	stream << "\"A\": " << A << ",";
 	stream << "\"B\": " << B << ",";
 	stream << "\"C\": " << C << ",";
-	stream << "\"k1\": " << k1 << ",";
-	stream << "\"k2\": " << k2 << ",";
-	stream << "\"k3\": " << k3 << ",";
-	stream << "\"horizon\": " << horizon << ",";
-	stream << "\"distortionFocus\": " << distortionFocus << "";
+	stream << "\"horizon\": " << horizon << "";
 
 	stream << "}";
 

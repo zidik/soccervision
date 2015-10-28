@@ -51,7 +51,6 @@ public:
 	);
     ~ParticleFilterLocalizer();
 
-	void generateRandomParticles(std::vector<Particle*>& particleVector, int particleCount);
     void addLandmark(Landmark* landmark);
     void addLandmark(std::string name, float x, float y);
 	void move(float velocityX, float velocityY, float omega, float dt) { move(velocityX, velocityY, omega, dt, false); }
@@ -60,12 +59,17 @@ public:
 	void setPosition(float x, float y, float orientation);
     void update(const Measurements& measurements);
     void resample();
+	
 	void calculatePosition();
 	Math::Position getPosition() const;
 	const ParticleList& getParticles() const { return particles; }
 	std::string getJSON() const;
 
 private:
+	void removeZeroProbabilityParticles();
+	void sampleParticles(ParticleList& newParticles, int resampledParticleCount);
+	void generateRandomParticles(std::vector<Particle*>& particleVector, int particleCount);
+
 	CameraTranslator* frontCameraTranslator;
 	CameraTranslator* rearCameraTranslator;
 	const int particleCount;

@@ -416,17 +416,10 @@ void SoccerBot::setupVision() {
 	float C = 0.2124259596292023f;
 	float horizon = 119.40878f;
 
-	// TODO these are not actually currently used any more, remove at some point
-	float k1 = -0.28f;
-	float k2 = 0.07f;
-	float k3 = -0.0075f;
-	float distortionFocus = 6.904681785333543758e+02f;
-
 	// TODO Add to config or load from file
 	frontCameraTranslator->setConstants(
 		A, B, C,
-		k1, k2, k3,
-		horizon, distortionFocus,
+		horizon,
 		Config::cameraWidth, Config::cameraHeight
 	);
 
@@ -438,8 +431,7 @@ void SoccerBot::setupVision() {
 
 	rearCameraTranslator->setConstants(
 		A, B, C,
-		k1, k2, k3,
-		horizon, distortionFocus,
+		horizon,
 		Config::cameraWidth, Config::cameraHeight
 	);
 
@@ -935,31 +927,19 @@ void SoccerBot::handleCameraTranslatorCommand(Command::Parameters parameters) {
 	float A = Util::toFloat(parameters[0]);
 	float B = Util::toFloat(parameters[1]);
 	float C = Util::toFloat(parameters[2]);
-	float k1 = Util::toFloat(parameters[3]);
-	float k2 = Util::toFloat(parameters[4]);
-	float k3 = Util::toFloat(parameters[5]);
 	float horizon = Util::toFloat(parameters[6]);
-	float distortionFocus = Util::toFloat(parameters[7]);
 
 	//std::cout << "! Updating camera translator constants" << std::endl;
 
 	frontCameraTranslator->A = A;
 	frontCameraTranslator->B = B;
 	frontCameraTranslator->C = C;
-	frontCameraTranslator->k1 = k1;
-	frontCameraTranslator->k2 = k2;
-	frontCameraTranslator->k3 = k3;
 	frontCameraTranslator->horizon = horizon;
-	frontCameraTranslator->distortionFocus = distortionFocus;
 
 	rearCameraTranslator->A = A;
 	rearCameraTranslator->B = B;
 	rearCameraTranslator->C = C;
-	rearCameraTranslator->k1 = k1;
-	rearCameraTranslator->k2 = k2;
-	rearCameraTranslator->k3 = k3;
 	rearCameraTranslator->horizon = horizon;
-	rearCameraTranslator->distortionFocus = distortionFocus;
 }
 
 void SoccerBot::handleCommunicationMessages() {

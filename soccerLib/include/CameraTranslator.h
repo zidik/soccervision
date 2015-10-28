@@ -57,12 +57,11 @@ public:
 
 	typedef std::vector <CameraPosition> CameraPositionSet;
 
-	CameraTranslator() : A(0.0f), B(0.0f), C(0.0f), k1(0.0f), k2(0.0f), k3(0.0f), horizon(0.0f), cameraWidth(0), cameraHeight(0) {}
+	CameraTranslator() : A(0.0f), B(0.0f), C(0.0f), horizon(0.0f), cameraWidth(0), cameraHeight(0) {}
 
 	void setConstants(
 		float A, float B, float C,
-		float k1, float k2, float k3,
-		float horizon, float distortionFocus,
+		float horizon,
 		int cameraWidth, int cameraHeight);
 
 	bool loadMapping(std::string xFilename, std::string yFilename, CameraMap& mapX, CameraMap& mapY);
@@ -77,7 +76,6 @@ public:
 	CameraPosition undistort(const CameraPosition &distorted) const;
 	CameraPosition distort(const CameraPosition &undistorted) const;
 	CameraPosition getMappingPosition(int x, int y, const CameraMap& mapX, const CameraMap& mapY) const;
-	//CameraPosition getAvgMappingPosition(int x, int y, CameraMap& mapX, CameraMap& mapY);
 	CameraPositionSet CameraTranslator::getSpiral(int width, int height);
 	Math::PointList getPointsBetween(float x1, float y1, float x2, float y2, float distanceStepMeters);
 	std::string getJSON();
@@ -85,11 +83,7 @@ public:
 	float A;
 	float B;
 	float C;
-	float k1;
-	float k2;
-	float k3;
 	float horizon;
-	float distortionFocus;
 
 	CameraMap undistortMapX;
 	CameraMap undistortMapY;
