@@ -130,8 +130,14 @@ float ParticleFilterLocalizer::getMeasurementProbability(Particle* particle, con
 
 		Math::Vector diff = (landmark->location - particle->location);
 
-		//FIX!!!
+		//HACK START
+		// - rest of the code currently uses unconventional coordinate system
+		//This line currenlty converts conventional to unconventional, so the Particlefilter returns the result in unconventional, which can be directly used
+		// TODO - make rest of the code to also use conventional coordinate system.
+		//Remove this line, and do the conversion after getting the result (unconv.y = Fieldheight - conv.y)
 		diff = Math::Vector(diff.x, -diff.y);
+		//HACK END
+		
 		diff = diff.getRotated(particle->orientation);
 
 		CameraTranslator* translator = (measurement.cameraDirection == Dir::FRONT ? frontCameraTranslator : rearCameraTranslator);

@@ -205,6 +205,10 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 
 	robotLocalizer->calculatePosition();
 	Math::Position localizerPosition = robotLocalizer->getPosition();
+	
+	
+
+
 	Math::Position odometerPosition = odometerLocalizer->getPosition();
 
 	// use localizer position
