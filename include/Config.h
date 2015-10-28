@@ -275,10 +275,10 @@ namespace Config {
 	const float objectFovCloseEnough = 0.5f;
 
 	// maximum number of frames after which a persistent object location is deletied
-	const int objectLocationMaxAge = 5;
+	const int objectLocationMaxAge = 8;
 
 	//Maximum distance delta between estimated position and new found object position for it to be considered the same object
-	const float objectPersistenceMinDistance = 0.2f;
+	const float objectPersistenceMinDistance = 0.5f;
 
 	// configuration filenames
 	const std::string blobberConfigFilename = "config/blobber.cfg";
