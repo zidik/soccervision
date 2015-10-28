@@ -82,8 +82,8 @@ ObjectList Vision::processGoalsUpdateRobots(Dir dir) {
 
 	goalsAndRobots = processGoalsAndRobots(dir);
 
-	//temporary hack until real code is written here
-	this->persistentRobots = goalsAndRobots.second;
+	//this is the real deal
+	bool updateSuccess = updatePersistentObjects(&(this->persistentRobots), goalsAndRobots.second);
 
 	return goalsAndRobots.first;
 }
@@ -197,7 +197,7 @@ bool Vision::updateBalls(Dir dir, ObjectList& goals) {
 }
 
 bool Vision::updatePersistentObjects(ObjectList* persistentObjects, ObjectList newObjects) {
-	for (ObjectListItc it = persistentObjects->begin(); it != this->persistentBalls.end(); it++) {
+	for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end(); it++) {
 		Object* persistentObject = *it;
 
 		persistentObject->notSeenFrames++;
@@ -214,7 +214,11 @@ bool Vision::updatePersistentObjects(ObjectList* persistentObjects, ObjectList n
 		for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end(); it++) {
 			Object* persistentObject = *it;
 
+			//check if object was already updated or created newly
 			if (persistentObject->notSeenFrames <= 0) continue;
+
+			//check if objects are the same type
+			if (persistentObject->type != newObject->type) continue;
 
 			float estimateX = persistentObject->distanceX + persistentObject->relativeMovement.dX * persistentObject->notSeenFrames;
 			float estimateY = persistentObject->distanceY + persistentObject->relativeMovement.dY * persistentObject->notSeenFrames;

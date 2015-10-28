@@ -133,7 +133,7 @@ void DebugRenderer::renderBalls(unsigned char* image, Vision* vision, const Obje
     }*/
 }
 
-void DebugRenderer::renderRobots(unsigned char* image, const ObjectList& robots, int width, int height) {
+void DebugRenderer::renderRobots(unsigned char* image, Vision* vision, const ObjectList& robots, int width, int height) {
 	Canvas canvas = Canvas();
 
 	canvas.data = image;
@@ -141,6 +141,9 @@ void DebugRenderer::renderRobots(unsigned char* image, const ObjectList& robots,
 	canvas.height = height;
 
 	Object* robot = NULL;
+	float robotFutureX, robotFutureY;
+	CameraTranslator::CameraPosition futureRobotPos, realRobotPos;
+	size_t robotNumber;
 	char buf[256];
 	int r, g, b;
 
@@ -166,6 +169,16 @@ void DebugRenderer::renderRobots(unsigned char* image, const ObjectList& robots,
 			sprintf(buf, "UNKNOWN");
 		}
 
+		robotNumber = it - robots.begin();
+
+		//calculate estimated future robot position based on movement vector
+		robotFutureX = robot->distanceX + 6 * robot->relativeMovement.dX;
+		robotFutureY = robot->distanceY + 6 * robot->relativeMovement.dY;
+
+		//get pixel on screen where robot should be
+		futureRobotPos = vision->getCameraTranslator()->getCameraPosition(robotFutureX, robotFutureY);
+		realRobotPos = vision->getCameraTranslator()->getCameraPosition(robot->distanceX, robot->distanceY);
+
 		canvas.drawBoxCentered(robot->x, robot->y, robot->width, robot->height, r, g, b);
 		canvas.drawCircle(robot->x, robot->y, std::min(robot->width / 2, robot->height / 2), r, g, b);
 		canvas.drawLine(robot->x - robot->width / 2, robot->y - robot->height / 2, robot->x + robot->width / 2, robot->y + robot->height / 2, r, g, b);
@@ -173,11 +186,18 @@ void DebugRenderer::renderRobots(unsigned char* image, const ObjectList& robots,
 
 		canvas.drawText(robot->x + robot->width / 2, robot->y - 8, buf, r, g, b);
 
-		sprintf(buf, "%.2fm %.1f deg", robot->distance, Math::radToDeg(robot->angle));
+		sprintf(buf, "%d : %.2fm %.2fm  %.1f deg, future %.2fm %.2fm", robotNumber, robot->distanceX, robot->distanceY, Math::radToDeg(robot->angle), robotFutureX, robotFutureY);
 		canvas.drawText(robot->x + robot->width / 2, robot->y + 2, buf, r, g, b);
 
 		sprintf(buf, "%d x %d, %d", robot->x, robot->y + robot->height / 2, robot->area);
 		canvas.drawText(robot->x + robot->width / 2, robot->y + 12, buf, r, g, b);
+
+		//draw future robot position on screen as a circle and a line leading to it
+		canvas.fillCircle(futureRobotPos.x, futureRobotPos.y, 3, r, g, b);
+		canvas.drawLine(realRobotPos.x, realRobotPos.y, futureRobotPos.x, futureRobotPos.y, r, g, b);
+
+		//add marker to mark robots that are not visible
+		if (robot->notSeenFrames > 0) canvas.fillBox(robot->x, robot->y, 10, 10, r, g, b);
 
 		/*int boxArea = robot->width * robot->height;
 

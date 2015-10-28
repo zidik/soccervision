@@ -305,9 +305,9 @@ enum Side {
 };
 
 enum RobotColor {
-	YELLOWHIGH = 0,
-	BLUEHIGH = 1,
-	WHATEVER = 2
+	YELLOWHIGH = 4,
+	BLUEHIGH = 5,
+	WHATEVER = 6
 };
 
 enum Dir {
