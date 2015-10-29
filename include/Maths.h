@@ -21,6 +21,9 @@ const float E = 2.718f;
 static float max(float a, float b) {
 	return (a < b) ? b : a;
 }
+static double max(double a, double b) {
+	return (a < b) ? b : a;
+}
 
 static float min(float a, float b) {
 	return (a < b) ? a : b;
@@ -89,13 +92,23 @@ static float atan(float a) {
 static float exp(float a) {
     return ::exp(a);
 }
+static double exp(double a) {
+	return ::exp(a);
+}
 
 static float pow(float a, float b) {
     return ::pow(a, b);
 }
 
+static double pow(double a, double b) {
+	return ::pow(a, b);
+}
+
 static float sqrt(float a) {
     return ::sqrt(a);
+}
+static double sqrt(double a) {
+	return ::sqrt(a);
 }
 
 static float map(float value, float inMin, float inMax, float outMin, float outMax) {
@@ -110,6 +123,9 @@ static float map(float value, float inMin, float inMax, float outMin, float outM
 
 static float floatModulus(float a, float b) {
     return ::fmod(a, b);
+}
+static double floatModulus(double a, double b) {
+	return ::fmod(a, b);
 }
 
 static float getOffsetAngleBetween(float x1, float y1, float x2, float y2) {
@@ -190,6 +206,9 @@ static float randomGaussian(float deviation = 0.5f, float mean = 0.0f) {
 
 static float getGaussian(float mu, float sigma, float x) {
     return Math::exp(-Math::pow(mu - x,  2.0f) / Math::pow(sigma, 2.0f) / 2.0f) / Math::sqrt(2.0f * Math::PI * Math::pow(sigma, 2.0f));
+}
+static double getGaussian(double mu, double sigma, double x) {
+	return Math::exp(-Math::pow(mu - x, 2.0) / Math::pow(sigma, 2.0) / 2.0) / Math::sqrt(2.0 * Math::PI * Math::pow(sigma, 2.0));
 }
 
 class Matrix3x1;
