@@ -22,14 +22,15 @@ typedef std::vector<ObjectLocation*> ObjectLocationList;
 struct movementVector {
 	float dX;
 	float dY;
-	float speed;	//currently used units are meters per frame i think
+	float speed;	//currently used units are meters per second i think
 	float angle;
 	ObjectLocationList locationBuffer;
 	movementVector(float dX = 0.0f, float dY = 0.0f, ObjectLocationList locationBuffer = ObjectLocationList());
 	bool addLocation(float posX, float posY);
 	bool incrementLocationsAge();
 	bool removeOldLocations();
-	bool updateSpeedAndAngle();
+	bool updateSpeedAndAngle(float dt);
+	bool calculateVector(float currentX, float currentY, float dt);
 };
 
 class Object {
@@ -38,6 +39,7 @@ public:
 	Object(int x = 0, int y = 0, int width = 0, int height = 0, int area = 0, float distance = 0.0f, float distanceX = 0.0f, float distanceY = 0.0f, float angle = 0.0f, movementVector relativeMovement = movementVector(0.0f, 0.0f), movementVector absoluteMovement = movementVector(0.0f, 0.0f), int type = -1, bool behind = false);
 	void copyFrom(const Object* other);
 	void copyWithoutMovement(const Object* other);
+	bool updateMovement(float objectGlobalX, float objectGlobalY, float dt);
 	bool intersects(Object* other, int margin = 0) const;
 	float getDribblerDistance() { return Math::max(distance - Config::robotDribblerDistance, 0.0f); };
 	bool contains(Object* other) const;

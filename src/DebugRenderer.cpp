@@ -83,7 +83,7 @@ void DebugRenderer::renderBalls(unsigned char* image, Vision* vision, const Obje
         //canvas.drawLine(ball->x - ball->width / 2, ball->y + ball->height / 2, ball->x + ball->width / 2, ball->y - ball->height / 2);
 
 		//sprintf(buf, "%.2fm x %.2fm  %.1f deg", ball->distanceX, ball->distanceY, Math::radToDeg(ball->angle));
-		sprintf(buf, "%d : %.2fm %.2fm  %.1f deg, future %.2fm %.2fm", ballNumber, ball->distanceX, ball->distanceY, Math::radToDeg(ball->angle), ballFutureX, ballFutureY);
+		sprintf(buf, "%d : %.2fm %.2fm %.2fm/s  %.1f deg, future %.2fm %.2fm", ballNumber, ball->distanceX, ball->distanceY, ball->absoluteMovement.speed, Math::radToDeg(ball->angle), ballFutureX, ballFutureY);
 
 		if (ball->y + ball->height / 2 < Config::cameraHeight - 50) {
 			canvas.drawText(ball->x - ball->width / 2 + 2, ball->y + ball->height / 2 + 4, buf);
@@ -186,7 +186,7 @@ void DebugRenderer::renderRobots(unsigned char* image, Vision* vision, const Obj
 
 		canvas.drawText(robot->x + robot->width / 2, robot->y - 8, buf, r, g, b);
 
-		sprintf(buf, "%d : %.2fm %.2fm  %.1f deg, future %.2fm %.2fm", robotNumber, robot->distanceX, robot->distanceY, Math::radToDeg(robot->angle), robotFutureX, robotFutureY);
+		sprintf(buf, "%d : %.2fm %.2fm %.2fm/s %.1f deg, future %.2fm %.2fm", robotNumber, robot->distanceX, robot->distanceY, robot->absoluteMovement.speed, Math::radToDeg(robot->angle), robotFutureX, robotFutureY);
 		canvas.drawText(robot->x + robot->width / 2, robot->y + 2, buf, r, g, b);
 
 		sprintf(buf, "%d x %d, %d", robot->x, robot->y + robot->height / 2, robot->area);

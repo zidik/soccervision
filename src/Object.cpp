@@ -10,12 +10,12 @@ movementVector::movementVector(float dX, float dY, ObjectLocationList locationBu
 
 bool movementVector::addLocation(float posX, float posY) {
 	ObjectLocation* newLocation = new ObjectLocation(posX, posY);
-	this->locationBuffer.push_back(newLocation);
+	locationBuffer.push_back(newLocation);
 	return true;
 }
 
 bool movementVector::incrementLocationsAge() {
-	for (ObjectLocationList::iterator it = this->locationBuffer.begin(); it != this->locationBuffer.end(); it++) {
+	for (ObjectLocationList::iterator it = locationBuffer.begin(); it != locationBuffer.end(); it++) {
 		ObjectLocation* currentLocation = *it;
 		currentLocation->age++;
 	}
@@ -23,10 +23,10 @@ bool movementVector::incrementLocationsAge() {
 }
 
 bool movementVector::removeOldLocations() {
-	for (ObjectLocationList::iterator it = this->locationBuffer.begin(); it != this->locationBuffer.end(); ) {
+	for (ObjectLocationList::iterator it = locationBuffer.begin(); it != locationBuffer.end(); ) {
 		ObjectLocation* currentLocation = *it;
 		if (currentLocation->age > Config::objectLocationMaxAge) {
-			this->locationBuffer.erase(it);
+			locationBuffer.erase(it);
 		}
 		else {
 			it++;
@@ -35,9 +35,33 @@ bool movementVector::removeOldLocations() {
 	return true;
 }
 
-bool movementVector::updateSpeedAndAngle() {
-	this->speed = sqrt(pow(this->dX, 2) + pow(this->dY, 2));
-	this->angle = atan2(this->dX, this->dY);
+bool movementVector::updateSpeedAndAngle(float dt) {
+	speed = sqrt(pow(dX, 2) + pow(dY, 2)) / dt;
+	angle = atan2(dX, dY);
+	return true;
+}
+
+bool movementVector::calculateVector(float currentX, float currentY, float dt) {
+	float deltaXsum = 0;
+	float deltaYsum = 0;
+	int weightSum = 0;
+	//update relative movement
+	for (ObjectLocationList::iterator jt = locationBuffer.begin(); jt != locationBuffer.end(); jt++) {
+		ObjectLocation* currentViewedLocation = *jt;
+		//check if location is newest inserted (current)
+		if (currentViewedLocation->age <= 1) continue;
+
+		deltaXsum += (currentX - currentViewedLocation->locationX) / ((float)currentViewedLocation->age - 1.0f) * (float)(Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
+		deltaYsum += (currentY - currentViewedLocation->locationY) / ((float)currentViewedLocation->age - 1.0f) * (float)(Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
+		weightSum += (Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
+	}
+
+	if (weightSum == 0) return false;
+
+	dX = deltaXsum / (float)weightSum;
+	dY = deltaYsum / (float)weightSum;
+	updateSpeedAndAngle(dt);
+
 	return true;
 }
 
@@ -80,6 +104,16 @@ void Object::copyWithoutMovement(const Object* other) {
 	notSeenFrames = other->notSeenFrames;
 	behind = other->behind;
 	processed = other->processed;
+}
+
+bool Object::updateMovement(float objectGlobalX, float objectGlobalY, float dt) {
+	//check if there is new data
+	if (notSeenFrames > 0) return false;
+
+	relativeMovement.calculateVector(distanceX, distanceY, dt);
+	absoluteMovement.calculateVector(objectGlobalX, objectGlobalY, dt);
+
+	return true;
 }
 
 bool Object::intersects(Object* other, int margin) const {

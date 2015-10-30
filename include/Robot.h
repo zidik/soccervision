@@ -100,6 +100,8 @@ private:
     void updateWheelSpeeds();
 	void updateMeasurements();
 	void updateBallLocalizer(Vision::Results* visionResults, float dt);
+	void updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, float robotY, float robotOrientation, float dt);
+	void updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, float dt);
 	void debugBallList(std::string name, std::stringstream& stream, BallLocalizer::BallList balls);
 	void handleQueuedChipKickRequest();
 

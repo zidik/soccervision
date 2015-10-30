@@ -206,6 +206,8 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	Math::Position localizerPosition = robotLocalizer->getPosition();
 	Math::Position odometerPosition = odometerLocalizer->getPosition();
 
+	updateAllObjectsAbsoluteMovement(visionResults, dt);
+
 	// use localizer position
 	x = localizerPosition.location.x;
 	y = localizerPosition.location.y;
@@ -315,11 +317,11 @@ void Robot::updateMeasurements() {
 	Object* blueGoal = visionResults->getLargestGoal(Side::BLUE);
 
 	if (yellowGoal != NULL) {
-		measurements["yellow-center"] = ParticleFilterLocalizer::Measurement(Math::Vector(yellowGoal->x, yellowGoal->y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
+		measurements["yellow-center"] = ParticleFilterLocalizer::Measurement(Math::Vector((float)yellowGoal->x, (float)yellowGoal->y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
 	}
 
 	if (blueGoal != NULL) {
-		measurements["blue-center"] = ParticleFilterLocalizer::Measurement(Math::Vector(blueGoal->x, blueGoal->y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
+		measurements["blue-center"] = ParticleFilterLocalizer::Measurement(Math::Vector((float)blueGoal->x, (float)blueGoal->y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
 	}
 }
 
@@ -340,7 +342,7 @@ void Robot::updateBallLocalizer(Vision::Results* visionResults, float dt) {
 	
 	if (visionResults->front != NULL) {
 		frontBalls = ballLocalizer->extractBalls(
-			visionResults->front->balls,
+			*visionResults->front->balls,
 			x,
 			y,
 			orientation
@@ -349,7 +351,7 @@ void Robot::updateBallLocalizer(Vision::Results* visionResults, float dt) {
 
 	if (visionResults->rear != NULL) {
 		rearBalls = ballLocalizer->extractBalls(
-			visionResults->rear->balls,
+			*visionResults->rear->balls,
 			x,
 			y,
 			orientation
@@ -365,6 +367,57 @@ void Robot::updateBallLocalizer(Vision::Results* visionResults, float dt) {
 	ballLocalizer->update(visibleBalls, currentCameraFOV, dt);
 
 	//std::cout << "@ UP front: " << frontBalls.size() << ", rear: " << rearBalls.size() << ", merged: " << visibleBalls.size() << std::endl;
+}
+
+void Robot::updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, float robotY, float robotOrientation, float dt) {
+	float objectGlobalX;
+	float objectGlobalY;
+	float objectGlobalAngle;
+
+	for (ObjectListItc it = objectList->begin(); it != objectList->end(); it++) {
+		Object* object = *it;
+
+		//check if object had new location added recently
+		if (object->notSeenFrames == 0) {
+			objectGlobalAngle = Math::floatModulus(robotOrientation + object->angle, Math::TWO_PI);
+			objectGlobalX = robotX + Math::cos(objectGlobalAngle) * object->distance;
+			objectGlobalY = robotY + Math::sin(objectGlobalAngle) * object->distance;
+
+			object->absoluteMovement.addLocation(objectGlobalX, objectGlobalY);
+			object->updateMovement(objectGlobalX, objectGlobalY, dt);
+
+			//std::cout << "Absolute movement speed : " << object->absoluteMovement.speed << "m/s" << std::endl;
+		}
+	}
+}
+
+void Robot::updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, float dt) {
+	ObjectList* frontBalls = visionResults->front->balls;
+	ObjectList* rearBalls = visionResults->rear->balls;
+	ObjectList* frontRobots = visionResults->front->robots;
+	ObjectList* rearRobots = visionResults->rear->robots;
+
+	float robotX;
+	float robotY;
+	float robotOrientation;
+
+	//using odometer
+	/*
+	robotX = odometerLocalizer->x;
+	robotY = odometerLocalizer->y;
+	robotOrientation = odometerLocalizer->orientation;
+	*/
+	
+	//using localization
+	robotX = odometerLocalizer->x;
+	robotY = odometerLocalizer->y;
+	robotOrientation = odometerLocalizer->orientation;
+	
+
+	updateObjectsAbsoluteMovement(frontBalls, robotX, robotY, robotOrientation, dt);
+	updateObjectsAbsoluteMovement(rearBalls, robotX, robotY, robotOrientation, dt);
+	updateObjectsAbsoluteMovement(frontRobots, robotX, robotY, robotOrientation, dt);
+	updateObjectsAbsoluteMovement(rearRobots, robotX, robotY, robotOrientation, dt);
 }
 
 void Robot::setTargetDir(float x, float y, float omega) {

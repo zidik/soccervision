@@ -495,7 +495,7 @@ void TestController::updateVisionInfo(Vision::Results* visionResults) {
 	isInCorner = isRobotInCorner(visionResults);
 
 	if (targetGoal != NULL) {
-		Vision::BallInWayMetric ballInWayMetric = visionResults->getBallInWayMetric(visionResults->front->balls, targetGoal->y + targetGoal->height / 2);
+		Vision::BallInWayMetric ballInWayMetric = visionResults->getBallInWayMetric(*visionResults->front->balls, targetGoal->y + targetGoal->height / 2);
 
 		isBallInWay = ballInWayMetric.isBallInWay;
 		isAvoidingBallInWay = shouldAvoidBallInWay(ballInWayMetric, targetGoal->distance);
@@ -2294,7 +2294,7 @@ void TestController::FetchBallNearState::step(float dt, Vision::Results* visionR
 	if (ballDistance < ballNearDistance) {
 		// don't choose to chip kick too soon after last kick
 		if (robot->coilgun->getTimeSinceLastKicked() > 0.2f) {
-			ballInWayMetric = visionResults->getBallInWayMetric(visionResults->front->balls, goal->y + goal->height / 2, ball);
+			ballInWayMetric = visionResults->getBallInWayMetric(*visionResults->front->balls, goal->y + goal->height / 2, ball);
 
 			isBallInWay = ballInWayMetric.isBallInWay;
 			shouldAvoidBallInWay = isBallInWay && ai->shouldAvoidBallInWay(ballInWayMetric, goal->distance);
@@ -2775,7 +2775,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 	bool isGoalPathObstructed = goalPathObstruction.left || goalPathObstruction.right;
 	float forwardSpeed = 0.0f;
 	float sideSpeed = 0.0f;
-	Vision::BallInWayMetric ballInWayMetric = visionResults->getBallInWayMetric(visionResults->front->balls, goal->y + goal->height / 2);
+	Vision::BallInWayMetric ballInWayMetric = visionResults->getBallInWayMetric(*visionResults->front->balls, goal->y + goal->height / 2);
 	bool validWindow = false;
 	bool isKickTooSoon = lastKickTime != -1.0 && timeSinceLastKick < minKickInterval;
 	bool isLowVoltage = robot->coilgun->isLowVoltage();

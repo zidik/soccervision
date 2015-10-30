@@ -63,9 +63,9 @@ Vision::Result* Vision::process() {
 	result->vision = this;
 	
 	result->goals = processGoalsUpdateRobots(dir);
-	result->robots = this->persistentRobots;
+	result->robots = &persistentRobots;
 	updateBalls(dir, result->goals);
-	result->balls = this->persistentBalls;
+	result->balls = &persistentBalls;
 
 	updateColorDistances();
 	updateColorOrder();
@@ -272,11 +272,15 @@ bool Vision::updatePersistentObjects(ObjectList* persistentObjects, ObjectList n
 		persistentObjects->push_back(newObject);
 	}
 
+	//increase locations ages
 	for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end();) {
 		Object* persistentObject = *it;
 
 		persistentObject->relativeMovement.incrementLocationsAge();
 		persistentObject->relativeMovement.removeOldLocations();
+
+		persistentObject->absoluteMovement.incrementLocationsAge();
+		persistentObject->absoluteMovement.removeOldLocations();
 
 		if (persistentObject->relativeMovement.locationBuffer.size() <= 0) {
 			persistentObjects->erase(it);
@@ -284,33 +288,6 @@ bool Vision::updatePersistentObjects(ObjectList* persistentObjects, ObjectList n
 		else {
 			it++;
 		}
-	}
-
-	//update movement vectors
-	for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end(); it++) {
-		Object* persistentObject = *it;
-
-		//check if there is new data
-		if (persistentObject->notSeenFrames > 0) continue;
-
-		float deltaXsum = 0;
-		float deltaYsum = 0;
-		int weightSum = 0;
-		for (ObjectLocationList::iterator jt = persistentObject->relativeMovement.locationBuffer.begin(); jt != persistentObject->relativeMovement.locationBuffer.end(); jt++) {
-			ObjectLocation* currentViewedLocation = *jt;
-			//check if location is newest inserted (current)
-			if (currentViewedLocation->age <= 1) continue;
-
-			deltaXsum += (persistentObject->distanceX - currentViewedLocation->locationX) / ((float)currentViewedLocation->age - 1.0f) * (Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
-			deltaYsum += (persistentObject->distanceY - currentViewedLocation->locationY) / ((float)currentViewedLocation->age - 1.0f) * (Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
-			weightSum += (Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
-		}
-
-		if (weightSum == 0) continue;
-
-		persistentObject->relativeMovement.dX = deltaXsum / (float)weightSum;
-		persistentObject->relativeMovement.dY = deltaYsum / (float)weightSum;
-		persistentObject->relativeMovement.updateSpeedAndAngle();
 	}
 
 	return true;
@@ -2572,7 +2549,7 @@ Object* Vision::Results::getClosestBall(Dir dir, bool nextClosest, bool preferLe
 	Object* nextClosestBall = NULL;
 
 	if (front != NULL && dir != Dir::REAR) {
-		for (ObjectListItc it = front->balls.begin(); it != front->balls.end(); it++) {
+		for (ObjectListItc it = front->balls->begin(); it != front->balls->end(); it++) {
 			ball = *it;
 
 			if (isBallInGoal(ball, blueGoal, yellowGoal)) {
@@ -2605,7 +2582,7 @@ Object* Vision::Results::getClosestBall(Dir dir, bool nextClosest, bool preferLe
 	}
 
 	if (rear != NULL && dir != Dir::FRONT) {
-		for (ObjectListItc it = rear->balls.begin(); it != rear->balls.end(); it++) {
+		for (ObjectListItc it = rear->balls->begin(); it != rear->balls->end(); it++) {
 			ball = *it;
 
 			if (isBallInGoal(ball, blueGoal, yellowGoal)) {
@@ -2648,7 +2625,7 @@ Object* Vision::Results::getFurthestBall(Dir dir) {
 	Object* furthestBall = NULL;
 
 	if (front != NULL && dir != Dir::REAR) {
-		for (ObjectListItc it = front->balls.begin(); it != front->balls.end(); it++) {
+		for (ObjectListItc it = front->balls->begin(); it != front->balls->end(); it++) {
 			ball = *it;
 
 			if (isBallInGoal(ball, blueGoal, yellowGoal)) {
@@ -2663,7 +2640,7 @@ Object* Vision::Results::getFurthestBall(Dir dir) {
 	}
 
 	if (rear != NULL && dir != Dir::FRONT) {
-		for (ObjectListItc it = rear->balls.begin(); it != rear->balls.end(); it++) {
+		for (ObjectListItc it = rear->balls->begin(); it != rear->balls->end(); it++) {
 			ball = *it;
 
 			if (isBallInGoal(ball, blueGoal, yellowGoal)) {
@@ -2907,5 +2884,5 @@ bool Vision::Results::isRobotOut(Dir dir) {
 }
 
 int Vision::Results::getVisibleBallCount() {
-	return front->balls.size() + rear->balls.size();
+	return front->balls->size() + rear->balls->size();
 }

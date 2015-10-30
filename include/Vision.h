@@ -77,10 +77,13 @@ public:
 	};
 
 	struct Result {
-		Result() : vision(NULL) {}
+		Result() : vision(NULL) {
+			balls = new ObjectList();
+			robots = new ObjectList();
+		}
 
-		ObjectList balls;
-		ObjectList robots;
+		ObjectList* balls;
+		ObjectList* robots;
 		ObjectList goals;
 		ColorList colorOrder;
 		ColorDistance whiteDistance;
@@ -168,7 +171,7 @@ public:
     ~Vision();
 
 	void setDebugImage(unsigned char* image, int width, int height);
-    Result* process();
+	Result* process();
     Blobber::Color* getColorAt(int x, int y);
 	CameraTranslator* getCameraTranslator() { return cameraTranslator; }
 	Dir getDir() { return dir; }
