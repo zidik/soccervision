@@ -3,7 +3,7 @@
 
 
 
-
+/*
 BOOST_AUTO_TEST_CASE(Integration)
 {
 	CameraTranslator* frontCameraTranslator = new CameraTranslator();
@@ -40,13 +40,6 @@ BOOST_AUTO_TEST_CASE(Integration)
 		);
 	std::cout << "done!" << std::endl;
 
-	/*std::cout << "  > loading front camera undistorion mappings.. ";
-	frontCameraTranslator->loadUndistortionMapping(
-	Config::undistortMappingFilenameFrontX,
-	Config::undistortMappingFilenameFrontY
-	);
-	std::cout << "done!" << std::endl;*/
-
 	std::cout << "  > generating front camera undistortion mappings.. ";
 	CameraTranslator::CameraMapSet mapSet = frontCameraTranslator->generateInverseMap(frontCameraTranslator->distortMapX, frontCameraTranslator->distortMapY);
 	frontCameraTranslator->undistortMapX = mapSet.x;
@@ -61,12 +54,6 @@ BOOST_AUTO_TEST_CASE(Integration)
 		);
 	std::cout << "done!" << std::endl;
 
-	/*std::cout << "  > loading rear camera undistorion mappings.. ";
-	rearCameraTranslator->loadUndistortionMapping(
-	Config::undistortMappingFilenameRearX,
-	Config::undistortMappingFilenameRearY
-	);
-	std::cout << "done!" << std::endl;*/
 
 	std::cout << "  > generating rear camera undistortion mappings.. ";
 	mapSet = rearCameraTranslator->generateInverseMap(rearCameraTranslator->distortMapX, rearCameraTranslator->distortMapY);
@@ -110,3 +97,4 @@ BOOST_AUTO_TEST_CASE(Integration)
 		Math::Position localizerPosition = robotLocalizer->getPosition();
 	}
 }
+*/

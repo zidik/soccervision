@@ -120,6 +120,26 @@ BOOST_AUTO_TEST_CASE(cameraTranslationDistortedSanityTest)
 	testMultipleGetCameraPositionSanity(cameraTranslator, true);
 }
 */
+
+BOOST_AUTO_TEST_CASE(cameraTranslation_OLD_vs_NEW)
+{
+	ensureDistortionMapLoaded();
+
+	//Old implementation uses nonstandard coordinate system, so x and y are switched and then direction of y flipped.
+	CameraPosition camerapos(423, 543);
+	Math::Vector newImplem = cameraTranslator.getWorldPosition(camerapos);
+	CameraTranslator::DEPRECATEDWorldPosition oldImplem = cameraTranslator.DEPRECATEDgetWorldPosition(camerapos.x, camerapos.y);
+
+	BOOST_TEST(newImplem.x == oldImplem.dy);
+	BOOST_TEST(newImplem.y == -oldImplem.dx);
+	BOOST_TEST(newImplem.getLength() == oldImplem.distance);
+
+	Math::Vector worldPos(2.0f, 0.5f);
+	CameraPosition newImplemCampos = cameraTranslator.getCameraPosition(worldPos);
+	CameraPosition oldImplemCampos = cameraTranslator.DEPRECATEDgetCameraPosition(-worldPos.y, worldPos.x); //NB - here is the diff
+	BOOST_TEST(newImplemCampos.x == oldImplemCampos.x);
+	BOOST_TEST(newImplemCampos.y == oldImplemCampos.y);
+}
 //____________________________________________________________________________//
 BOOST_AUTO_TEST_SUITE_END()
 //____________________________________________________________________________//
