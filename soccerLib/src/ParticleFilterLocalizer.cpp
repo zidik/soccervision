@@ -262,8 +262,10 @@ std::string ParticleFilterLocalizer::getJSON() const {
 	bool first = true;
 	for (Particle* particle : particles | boost::adaptors::strided(10)){
 		if (first) {
-			stream << ",";
 			first = false;
+		}
+		else {
+			stream << ",";
 		}
 
 		stream << "[" << particle->location.x << ", " << particle->location.y << "]";
