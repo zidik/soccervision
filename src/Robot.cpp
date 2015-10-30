@@ -402,17 +402,18 @@ void Robot::updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, flo
 	float robotOrientation;
 
 	//using odometer
+	
+	robotX = odometerLocalizer->x;
+	robotY = odometerLocalizer->y;
+	robotOrientation = odometerLocalizer->orientation;
+	
+	
+	//using localization
 	/*
 	robotX = odometerLocalizer->x;
 	robotY = odometerLocalizer->y;
 	robotOrientation = odometerLocalizer->orientation;
 	*/
-	
-	//using localization
-	robotX = odometerLocalizer->x;
-	robotY = odometerLocalizer->y;
-	robotOrientation = odometerLocalizer->orientation;
-	
 
 	updateObjectsAbsoluteMovement(frontBalls, robotX, robotY, robotOrientation, dt);
 	updateObjectsAbsoluteMovement(rearBalls, robotX, robotY, robotOrientation, dt);
