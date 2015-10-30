@@ -782,6 +782,8 @@ std::string TestController::getJSON() {
 
 	stream << "\"timeSinceLastKicked\": \"" << (timeSinceLastKicked < 170000 ? Util::toString(timeSinceLastKicked) : "never") << "\"";
 
+	stream << "\"particleLocalizer\": " << robot->robotLocalizer->getJSON();
+
 	stream << "}";
 
 	return stream.str();
