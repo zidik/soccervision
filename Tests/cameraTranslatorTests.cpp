@@ -53,7 +53,7 @@ struct F {
 BOOST_FIXTURE_TEST_SUITE(TranslationSuite, F)
 //____________________________________________________________________________//
 
-typedef CameraTranslator::CameraPosition CameraPosition;
+typedef Pixel CameraPosition;
 
 void testTranslationLoopback(const CameraTranslator &cameraTranslator, const CameraPosition &initial, bool distortion=true)
 {

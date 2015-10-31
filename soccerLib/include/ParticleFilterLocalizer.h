@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 #include "CameraTranslator.h"
+#include "Pixel.h"
 
 // TODO Move this into the actual class
 
@@ -33,8 +34,8 @@ public:
 	struct Measurement
 	{
 		Measurement() = default;
-		Measurement(Math::Vector bottomPixel, Dir cameraDirection) : bottomPixel{ bottomPixel }, cameraDirection{ cameraDirection } {};
-		Math::Vector bottomPixel;
+		Measurement(Pixel bottomPixel, Dir cameraDirection) : bottomPixel{ bottomPixel }, cameraDirection{ cameraDirection } {};
+		Pixel bottomPixel;
 		Dir cameraDirection;
 	};
 
@@ -64,7 +65,7 @@ public:
 	Math::Position getPosition() const;
 	const ParticleList& getParticles() const { return particles; }
 	std::string getJSON() const;
-
+	Math::Vector getMeasurementVector(Measurement measurement);
 private:
 	void removeZeroProbabilityParticles();
 	void sampleParticles(ParticleList& newParticles, int resampledParticleCount);

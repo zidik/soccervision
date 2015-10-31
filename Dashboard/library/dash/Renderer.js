@@ -155,6 +155,30 @@ Dash.Renderer.prototype.drawBall = function(ball, color, radius, useEffects) {
 	this.c.restore();
 };
 
+Dash.Renderer.prototype.drawMeasurements = function(measurements) {
+	var measurement = measurements.yellow-center;
+	if (measurement !== null && typeof(measurement) === 'object') {
+		this.drawMeasurement(measurement, '#FF0')
+	}
+	measurement = measurements.blue-center;
+	if (measurement !== null && typeof(measurement) === 'object') {
+		this.drawMeasurement(measurement, '#07F')
+	}
+};
+
+Dash.Renderer.prototype.drawMeasurement = function(measurement, color) {
+	this.c.save();
+
+	this.c.translate(measurement.x, measurement.y);
+	this.c.fillStyle = color;
+	this.c.beginPath();
+	this.c.arc(0, 0, 0.03, 0, Math.PI * 2, true);
+	this.c.closePath();
+	this.c.fill();
+
+	this.c.restore();
+};
+
 Dash.Renderer.prototype.drawPolygon = function(points, color) {
 	if (points.length === 0) {
 		return;
@@ -354,47 +378,6 @@ Dash.Renderer.prototype.renderState = function(state) {
 	);*/
 
 	if (state.controllerState !== null) {
-		/*if (state.controllerState.odometerLocalizer !== null && typeof(state.controllerState.odometerLocalizer) === 'object') {
-			this.drawRobot(
-				dash.config.robot.radius / 2,
-				'#600',
-				state.controllerState.odometerLocalizer.x,
-				state.controllerState.odometerLocalizer.y,
-				state.controllerState.odometerLocalizer.orientation
-			);
-
-			this.drawPath(state, 'odometerLocalizer', '#600');
-		}*/
-
-		/*if (state.controllerState.intersectionLocalizer !== null && typeof(state.controllerState.intersectionLocalizer) === 'object') {
-			this.drawIntersections(
-				state.controllerState.intersectionLocalizer.yellowDistance,
-				state.controllerState.intersectionLocalizer.blueDistance
-			);
-
-			this.drawRobot(
-				dash.config.robot.radius / 2,
-				'#660',
-				state.controllerState.intersectionLocalizer.x,
-				state.controllerState.intersectionLocalizer.y,
-				state.controllerState.intersectionLocalizer.orientation
-			);
-
-			this.drawPath(state, 'intersectionLocalizer', '#660');
-		}*/
-
-		/*if (state.controllerState.kalmanLocalizer !== null && typeof(state.controllerState.kalmanLocalizer) === 'object') {
-			this.drawRobot(
-				dash.config.robot.radius,
-				'#006',
-				parseFloat(state.controllerState.kalmanLocalizer.x),
-				parseFloat(state.controllerState.kalmanLocalizer.y),
-					parseFloat(state.controllerState.kalmanLocalizer.orientation)
-			);
-
-			this.drawPath(state, 'kalmanLocalizer', '#006');
-		}*/
-
 		if (state.controllerState.particleLocalizer !== null && typeof(state.controllerState.particleLocalizer) === 'object') {
 			this.drawRobot(
 				dash.config.robot.radius,
@@ -413,6 +396,8 @@ Dash.Renderer.prototype.renderState = function(state) {
 
 			//this.drawPath(state, 'particleLocalizer', '#060');
 		}
+
+		this.drawMeasurements(state.controllerState.measurements);
 
 		if (state.controllerState.blueGoalDistance || state.controllerState.yellowGoalDistance) {
 			this.drawIntersections(

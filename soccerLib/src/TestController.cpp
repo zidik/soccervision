@@ -783,6 +783,19 @@ std::string TestController::getJSON() {
 	stream << "\"timeSinceLastKicked\": \"" << (timeSinceLastKicked < 170000 ? Util::toString(timeSinceLastKicked) : "never") << "\",";
 
 	stream << "\"particleLocalizer\": " << robot->robotLocalizer->getJSON();
+	
+	stream << "\"measurements\": {";
+	bool first = true;
+	for(std::pair<std::string, ParticleFilterLocalizer::Measurement> pair : robot->getMeasurements()) {
+		std::string name = pair.first;
+		ParticleFilterLocalizer::Measurement measurement = pair.second;
+		Math::Vector position = robot->robotLocalizer->getMeasurementVector(measurement);
+		if (first) { first = false; }
+		else { stream << ","; }
+		stream << "\"" << name << "\": { x: " << position.x << ", y: " << position.y << "}";
+	}
+	stream << "}";
+	
 
 	stream << "}";
 

@@ -1,10 +1,11 @@
 #include "CameraTranslator.h"
 #include "Maths.h"
+#include "Pixel.h"
 
 #include <iostream>
 
 CameraTranslator::DEPRECATEDWorldPosition CameraTranslator::DEPRECATEDgetWorldPosition(int cameraX, int cameraY) {
-	CameraPosition undistorted = undistort(CameraPosition(cameraX, cameraY));
+	Pixel undistorted = undistort(Pixel(cameraX, cameraY));
 
 	//std::cout << "UNDISTORT " << cameraX << "x" << cameraY << " to " << undistorted.x << "x" << undistorted.y << std::endl;
 
@@ -26,9 +27,9 @@ CameraTranslator::DEPRECATEDWorldPosition CameraTranslator::DEPRECATEDgetWorldPo
 	return DEPRECATEDWorldPosition(worldX, worldY, worldDistance, worldAngle, isValid);
 }
 
-Math::Vector CameraTranslator::getWorldPosition(const CameraPosition &distorted, bool distortion) const
+Math::Vector CameraTranslator::getWorldPosition(const Pixel &distorted, bool distortion) const
 {
-	CameraPosition cameraPosition = distorted;
+	Pixel cameraPosition = distorted;
 	if (distortion) { cameraPosition = undistort(distorted); }
 
 	float pixelVerticalCoord = cameraPosition.y - this->horizon;
@@ -40,25 +41,25 @@ Math::Vector CameraTranslator::getWorldPosition(const CameraPosition &distorted,
 	return Math::Vector(worldX, worldY);
 }
 
-CameraTranslator::CameraPosition CameraTranslator::DEPRECATEDgetCameraPosition(float worldX, float worldY) {
+Pixel CameraTranslator::DEPRECATEDgetCameraPosition(float worldX, float worldY) {
 	float pixelVerticalCoord = this->A / (worldY - this->B);
 	float pixelRight = worldX * pixelVerticalCoord / this->C;
 
 	float cameraY = pixelVerticalCoord + this->horizon;
 	float cameraX = pixelRight + this->cameraWidth / 2;
 
-	CameraPosition cameraPosition((int)Math::round(cameraX, 0), (int)Math::round(cameraY, 0));
+	Pixel cameraPosition((int)Math::round(cameraX, 0), (int)Math::round(cameraY, 0));
 
 	return distort(cameraPosition);
 }
 
-CameraTranslator::CameraPosition CameraTranslator::getCameraPosition(const Math::Vector &worldPosition, bool distortion) const {
+Pixel CameraTranslator::getCameraPosition(const Math::Vector &worldPosition, bool distortion) const {
 	float pixelVerticalCoord = this->A / (worldPosition.x - this->B);
 	float pixelLeft = worldPosition.y * pixelVerticalCoord / this->C;
 
 	float cameraX = this->cameraWidth / 2 - pixelLeft;
 	float cameraY = pixelVerticalCoord + this->horizon;
-	CameraPosition cameraPosition((int)Math::round(cameraX, 0), (int)Math::round(cameraY, 0));
+	Pixel cameraPosition((int)Math::round(cameraX, 0), (int)Math::round(cameraY, 0));
 	if (distortion) { cameraPosition = distort(cameraPosition); }
 	return cameraPosition;
 	
@@ -77,23 +78,23 @@ void CameraTranslator::setConstants(
 	this->cameraHeight = cameraHeight;
 }
 
-CameraTranslator::CameraPosition CameraTranslator::getMappingPosition(int x, int y, const CameraMap& mapX, const CameraMap& mapY) const {
+Pixel CameraTranslator::getMappingPosition(int x, int y, const CameraMap& mapX, const CameraMap& mapY) const {
 	if (x < 0) x = 0;
 	if (x > cameraWidth - 1) x = cameraWidth - 1;
 	if (y < 0) y = 0;
 	if (y > cameraHeight - 1) y = cameraHeight - 1;
 
-	return CameraPosition(
+	return Pixel(
 		(int)mapX[y][x],
 		(int)mapY[y][x]
 	);
 }
 
-CameraTranslator::CameraPosition CameraTranslator::undistort(const CameraPosition &distorted) const{
+Pixel CameraTranslator::undistort(const Pixel &distorted) const{
 	return getMappingPosition(distorted.x, distorted.y, undistortMapX, undistortMapY);
 }
 
-CameraTranslator::CameraPosition CameraTranslator::distort(const CameraPosition &undistorted) const{
+Pixel CameraTranslator::distort(const Pixel &undistorted) const{
 	return getMappingPosition(undistorted.x, undistorted.y, distortMapX, distortMapY);
 }
 
@@ -178,7 +179,7 @@ CameraTranslator::CameraMapSet CameraTranslator::generateInverseMap(CameraMap& m
 	//CameraMapItem x, y;
 	CameraTranslator::CameraMapRow mapRowX;
 	CameraTranslator::CameraMapRow mapRowY;
-	CameraPosition distorted;
+	Pixel distorted;
 
 	unsigned int rowCount = mapX.size();
 	unsigned int colCount = mapX[0].size();
@@ -204,7 +205,7 @@ CameraTranslator::CameraMapSet CameraTranslator::generateInverseMap(CameraMap& m
 			//y = mapY[row][col];
 
 			//std::cout << "D " << col << "x" << row << ".. ";
-			distorted = distort(CameraPosition(col, row));
+			distorted = distort(Pixel(col, row));
 
 			//std::cout << distorted.x << "x" << distorted.y << std::endl;
 
@@ -216,7 +217,7 @@ CameraTranslator::CameraMapSet CameraTranslator::generateInverseMap(CameraMap& m
 	}
 
 	// fix NaN's
-	CameraPositionSet spiralPositions = getSpiral(120, 120);
+	PixelSet spiralPositions = getSpiral(120, 120);
 	CameraMapChangeSet mapChangeSet;
 	int spiralPosCount = spiralPositions.size();
 	int dx, dy, senseX, senseY;
@@ -235,7 +236,7 @@ CameraTranslator::CameraMapSet CameraTranslator::generateInverseMap(CameraMap& m
 			substituteFound = false;
 
 			for (int i = 0; i < spiralPosCount; i++) {
-				CameraPosition spiralPos = spiralPositions[i];
+				Pixel spiralPos = spiralPositions[i];
 
 				dx = spiralPos.x;
 				dy = spiralPos.y;
@@ -276,8 +277,8 @@ CameraTranslator::CameraMapSet CameraTranslator::generateInverseMap(CameraMap& m
 	return CameraMapSet(inverseMapX, inverseMapY);
 }
 
-CameraTranslator::CameraPositionSet CameraTranslator::getSpiral(int width, int height) {
-	CameraTranslator::CameraPositionSet positions;
+CameraTranslator::PixelSet CameraTranslator::getSpiral(int width, int height) {
+	CameraTranslator::PixelSet positions;
 
 	int x, y, dx, dy;
 	x = y = dx = 0;
@@ -286,7 +287,7 @@ CameraTranslator::CameraPositionSet CameraTranslator::getSpiral(int width, int h
 	int maxI = t*t;
 	for (int i = 0; i < maxI; i++){
 		if ((-width / 2 <= x) && (x <= width / 2) && (-height / 2 <= y) && (y <= height / 2)){
-			positions.push_back(CameraPosition(x, y));
+			positions.push_back(Pixel(x, y));
 		}
 		if ((x == y) || ((x < 0) && (x == -y)) || ((x > 0) && (x == 1 - y))){
 			t = dx;

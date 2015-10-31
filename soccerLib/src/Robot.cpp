@@ -320,11 +320,11 @@ void Robot::updateMeasurements() {
 	Object* blueGoal = visionResults->getLargestGoal(Side::BLUE);
 
 	if (yellowGoal != NULL) {
-		measurements["yellow-center"] = ParticleFilterLocalizer::Measurement(Math::Vector(yellowGoal->x, yellowGoal->y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
+		measurements["yellow-center"] = ParticleFilterLocalizer::Measurement(Pixel(yellowGoal->x, yellowGoal->y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
 	}
 
 	if (blueGoal != NULL) {
-		measurements["blue-center"] = ParticleFilterLocalizer::Measurement(Math::Vector(blueGoal->x, blueGoal->y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
+		measurements["blue-center"] = ParticleFilterLocalizer::Measurement(Pixel(blueGoal->x, blueGoal->y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
 	}
 }
 

@@ -4,6 +4,7 @@
 #include "Maths.h"
 #include "Vision.h"
 #include "Util.h"
+#include "Pixel.h"
 
 void DebugRenderer::renderFPS(unsigned char* image, int fps, int width, int height) {
 	Canvas canvas = Canvas();
@@ -81,7 +82,7 @@ void DebugRenderer::renderBalls(unsigned char* image, Vision* vision, const Obje
 		//correctedX = ball->x;
 		//correctedY = ball->y + ball->height / 2;
 
-		CameraTranslator::CameraPosition undistortedPos = vision->getCameraTranslator()->undistort(CameraTranslator::CameraPosition(ball->x, ball->y + ball->height / 2));
+		Pixel undistortedPos = vision->getCameraTranslator()->undistort(Pixel(ball->x, ball->y + ball->height / 2));
 
 		//Util::correctCameraPoint(correctedX, correctedY);
 
@@ -278,9 +279,9 @@ void DebugRenderer::renderGrid(unsigned char* image, Vision* vision, int width, 
 	int lastTextY = -1;
 	int xOverflow = 500;
 	Math::Vector screenCoords;
-	CameraTranslator::CameraPosition pos;
-	CameraTranslator::CameraPosition distorted;
-	CameraTranslator::CameraPosition undistorted;
+	Pixel pos;
+	Pixel distorted;
+	Pixel undistorted;
 
 	for (distanceY = distanceStartY; distanceY <= maxDistanceY; distanceY *= 2.0f) {
 		for (distanceX = minDistanceX; distanceX <= maxDistanceX; distanceX += stepX) {
@@ -351,11 +352,11 @@ void DebugRenderer::renderMapping(unsigned char* image, Vision* vision, int widt
 	int step = 5;
 
 	int x, y;
-	CameraTranslator::CameraPosition pos;
+	Pixel pos;
 
 	for (x = 0; x < Config::cameraWidth; x += step) {
 		for (y = 0; y < Config::cameraHeight; y += step) {
-			pos = translator->undistort(CameraTranslator::CameraPosition(x, y));
+			pos = translator->undistort(Pixel(x, y));
 			//pos = translator->distort(x, y);
 
 			canvas.setPixelAt(pos.x, pos.y, 0, 0, 0);

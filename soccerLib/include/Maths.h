@@ -278,6 +278,7 @@ public:
 	Vector getNormalized() const;
 	Vector getScaled(float magnitude) const;
 
+	Vector operator-() const { return Vector(-x, -y); };
 	Vector& operator-=(const Vector& other);
 	Vector& operator+=(const Vector& other);
 	Vector& operator*=(float magnitude);

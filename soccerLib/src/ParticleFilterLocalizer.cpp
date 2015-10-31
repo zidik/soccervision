@@ -157,8 +157,7 @@ float ParticleFilterLocalizer::getMeasurementProbability(Particle* particle, con
 			// Camera can not see behind itself
 			probability = 0.0f;
 		}
-		CameraTranslator::CameraPosition excpectedCamPos = translator->getCameraPosition(diff);
-		Math::Vector expectation(excpectedCamPos.x, excpectedCamPos.y);
+		Pixel expectation = translator->getCameraPosition(diff);
 		float error = measurement.bottomPixel.distanceTo(expectation);
 		probability *= Math::getGaussian(0, 50.0, error);
     }
@@ -274,6 +273,27 @@ std::string ParticleFilterLocalizer::getJSON() const {
 	stream << "]}";
 
 	return stream.str();
+}
+
+Math::Vector ParticleFilterLocalizer::getMeasurementVector(Measurement measurement)
+{
+	CameraTranslator* translator;
+	if (measurement.cameraDirection == Dir::FRONT) {
+		translator = frontCameraTranslator;
+	}
+	else if(measurement.cameraDirection == Dir::REAR) {
+		translator = rearCameraTranslator;
+	}
+	else {
+		throw std::runtime_error("Unexpected camera direction - can not choose translator");
+	}
+
+	Math::Vector position = translator->getWorldPosition(measurement.bottomPixel);
+
+	if (measurement.cameraDirection == Dir::REAR) {
+		position = -position;
+	}
+	return position;
 }
 
 Math::Position ParticleFilterLocalizer::getPosition() const {

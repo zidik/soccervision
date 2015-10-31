@@ -249,6 +249,9 @@
     <ClInclude Include="lib\pthread\include\semaphore.h">
       <Filter>libs</Filter>
     </ClInclude>
+    <ClInclude Include="include\Pixel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\BallLocalizer.cpp">

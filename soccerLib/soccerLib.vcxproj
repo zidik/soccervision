@@ -176,6 +176,7 @@
     <ClInclude Include="include\OffensiveAI.h" />
     <ClInclude Include="include\ParticleFilterLocalizer.h" />
     <ClInclude Include="include\PID.h" />
+    <ClInclude Include="include\Pixel.h" />
     <ClInclude Include="include\ProcessThread.h" />
     <ClInclude Include="include\Robot.h" />
     <ClInclude Include="include\Serial.h" />

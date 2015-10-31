@@ -1,5 +1,6 @@
 #include "Vision.h"
 #include "Config.h"
+#include "Pixel.h"
 #include "Util.h"
 #include <utility>
 
@@ -970,7 +971,7 @@ int Vision::getPixelsBelow(int startX, int startY, std::vector<std::string> vali
 	return pos.y;
 }*/
 
-CameraTranslator::CameraPosition Vision::getPixelAt(float distanceX, float distanceY) {
+Pixel Vision::getPixelAt(float distanceX, float distanceY) {
 	return cameraTranslator->DEPRECATEDgetCameraPosition(distanceX, distanceY);
 }
 
@@ -1166,7 +1167,7 @@ Vision::PathMetric Vision::getPathMetric(int x1, int y1, int x2, int y2, std::ve
 	for (Math::PointListIt it = sensePointsWorld.begin(); it != sensePointsWorld.end(); it++) {
 		Math::Vector worldPoint = *it;
 
-		CameraTranslator::CameraPosition camPos = cameraTranslator->DEPRECATEDgetCameraPosition(worldPoint.x, worldPoint.y);
+		Pixel camPos = cameraTranslator->DEPRECATEDgetCameraPosition(worldPoint.x, worldPoint.y);
    
 		x = camPos.x;
 		y = camPos.y;
@@ -1583,7 +1584,7 @@ Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
 	float xDistance, yDistance;
 	bool debug = canvas.data != NULL;
 	Blobber::Color* color;
-	CameraTranslator::CameraPosition pos;
+	Pixel pos;
 	int lastSenseX = 0;
 	int lastSenseY = 0;
 	int validCountLeft = 0;
