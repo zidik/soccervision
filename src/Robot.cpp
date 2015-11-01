@@ -155,6 +155,10 @@ void Robot::step(float dt, Vision::Results* visionResults) {
     updateWheelSpeeds();
     updateBallLocalizer(visionResults, dt);
 
+	//update objects location in absolute coordinate system
+	//using odometer, using older location results
+	updateAllObjectsAbsoluteMovement(visionResults, odometerLocalizer->x, odometerLocalizer->y, odometerLocalizer->orientation, dt);
+
     wheelFL->step(dt);
     wheelFR->step(dt);
     wheelRL->step(dt);
@@ -217,10 +221,6 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	orientation = odometerPosition.orientation;*/
 
 	//update objects location in absolute coordinate system
-
-	//using odometer
-	updateAllObjectsAbsoluteMovement(visionResults, odometerPosition.location.x, odometerPosition.location.y, odometerPosition.orientation, dt);
-	
 	//using localizer
 	//updateAllObjectsAbsoluteMovement(visionResults, localizerPosition.location.x, localizerPosition.location.y, localizerPosition.orientation, dt);
 
