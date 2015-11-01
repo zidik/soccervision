@@ -155,8 +155,7 @@ void Robot::step(float dt, Vision::Results* visionResults) {
     updateWheelSpeeds();
     updateBallLocalizer(visionResults, dt);
 
-	//update objects location in absolute coordinate system
-	//using odometer, using older location results
+	//using odometer
 	updateAllObjectsAbsoluteMovement(visionResults, odometerLocalizer->x, odometerLocalizer->y, odometerLocalizer->orientation, dt);
 
     wheelFL->step(dt);
@@ -216,13 +215,16 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	orientation = localizerPosition.orientation;
 
 	// use odometer position
-	/*x = odometerPosition.x;
-	y = odometerPosition.y;
-	orientation = odometerPosition.orientation;*/
+	x = odometerPosition.location.x;
+	y = odometerPosition.location.y;
+	orientation = odometerPosition.orientation;
 
 	//update objects location in absolute coordinate system
 	//using localizer
 	//updateAllObjectsAbsoluteMovement(visionResults, localizerPosition.location.x, localizerPosition.location.y, localizerPosition.orientation, dt);
+
+	//using odometer
+	//updateAllObjectsAbsoluteMovement(visionResults, odometerLocalizer->x, odometerLocalizer->y, odometerLocalizer->orientation, dt);
 
 	std::stringstream stream;
 
@@ -414,20 +416,6 @@ void Robot::updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, flo
 	ObjectList* rearBalls = visionResults->rear->balls;
 	ObjectList* frontRobots = visionResults->front->robots;
 	ObjectList* rearRobots = visionResults->rear->robots;
-
-	//using odometer
-	
-	robotX = odometerLocalizer->x;
-	robotY = odometerLocalizer->y;
-	robotOrientation = odometerLocalizer->orientation;
-	
-	
-	//using localization
-	/*
-	robotX = odometerLocalizer->x;
-	robotY = odometerLocalizer->y;
-	robotOrientation = odometerLocalizer->orientation;
-	*/
 
 	//std::cout << "Robot coordinates - x: " << robotX << "m y: " << robotY << "m, orientation" << robotOrientation << "rad" << std::endl;
 
