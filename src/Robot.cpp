@@ -155,9 +155,6 @@ void Robot::step(float dt, Vision::Results* visionResults) {
     updateWheelSpeeds();
     updateBallLocalizer(visionResults, dt);
 
-	//using odometer
-	updateAllObjectsAbsoluteMovement(visionResults, odometerLocalizer->x, odometerLocalizer->y, odometerLocalizer->orientation, dt);
-
     wheelFL->step(dt);
     wheelFR->step(dt);
     wheelRL->step(dt);
@@ -215,13 +212,13 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	orientation = localizerPosition.orientation;
 
 	// use odometer position
-	x = odometerPosition.location.x;
+	/*x = odometerPosition.location.x;
 	y = odometerPosition.location.y;
-	orientation = odometerPosition.orientation;
+	orientation = odometerPosition.orientation;*/
 
 	//update objects location in absolute coordinate system
 	//using localizer
-	//updateAllObjectsAbsoluteMovement(visionResults, localizerPosition.location.x, localizerPosition.location.y, localizerPosition.orientation, dt);
+	updateAllObjectsAbsoluteMovement(visionResults, localizerPosition.location.x, localizerPosition.location.y, localizerPosition.orientation, dt);
 
 	//using odometer
 	//updateAllObjectsAbsoluteMovement(visionResults, odometerLocalizer->x, odometerLocalizer->y, odometerLocalizer->orientation, dt);
@@ -404,8 +401,7 @@ void Robot::updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, 
 
 			//std::cout << "Object Absolute location dx: " << object->absoluteMovement.dX << ", dy:" << object->absoluteMovement.dY << std::endl;
 
-
-			std::cout << "Object absolute movement speed : " << object->absoluteMovement.speed << "m/s, angle" << object->absoluteMovement.angle << "rad" << std::endl;
+			//std::cout << "Object absolute movement speed : " << object->absoluteMovement.speed << "m/s, angle" << object->absoluteMovement.angle << "rad" << std::endl;
 			//std::cout << "Relative movement speed : " << object->relativeMovement.speed << "m/s" << std::endl;
 		}
 	}
