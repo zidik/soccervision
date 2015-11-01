@@ -394,9 +394,10 @@ void Robot::updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, 
 		if (object->notSeenFrames == 0) {
 			object->updateMovement(objectGlobalX, objectGlobalY, dt);
 
-			std::cout << "Object Absolute location dx: " << object->absoluteMovement.dX << ", dy:" << object->absoluteMovement.dY << std::endl;
+			//std::cout << "Object Absolute location dx: " << object->absoluteMovement.dX << ", dy:" << object->absoluteMovement.dY << std::endl;
 
-			//std::cout << "Absolute movement speed : " << object->absoluteMovement.speed << "m/s" << std::endl;
+
+			std::cout << "Object absolute movement speed : " << object->absoluteMovement.speed << "m/s, angle" << object->absoluteMovement.angle << "rad" << std::endl;
 			//std::cout << "Relative movement speed : " << object->relativeMovement.speed << "m/s" << std::endl;
 		}
 	}
