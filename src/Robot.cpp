@@ -384,6 +384,8 @@ void Robot::updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, 
 			objectGlobalY = robotY + Math::sin(objectGlobalAngle) * object->distance;
 
 			object->absoluteMovement.addLocation(objectGlobalX, objectGlobalY);
+
+			std::cout << "Object Absolute location : " << objectGlobalX << ", " << objectGlobalY << std::endl;
 		}
 
 		object->absoluteMovement.incrementLocationsAge();
