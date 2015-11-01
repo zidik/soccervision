@@ -393,7 +393,7 @@ void Robot::updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, 
 
 			object->absoluteMovement.addLocation(objectGlobalX, objectGlobalY);
 
-			std::cout << "Object Absolute location : " << objectGlobalX << ", " << objectGlobalY << std::endl;
+			//std::cout << "Object Absolute location : " << objectGlobalX << ", " << objectGlobalY << std::endl;
 		}
 
 		object->absoluteMovement.incrementLocationsAge();
@@ -405,7 +405,7 @@ void Robot::updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, 
 			//std::cout << "Object Absolute location dx: " << object->absoluteMovement.dX << ", dy:" << object->absoluteMovement.dY << std::endl;
 
 
-			//std::cout << "Object absolute movement speed : " << object->absoluteMovement.speed << "m/s, angle" << object->absoluteMovement.angle << "rad" << std::endl;
+			std::cout << "Object absolute movement speed : " << object->absoluteMovement.speed << "m/s, angle" << object->absoluteMovement.angle << "rad" << std::endl;
 			//std::cout << "Relative movement speed : " << object->relativeMovement.speed << "m/s" << std::endl;
 		}
 	}
