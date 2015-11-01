@@ -385,7 +385,7 @@ void Robot::updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, 
 
 			object->absoluteMovement.addLocation(objectGlobalX, objectGlobalY);
 
-			std::cout << "Object Absolute location : " << objectGlobalX << ", " << objectGlobalY << std::endl;
+			//std::cout << "Object Absolute location : " << objectGlobalX << ", " << objectGlobalY << std::endl;
 		}
 
 		object->absoluteMovement.incrementLocationsAge();
@@ -393,6 +393,8 @@ void Robot::updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, 
 
 		if (object->notSeenFrames == 0) {
 			object->updateMovement(objectGlobalX, objectGlobalY, dt);
+
+			std::cout << "Object Absolute location dx: " << object->absoluteMovement.dX << ", dy:" << object->absoluteMovement.dY << std::endl;
 
 			//std::cout << "Absolute movement speed : " << object->absoluteMovement.speed << "m/s" << std::endl;
 			//std::cout << "Relative movement speed : " << object->relativeMovement.speed << "m/s" << std::endl;
@@ -424,7 +426,7 @@ void Robot::updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, flo
 	robotOrientation = odometerLocalizer->orientation;
 	*/
 
-	std::cout << "Robot coordinates - x: " << robotX << "m y: " << robotY << "m, orientation" << robotOrientation << "rad" << std::endl;
+	//std::cout << "Robot coordinates - x: " << robotX << "m y: " << robotY << "m, orientation" << robotOrientation << "rad" << std::endl;
 
 	updateObjectsAbsoluteMovement(frontBalls, robotX, robotY, robotOrientation, dt);
 	updateObjectsAbsoluteMovement(rearBalls, robotX, robotY, robotOrientation, dt);
