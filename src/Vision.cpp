@@ -279,9 +279,6 @@ bool Vision::updatePersistentObjects(ObjectList* persistentObjects, ObjectList n
 		persistentObject->relativeMovement.incrementLocationsAge();
 		persistentObject->relativeMovement.removeOldLocations();
 
-		persistentObject->absoluteMovement.incrementLocationsAge();
-		persistentObject->absoluteMovement.removeOldLocations();
-
 		if (persistentObject->relativeMovement.locationBuffer.size() <= 0) {
 			persistentObjects->erase(it);
 		}

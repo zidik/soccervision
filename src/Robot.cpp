@@ -384,6 +384,12 @@ void Robot::updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, 
 			objectGlobalY = robotY + Math::sin(objectGlobalAngle) * object->distance;
 
 			object->absoluteMovement.addLocation(objectGlobalX, objectGlobalY);
+		}
+
+		object->absoluteMovement.incrementLocationsAge();
+		object->absoluteMovement.removeOldLocations();
+
+		if (object->notSeenFrames == 0) {
 			object->updateMovement(objectGlobalX, objectGlobalY, dt);
 
 			//std::cout << "Absolute movement speed : " << object->absoluteMovement.speed << "m/s" << std::endl;
@@ -414,6 +420,8 @@ void Robot::updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, flo
 	robotY = odometerLocalizer->y;
 	robotOrientation = odometerLocalizer->orientation;
 	*/
+
+	printf("Robot coordinates - x:%.2fm y:%.2fm, orientation %.2frad", robotX, robotY, robotOrientation);
 
 	updateObjectsAbsoluteMovement(frontBalls, robotX, robotY, robotOrientation, dt);
 	updateObjectsAbsoluteMovement(rearBalls, robotX, robotY, robotOrientation, dt);
