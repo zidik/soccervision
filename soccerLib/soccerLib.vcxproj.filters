@@ -1,0 +1,456 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="libs">
+      <UniqueIdentifier>{68534436-98a6-4ea7-96a8-f760dddaec2f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\AbstractCommunication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BallLocalizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BaseAI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BaseCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Blobber.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\CameraTranslator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Canvas.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Coilgun.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Command.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ComPortCommunication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Controller.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DebouncedButton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DebugRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DisplayWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Dribbler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\DummyCommunication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\EthernetCommunication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\FpsCounter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Gui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ImageProcessor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Localizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\LookupTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ManualController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Maths.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Odometer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OdometerLocalizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\OffensiveAI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ParticleFilterLocalizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\PID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ProcessThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Robot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Serial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SerialCommunication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Server.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SignalHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\SoccerBot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Tasks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TestController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\WebSocketServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Wheel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\VirtualCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Vision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\XimeaCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MouseListener.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\enumser\AutoHandle.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\enumser\AutoHeapAlloc.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\enumser\AutoHModule.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\enumser\enumser.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\enumser\StdAfx.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\jpeg\jpge.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\basic_types.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\compare.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\convert.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\convert_argb.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\convert_from.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\convert_from_argb.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\cpu_id.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\format_conversion.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\mjpeg_decoder.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\planar_functions.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\rotate.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\rotate_argb.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\row.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\scale.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\scale_argb.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\version.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\video_common.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\pthread\include\pthread.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\pthread\include\sched.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\pthread\include\semaphore.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Hacks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\BallLocalizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BaseAI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Blobber.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CameraTranslator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Canvas.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Coilgun.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Command.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ComPortCommunication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DebouncedButton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DebugRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DisplayWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dribbler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EthernetCommunication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\FpsCounter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Gui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ImageProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LookupTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ManualController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Maths.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Odometer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OdometerLocalizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OffensiveAI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ParticleFilterLocalizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PID.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ProcessThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Robot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Serial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SerialCommunication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Server.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SignalHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SoccerBot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Tasks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TestController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\WebSocketServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Wheel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VirtualCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Vision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\XimeaCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\enumser\enumser.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\enumser\StdAfx.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\jpeg\jpge.cpp">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\compare.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\compare_neon.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\convert.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\convert_argb.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\convert_from.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\convert_from_argb.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\cpu_id.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\format_conversion.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\mjpeg_decoder.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\planar_functions.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\rotate.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\rotate_argb.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\rotate_neon.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\row_common.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\row_neon.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\row_posix.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\row_win.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\scale.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\scale_argb.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\scale_neon.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\video_common.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
