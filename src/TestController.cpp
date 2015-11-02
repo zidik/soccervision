@@ -3244,11 +3244,3 @@ void TestController::DriveHomeState::step(float dt, Vision::Results* visionResul
 	ai->dbg("reverseSpeed", reverseSpeed);
 	ai->dbg("maxWhiteDistance", visionResults->rear->whiteDistance.max);
 }
-
-void TestController::WaitForKickState::onEnter(Robot* robot, Parameters parameters) {
-	//TO-DO overwrite from parameters which team has possession, what game situation it is, ball location
-}
-
-void TestController::WaitForKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	//TO-DO write logic here
-}

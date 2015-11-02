@@ -125,6 +125,7 @@
     <ClInclude Include="include\SignalHandler.h" />
     <ClInclude Include="include\SoccerBot.h" />
     <ClInclude Include="include\Tasks.h" />
+    <ClInclude Include="include\TeamController.h" />
     <ClInclude Include="include\TestController.h" />
     <ClInclude Include="include\Thread.h" />
     <ClInclude Include="include\Util.h" />
@@ -217,6 +218,7 @@
     <ClCompile Include="src\SignalHandler.cpp" />
     <ClCompile Include="src\SoccerBot.cpp" />
     <ClCompile Include="src\Tasks.cpp" />
+    <ClCompile Include="src\TeamController.cpp" />
     <ClCompile Include="src\TestController.cpp" />
     <ClCompile Include="src\Thread.cpp" />
     <ClCompile Include="src\Util.cpp" />

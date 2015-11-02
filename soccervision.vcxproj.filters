@@ -233,6 +233,9 @@
     <ClInclude Include="include\PID.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\TeamController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\DisplayWindow.cpp">
@@ -431,6 +434,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\PID.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TeamController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
