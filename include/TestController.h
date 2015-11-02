@@ -329,8 +329,7 @@ public:
 	void dbg(std::string key, bool value) { messages[key] = value ? "true" : "false"; }
 	std::string getJSON();
 
-private:
-	void setupStates();
+protected:
 	void updateVisionInfo(Vision::Results* visionResults);
 	bool isRobotNearLine(Vision::Results* visionResults, bool ignoreCenterSample = false);
 	bool isRobotInCorner(Vision::Results* visionResults);
@@ -395,6 +394,10 @@ private:
 	Params parameters;
 	Messages messages;
 	StateList stateChanges;
-};
+
+
+private:
+	void setupStates();
+	};
 
 #endif // TESTCONTROLLER_H
