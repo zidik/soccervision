@@ -32,7 +32,7 @@
 	<body>
 		<div id="contents">
 			<canvas id="canvas" width="800" height="537"></canvas>
-			<div id="status" class="ctrl offensive-ai-ctrl test-ctrl"></div>
+			<div id="status" class="ctrl offensive-ai-ctrl test-ctrl teamplay-ctrl"></div>
 			<div id="obstruction-indicator">
 				<div id="obstruction-indicator-left"></div>
 				<div id="obstruction-indicator-right"></div>
@@ -138,6 +138,7 @@
 					<!--option value="manual">Manual Controller</option-->
 					<option value="test">Test Controller</option>
 					<option value="offensive-ai">Offensive AI</option>
+					<option value="teamplay">Team Controller</option>
 				</select>
 				
 				<!-- manual controller -->
@@ -165,6 +166,7 @@
 				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="reset-position" disabled="disabled">Reset position</button>
 				<button id="drive-to-btn" class="live-only ctrl test-ctrl" disabled="disabled">Drive to</button>
 				<button id="turn-by-btn" class="live-only ctrl test-ctrl" disabled="disabled">Turn by</button>
+				
 
 				<!--button id="test-turn-btn" class="live-only ctrl test-ctrl" disabled="disabled">Turn 90°</button>
 				<button id="test-drive-to-btn" class="live-only ctrl test-ctrl" disabled="disabled">Call Home</button>
@@ -178,6 +180,13 @@
 				<!-- offensive-ai controller -->
 				<button id="ai-toggle-go-btn" class="live-only ctrl offensive-ai-ctrl" disabled="disabled">Start</button>
 				<button id="ai-toggle-side-btn" class="live-only ctrl offensive-ai-ctrl" disabled="disabled">Toggle side</button>
+				
+				<!-- team controller -->
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-manual-control" disabled="disabled">Manual Control</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-wait-for-kick" disabled="disabled">Wait for Kick</button>
+				<button id="drive-to-btn" class="live-only ctrl teamplay-ctrl" disabled="disabled">Drive to</button>
+				<button id="turn-by-btn" class="live-only ctrl teamplay-ctrl" disabled="disabled">Turn by</button>
+				
 			</div>
 			<div id="parameters">
 				<input type="text" class="send-parameter-field" data-index="0" value="" placeholder="Parameter 1"/>

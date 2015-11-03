@@ -12,13 +12,11 @@ public:
 	class WaitForKickState : public State {
 
 	public:
-		WaitForKickState(TestController* ai) : State(ai), ballIsInCentre(false), ballNearEdge(false), startingBallPos(0.0f, 0.0f) {}
+		WaitForKickState(TeamController* ai) : State(ai), startingBallPos(-1000.0f, -1000.0f) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 
 	private:
-		bool ballIsInCentre;
-		bool ballNearEdge;
 		Math::Vector startingBallPos;
 	};
 
