@@ -8,12 +8,14 @@
 #include "Util.h"
 #include "Tasks.h"
 #include "Config.h"
+#include "Configuration.h"
 
 #include <iostream>
 #include <map>
 #include <sstream>
 
-Robot::Robot(AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f) {
+Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) 
+	: conf(conf), com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f) {
     targetOmega = 0;
     targetDir = Math::Vector(0, 0);
    
@@ -72,7 +74,7 @@ void Robot::setup() {
 	setupDribbler();
 	setupOdometer();
 
-	setPosition(Config::fieldWidth / 2.0f, Config::fieldHeight / 2.0f, 0.0f);
+	setPosition(conf->field.width / 2.0f, conf->field.height / 2.0f, 0.0f);
 }
 
 void Robot::setupCameraFOV() {
@@ -95,13 +97,13 @@ void Robot::setupRobotLocalizer() {
 	robotLocalizer->addLandmark(
 		"yellow-center",
 		0.0f,
-		Config::fieldHeight / 2.0f
+		conf->field.height / 2.0f
 	);
 
 	robotLocalizer->addLandmark(
 		"blue-center",
-		Config::fieldWidth,
-		Config::fieldHeight / 2.0f
+		conf->field.width,
+		conf->field.height / 2.0f
 	);
 }
 
@@ -130,12 +132,9 @@ void Robot::setupDribbler() {
 
 void Robot::setupOdometer() {
 	odometer = new Odometer(
-		Config::robotWheelAngle1,
-		Config::robotWheelAngle2,
-		Config::robotWheelAngle3,
-		Config::robotWheelAngle4,
-		Config::robotWheelOffset,
-		Config::robotWheelRadius
+		conf->robot.wheelAngles,
+		conf->robot.wheelDiagonalOffset,
+		conf->robot.wheelRadius
 	);
 }
 
@@ -202,13 +201,8 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	robotLocalizer->update(measurements);
 	robotLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt);
 	odometerLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt);
-
 	robotLocalizer->calculatePosition();
 	Math::Position localizerPosition = robotLocalizer->getPosition();
-	
-	
-
-
 	Math::Position odometerPosition = odometerLocalizer->getPosition();
 
 	// use localizer position
@@ -501,7 +495,7 @@ void Robot::lookAt(Object* object, float lookAtP, bool stare) {
 
 	// aim state for example sets stare to true so it really focuses on it always
 	if (stare != true && (object->type == Side::BLUE || object->type == Side::YELLOW)) {
-		int halfWidth = Config::cameraWidth / 2;
+		int halfWidth = conf->camera.width / 2;
 		int leftEdge = object->x - object->width / 2;
 		int rightEdge = object->x + object->width / 2;
 		int goalWidth = object->width;

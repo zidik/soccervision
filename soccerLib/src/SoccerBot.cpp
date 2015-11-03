@@ -22,11 +22,13 @@
 #include "TestController.h"
 #include "OffensiveAI.h"
 #include "ImageProcessor.h"
+#include "Configuration.h"
 
 #include <iostream>
 #include <algorithm>
 
 SoccerBot::SoccerBot() :
+	config(nullptr),
 	frontCamera(NULL), rearCamera(NULL),
 	ximeaFrontCamera(NULL), ximeaRearCamera(NULL),
 	virtualFrontCamera(NULL), virtualRearCamera(NULL),
@@ -72,14 +74,17 @@ SoccerBot::~SoccerBot() {
 	if (rearBlobber != NULL) delete rearBlobber; rearBlobber = NULL;
 	if (com != NULL) delete com; com = NULL;
 	if (jpegBuffer != NULL) delete jpegBuffer; jpegBuffer = NULL;
+	if (config != NULL) delete config; config = NULL;
 
 	frontCamera = NULL;
 	rearCamera = NULL;
+
 
 	std::cout << "! Resources freed" << std::endl;
 }
 
 void SoccerBot::setup() {
+	loadConfiguration();
 	setupCommunication();
 	setupVision();
 	setupFpsCounter();
@@ -337,7 +342,7 @@ void SoccerBot::broadcastFrame(unsigned char* rgb, unsigned char* classification
 		std::cout << "done!" << std::endl;
     }
 
-	if (!ImageProcessor::rgbToJpeg(rgb, jpegBuffer, jpegBufferSize, Config::cameraWidth, Config::cameraHeight)) {
+	if (!ImageProcessor::rgbToJpeg(rgb, jpegBuffer, jpegBufferSize, config->camera.width, config->camera.height)) {
 		std::cout << "- Converting RGB image to JPEG failed, probably need to increase buffer size" << std::endl;
 
 		return;
@@ -347,7 +352,7 @@ void SoccerBot::broadcastFrame(unsigned char* rgb, unsigned char* classification
 
 	jpegBufferSize = Config::jpegBufferSize;
 
-	if (!ImageProcessor::rgbToJpeg(classification, jpegBuffer, jpegBufferSize, Config::cameraWidth, Config::cameraHeight)) {
+	if (!ImageProcessor::rgbToJpeg(classification, jpegBuffer, jpegBufferSize, config->camera.width, config->camera.height)) {
 		std::cout << "- Converting classification image to JPEG failed, probably need to increase buffer size" << std::endl;
 
 		return;
@@ -391,14 +396,30 @@ void SoccerBot::broadcastScreenshots() {
 	server->broadcast(response);
 }
 
+void SoccerBot::loadConfiguration()
+{
+	std::cout << "! Loading configuration file.. " << std::endl;
+	try{
+		config = Configuration::newInstance("config\\configuration.json");
+	}
+	catch(const runtime_error& e)
+	{
+		std::cout
+			<< "Exception whas thrown while loading configuration file:" << std::endl
+			<< e.what();
+		throw;
+	}
+}
+
+
 void SoccerBot::setupVision() {
 	std::cout << "! Setting up vision.. " << std::endl;
 
 	frontBlobber = new Blobber();
 	rearBlobber = new Blobber();
 
-	frontBlobber->initialize(Config::cameraWidth, Config::cameraHeight);
-	rearBlobber->initialize(Config::cameraWidth, Config::cameraHeight);
+	frontBlobber->initialize(config->camera.width, config->camera.height);
+	rearBlobber->initialize(config->camera.width, config->camera.height);
 
 	frontBlobber->loadOptions(Config::blobberConfigFilename);
 	rearBlobber->loadOptions(Config::blobberConfigFilename);
@@ -416,11 +437,12 @@ void SoccerBot::setupVision() {
 	float C = 0.2124259596292023f;
 	float horizon = 119.40878f;
 
+
 	// TODO Add to config or load from file
 	frontCameraTranslator->setConstants(
 		A, B, C,
-		horizon,
-		Config::cameraWidth, Config::cameraHeight
+		horizon, 
+		config->camera.width, config->camera.height
 	);
 
 	// rear parameters
@@ -432,7 +454,7 @@ void SoccerBot::setupVision() {
 	rearCameraTranslator->setConstants(
 		A, B, C,
 		horizon,
-		Config::cameraWidth, Config::cameraHeight
+		config->camera.width, config->camera.height
 	);
 
 	std::cout << "  > loading front camera distortion mappings.. ";
@@ -476,8 +498,8 @@ void SoccerBot::setupVision() {
 	rearCameraTranslator->undistortMapY = mapSet.y;
 	std::cout << "done!" << std::endl;
 
-	frontVision = new Vision(frontBlobber, frontCameraTranslator, Dir::FRONT, Config::cameraWidth, Config::cameraHeight);
-	rearVision = new Vision(rearBlobber, rearCameraTranslator, Dir::REAR, Config::cameraWidth, Config::cameraHeight);
+	frontVision = new Vision(frontBlobber, frontCameraTranslator, Dir::FRONT, config->camera.width, config->camera.height);
+	rearVision = new Vision(rearBlobber, rearCameraTranslator, Dir::REAR, config->camera.width, config->camera.height);
 
 	visionResults = new Vision::Results();
 }
@@ -506,29 +528,42 @@ void SoccerBot::setupGui() {
 		GetModuleHandle(0),
 		frontCameraTranslator, rearCameraTranslator,
 		frontBlobber, rearBlobber,
-		Config::cameraWidth, Config::cameraHeight
+		config->camera.width, config->camera.height
 	);
 }
 
 void SoccerBot::setupCameras() {
 	std::cout << "! Setting up cameras" << std::endl;
 
-	ximeaFrontCamera = new XimeaCamera();
-	ximeaRearCamera = new XimeaCamera();
+	ximeaFrontCamera = new XimeaCamera(config->camera.frontSerial);
+	ximeaRearCamera = new XimeaCamera(config->camera.rearSerial);
 
-	ximeaFrontCamera->open(Config::frontCameraSerial);
-	ximeaRearCamera->open(Config::rearCameraSerial);
+	ximeaFrontCamera->open();
+	ximeaRearCamera->open();
 
 	if (ximeaFrontCamera->isOpened()) {
 		setupXimeaCamera("Front", ximeaFrontCamera);
 	} else {
-		std::cout << "- Opening front camera failed" << std::endl;
+		std::cout << "- Opening front camera failed - configured serial: " << ximeaFrontCamera->getSerial() << std::endl;
+
 	}
 
 	if (ximeaRearCamera->isOpened()) {
 		setupXimeaCamera("Rear", ximeaRearCamera);
 	} else {
-		std::cout << "- Opening rear camera failed" << std::endl;
+		std::cout << "- Opening rear  camera failed - configured serial: "<< ximeaRearCamera->getSerial() << std::endl;
+	}
+
+	if (!ximeaFrontCamera->isOpened() || !ximeaRearCamera->isOpened()) {
+		//Display debug information - if atleast one camera is not opened
+		XimeaCamera debugCamera(0);
+		std::vector<int> serials = debugCamera.getAvailableSerials();
+		std::cout << "! Atleast one camera was not opened - debug information:" << std::endl;
+		std::cout << "  > available devices: " << XimeaCamera::getNumberDevices() << std::endl;
+		std::vector<int>::iterator it;
+		for (it = serials.begin(); it != serials.end(); ++it) {
+			std::cout << "  > Serial: " << *it << std::endl;
+		}
 	}
 
 	if (!ximeaFrontCamera->isOpened() && !ximeaRearCamera->isOpened()) {
@@ -543,7 +578,7 @@ void SoccerBot::setupCameras() {
 }
 
 void SoccerBot::setupRobot() {
-	robot = new Robot(com, frontCameraTranslator, rearCameraTranslator);
+	robot = new Robot(config, com, frontCameraTranslator, rearCameraTranslator);
 
 	robot->setup();
 }
@@ -559,9 +594,8 @@ void SoccerBot::setupControllers() {
 }
 
 void SoccerBot::setupXimeaCamera(std::string name, XimeaCamera* camera) {
-	camera->setGain(Config::cameraGain);
-	//camera->setGain(4);
-	camera->setExposure(Config::cameraExposure);
+	camera->setGain(config->camera.gain);
+	camera->setExposure(config->camera.exposure);
 	camera->setFormat(XI_RAW8);
 	camera->setAutoWhiteBalance(false);
 	camera->setAutoExposureGain(false);
@@ -589,15 +623,16 @@ void SoccerBot::setupServer() {
 }
 
 void SoccerBot::setupCommunication() {
+
 	try {
-		switch (Config::communicationMode) {
-			case Config::ETHERNET:
+		switch (config->mBed.communicationMode) {
+			case Configuration::ETHERNET:
 				std::cout << "! Using ethernet communication" << std::endl;
 
-				com = new EthernetCommunication(Config::communicationHost, Config::communicationPort);
+				com = new EthernetCommunication(config->mBed.ethernetIp, config->mBed.ethernetPort);
 			break;
 
-			case Config::SERIAL: {
+			case Configuration::SERIAL: {
 				std::cout << "! Using serial communication" << std::endl;
 
 				int serialPortNumber = -1;
@@ -609,8 +644,8 @@ void SoccerBot::setupCommunication() {
 				for (unsigned int i = 0; i < portList.numbers.size(); i++) {
 					std::cout << "  > COM" << portList.numbers[i] << " <" << portList.names[i] << ">" << std::endl;
 
-					if (portList.names[i].find(Config::serialDeviceContains) != std::string::npos) {
-						std::cout << "    + found serial device containing '" << Config::serialDeviceContains << "' in it's name, using COM" << portList.numbers[i] << std::endl;
+					if (portList.names[i].find(config->mBed.serialIdentificatonString) != std::string::npos) {
+						std::cout << "    + found serial device containing '" << config->mBed.serialIdentificatonString << "' in it's name, using COM" << portList.numbers[i] << std::endl;
 
 						serialPortNumber = portList.numbers[i];
 					}
@@ -620,7 +655,7 @@ void SoccerBot::setupCommunication() {
 //serialPortNumber = 14;
 
 				if (serialPortNumber == -1) {
-					throw new std::exception(std::string("com port containing '" + Config::serialDeviceContains + "' not found").c_str());
+					throw new std::exception(std::string("com port containing '" + config->mBed.serialIdentificatonString + "' not found").c_str());
 				}
 
 				std::string comPortName = "COM" + Util::toString(serialPortNumber);
@@ -629,12 +664,12 @@ void SoccerBot::setupCommunication() {
 					comPortName = "\\\\.\\" + comPortName;
 				}*/
 
-				com = new SerialCommunication(comPortName, Config::serialBaud);
+				com = new SerialCommunication(comPortName, config->mBed.serialBaud);
 
-				std::cout << "! Opened serial COM" << serialPortNumber << " at " << Config::serialBaud << " baud" << std::endl;
+				std::cout << "! Opened serial COM" << serialPortNumber << " at " << config->mBed.serialBaud << " baud" << std::endl;
 			} break;
 
-			case Config::COM: {
+			case Configuration::COM: {
 				std::cout << "! Using com port communication" << std::endl;
 
 				int serialPortNumber = -1;
@@ -646,20 +681,20 @@ void SoccerBot::setupCommunication() {
 				for (unsigned int i = 0; i < portList.numbers.size(); i++) {
 					std::cout << "  > COM" << portList.numbers[i] << " <" << portList.names[i] << ">" << std::endl;
 
-					if (portList.names[i].find(Config::serialDeviceContains) != std::string::npos) {
-						std::cout << "    + found serial device containing '" << Config::serialDeviceContains << "' in it's name, using COM" << portList.numbers[i] << std::endl;
+					if (portList.names[i].find(config->mBed.serialIdentificatonString) != std::string::npos) {
+						std::cout << "    + found serial device containing '" << config->mBed.serialIdentificatonString << "' in it's name, using COM" << portList.numbers[i] << std::endl;
 
 						serialPortNumber = portList.numbers[i];
 					}
 				}
 
 				if (serialPortNumber == -1) {
-					throw new std::exception(std::string("com port containing '" + Config::serialDeviceContains + "' not found").c_str());
+					throw new std::exception(std::string("com port containing '" + config->mBed.serialIdentificatonString + "' not found").c_str());
 				}
 
-				com = new ComPortCommunication("COM" + Util::toString(serialPortNumber), Config::serialBaud);
+				com = new ComPortCommunication("COM" + Util::toString(serialPortNumber), config->mBed.serialBaud);
 
-				std::cout << "! Opened serial COM" << serialPortNumber << " at " << Config::serialBaud << " baud" << std::endl;
+				std::cout << "! Opened serial COM" << serialPortNumber << " at " << config->mBed.serialBaud << " baud" << std::endl;
 			} break;
 		}
 	} catch (std::exception e) {
@@ -838,8 +873,8 @@ void SoccerBot::handleStreamChoiceCommand(Command::Parameters parameters) {
 		activeStreamName = requestedStream;
 	} else {
 		try {
-			bool frontSuccess = virtualFrontCamera->loadImage(Config::screenshotsDirectory + "/" + requestedStream + "-front.scr", Config::cameraWidth * Config::cameraHeight * 4);
-			bool rearSuccess = virtualRearCamera->loadImage(Config::screenshotsDirectory + "/" + requestedStream + "-rear.scr", Config::cameraWidth * Config::cameraHeight * 4);
+			bool frontSuccess = virtualFrontCamera->loadImage(Config::screenshotsDirectory + "/" + requestedStream + "-front.scr", config->camera.width * config->camera.height * 4);
+			bool rearSuccess = virtualRearCamera->loadImage(Config::screenshotsDirectory + "/" + requestedStream + "-rear.scr", config->camera.width * config->camera.height * 4);
 
 			if (!frontSuccess || !rearSuccess) {
 				std::cout << "- Loading screenshot '" << requestedStream << "' failed" << std::endl;
@@ -876,7 +911,7 @@ void SoccerBot::handleBlobberThresholdCommand(Command::Parameters parameters) {
 	unsigned char* dataU = debugCameraDir == Dir::FRONT ? frontProcessor->dataU : rearProcessor->dataU;
 	unsigned char* dataV = debugCameraDir == Dir::FRONT ? frontProcessor->dataV : rearProcessor->dataV;
 
-	ImageProcessor::YUYVRange yuyvRange = ImageProcessor::extractColorRange(dataY, dataU, dataV, Config::cameraWidth, Config::cameraHeight, centerX, centerY, brushRadius, stdDev);
+	ImageProcessor::YUYVRange yuyvRange = ImageProcessor::extractColorRange(dataY, dataU, dataV, config->camera.width, config->camera.height, centerX, centerY, brushRadius, stdDev);
 
 	frontBlobber->getColor(selectedColorName)->addThreshold(
 		yuyvRange.minY, yuyvRange.maxY,
@@ -907,14 +942,14 @@ void SoccerBot::handleScreenshotCommand(Command::Parameters parameters) {
 
 	std::cout << "! Storing screenshot: " << name << std::endl;
 
-	ImageProcessor::saveBitmap(frontProcessor->frame, Config::screenshotsDirectory + "/" + name + "-front.scr", Config::cameraWidth * Config::cameraHeight * 4);
-	ImageProcessor::saveBitmap(rearProcessor->frame, Config::screenshotsDirectory + "/" + name + "-rear.scr", Config::cameraWidth * Config::cameraHeight * 4);
+	ImageProcessor::saveBitmap(frontProcessor->frame, Config::screenshotsDirectory + "/" + name + "-front.scr", config->camera.width * config->camera.height * 4);
+	ImageProcessor::saveBitmap(rearProcessor->frame, Config::screenshotsDirectory + "/" + name + "-rear.scr", config->camera.width * config->camera.height * 4);
 	
-	ImageProcessor::saveJPEG(frontProcessor->rgb, Config::screenshotsDirectory + "/" + name + "-rgb-front.jpeg", Config::cameraWidth, Config::cameraHeight, 3);
-	ImageProcessor::saveJPEG(frontProcessor->classification, Config::screenshotsDirectory + "/" + name + "-classification-front.jpeg", Config::cameraWidth, Config::cameraHeight, 3);
+	ImageProcessor::saveJPEG(frontProcessor->rgb, Config::screenshotsDirectory + "/" + name + "-rgb-front.jpeg", config->camera.width, config->camera.height, 3);
+	ImageProcessor::saveJPEG(frontProcessor->classification, Config::screenshotsDirectory + "/" + name + "-classification-front.jpeg", config->camera.width, config->camera.height, 3);
 
-	ImageProcessor::saveJPEG(rearProcessor->rgb, Config::screenshotsDirectory + "/" + name + "-rgb-rear.jpeg", Config::cameraWidth, Config::cameraHeight, 3);
-	ImageProcessor::saveJPEG(rearProcessor->classification, Config::screenshotsDirectory + "/" + name + "-classification-rear.jpeg", Config::cameraWidth, Config::cameraHeight, 3);
+	ImageProcessor::saveJPEG(rearProcessor->rgb, Config::screenshotsDirectory + "/" + name + "-rgb-rear.jpeg", config->camera.width, config->camera.height, 3);
+	ImageProcessor::saveJPEG(rearProcessor->classification, Config::screenshotsDirectory + "/" + name + "-classification-rear.jpeg", config->camera.width, config->camera.height, 3);
 
 	broadcastScreenshots();
 }
