@@ -45,7 +45,6 @@ void TeamController::WaitForKickState::onEnter(Robot* robot, Parameters paramete
 }
 
 void TeamController::WaitForKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	//TO-DO write logic here
 	Object* ball = visionResults->getClosestBall();
 
 	if (ball != NULL) {
@@ -59,9 +58,11 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 		else {
 			Math::Vector currentBallPos = Math::Vector(ball->distanceX, ball->distanceY);
 
-			//check if ball has drifted significantly away from starting position or is moving with high enough speed
-			if (abs(currentBallPos.x - startingBallPos.x) > 0.2f || abs(currentBallPos.y - startingBallPos.y) > 0.2f /*|| ball->relativeMovement.speed > 0.6f*/) {
+			//check if ball has drifted significantly away from starting position or is moving with high enough speed (not using speed currently, speed calculation has too many errors it seems)
+			if (abs(currentBallPos.x - startingBallPos.x) > 0.15f || abs(currentBallPos.y - startingBallPos.y) > 0.15f /*|| ball->relativeMovement.speed > 0.6f*/) {
 				//kick detected
+
+				//TO-DO write here what states to go to based on game situation, currently
 				ai->setState("manual-control");
 			}
 		}
