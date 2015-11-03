@@ -21,6 +21,15 @@ public:
 		Math::Vector startingBallPos;
 	};
 
+	//This state is for the goalkeeper
+	class DefendGoalState : public State {
+
+	public:
+		DefendGoalState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	};
+
 	TeamController(Robot* robot, AbstractCommunication* com);
 	~TeamController();
 

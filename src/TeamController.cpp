@@ -36,6 +36,7 @@ void TeamController::setupStates() {
 	states["drive-to"] = new DriveToState(this);
 	states["turn-by"] = new TurnByState(this);
 	states["wait-for-kick"] = new WaitForKickState(this);
+	states["defend-goal"] = new DefendGoalState(this);
 }
 
 void TeamController::WaitForKickState::onEnter(Robot* robot, Parameters parameters) {
@@ -67,4 +68,17 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 			}
 		}
 	}	
+}
+
+void TeamController::DefendGoalState::onEnter(Robot* robot, Parameters parameters) {
+	
+}
+
+void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO write goal defending logic here.
+
+	//check if ball is moving fast towards goal or is close enough
+	//decide if robot should move toward intercepting position or go and fetch the ball
+	//if intercepting position, get best direction + speed + rotation to move with
+
 }
