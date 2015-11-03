@@ -156,6 +156,7 @@
     <ClInclude Include="include\Command.h" />
     <ClInclude Include="include\ComPortCommunication.h" />
     <ClInclude Include="include\Config.h" />
+    <ClInclude Include="include\Configuration.h" />
     <ClInclude Include="include\Controller.h" />
     <ClInclude Include="include\DebouncedButton.h" />
     <ClInclude Include="include\DebugRenderer.h" />

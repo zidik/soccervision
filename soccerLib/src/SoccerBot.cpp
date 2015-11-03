@@ -400,7 +400,7 @@ void SoccerBot::loadConfiguration()
 {
 	std::cout << "! Loading configuration file.. " << std::endl;
 	try{
-		config = Configuration::newInstance("config\\configuration.json");
+		config = Configuration::newInstance("..\\config\\configuration.json");
 	}
 	catch(const runtime_error& e)
 	{
