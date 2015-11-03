@@ -296,7 +296,7 @@ public:
 
 	void onEnter();
 	void onExit();
-	void reset();
+	virtual void reset();
 	
 	virtual void setState(std::string state);
 	virtual void setState(std::string state, Parameters parameters);

@@ -23,7 +23,7 @@ public:
 	TeamController(Robot* robot, AbstractCommunication* com);
 	~TeamController();
 
-	void reset();
+	void reset() override;
 
 private:
 	void setupStates();

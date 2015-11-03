@@ -31,7 +31,6 @@ void TeamController::reset() {
 	handleToggleSideCommand();
 }
 
-
 void TeamController::setupStates() {
 	states["manual-control"] = new ManualControlState(this);
 	states["drive-to"] = new DriveToState(this);
@@ -54,12 +53,14 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 		if (startingBallPos.x < -999.0f){
 			startingBallPos.x = ball->distanceX;
 			startingBallPos.y = ball->distanceY;
+
+			//std::cout << "Found ball @ position- x:" << ball->distanceX << " y: " << ball->distanceY << std::endl;
 		}
 		else {
 			Math::Vector currentBallPos = Math::Vector(ball->distanceX, ball->distanceY);
 
 			//check if ball has drifted significantly away from starting position or is moving with high enough speed
-			if (abs(currentBallPos.x - startingBallPos.x) < 0.2f || abs(currentBallPos.y - startingBallPos.y) < 0.2f /*|| ball->relativeMovement.speed > 0.6f*/) {
+			if (abs(currentBallPos.x - startingBallPos.x) > 0.2f || abs(currentBallPos.y - startingBallPos.y) > 0.2f /*|| ball->relativeMovement.speed > 0.6f*/) {
 				//kick detected
 				ai->setState("manual-control");
 			}
