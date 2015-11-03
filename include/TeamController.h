@@ -23,6 +23,8 @@ public:
 	TeamController(Robot* robot, AbstractCommunication* com);
 	~TeamController();
 
+	void reset();
+
 private:
 	void setupStates();
 	GameSituation currentSituation;
