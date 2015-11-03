@@ -40,22 +40,22 @@ void TeamController::setupStates() {
 }
 
 void TeamController::WaitForKickState::onEnter(Robot* robot, Parameters parameters) {
-	
+	//reset starting ball position
+	startingBallPos.x = -1000.0f;
+	startingBallPos.y = -1000.0f;
 }
 
 void TeamController::WaitForKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 	//TO-DO write logic here
 	Object* ball = visionResults->getClosestBall();
 
-	//write down initial ball location if not done already, relative coordinates
-	if (startingBallPos.x < -999.0f){
-		if (ball != NULL) {
+	if (ball != NULL) {
+		//write down initial ball location if not done already, relative coordinates
+		if (startingBallPos.x < -999.0f){
 			startingBallPos.x = ball->distanceX;
 			startingBallPos.y = ball->distanceY;
 		}
-	}
-	else {
-		if (ball != NULL) {	
+		else {
 			Math::Vector currentBallPos = Math::Vector(ball->distanceX, ball->distanceY);
 
 			//check if ball has drifted significantly away from starting position or is moving with high enough speed
@@ -64,5 +64,5 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 				ai->setState("manual-control");
 			}
 		}
-	}
+	}	
 }
