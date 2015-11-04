@@ -161,6 +161,8 @@ private:
 	float getUndersideMetric(int x, int y, float distance, int width, int height, std::string targetColor, std::string targetColor2, std::vector<std::string> validColors, int& minValidX, int& minValidY, int& maxValidX, int& maxValidY, bool expand = true);
 	float getColorDistance(std::string colorName, int x1, int y1, int x2, int y2);
 	ColorDistance getColorDistance(std::string colorName);
+	Distance getColorTransitionPoint(std::string firstColor, std::string secondColor, float x1, float y1, float x2, float y2);
+	Math::Vector getCornerPoint(float startAngle, float endAngle, float r, int numberOfPoints);
 	ColorList getViewColorOrder();
 	Object* mergeGoals(Object* goal1, Object* goal2);
 	bool findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots);
