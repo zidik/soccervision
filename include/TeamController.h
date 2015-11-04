@@ -25,9 +25,12 @@ public:
 	class DefendGoalState : public State {
 
 	public:
-		DefendGoalState(TeamController* ai) : State(ai) {}
+		DefendGoalState(TeamController* ai) : State(ai), ballWasSeen(false) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+
+	private:
+		bool ballWasSeen;
 	};
 
 	TeamController(Robot* robot, AbstractCommunication* com);

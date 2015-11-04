@@ -65,20 +65,82 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 
 				//TO-DO write here what states to go to based on game situation, currently
 				ai->setState("manual-control");
+				return;
 			}
 		}
 	}	
 }
 
 void TeamController::DefendGoalState::onEnter(Robot* robot, Parameters parameters) {
-	
+	ballWasSeen = false;
 }
 
 void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 	//TODO write goal defending logic here.
 
-	//check if ball is moving fast towards goal or is close enough
-	//decide if robot should move toward intercepting position or go and fetch the ball
-	//if intercepting position, get best direction + speed + rotation to move with
+	Object* defendedGoal = visionResults->getLargestGoal(ai->getDefendSide(), Dir::REAR);
 
+	//if goal is not visible in back camera, switch to driving in front of goal state.
+	if (defendedGoal == NULL) {
+		//temporary substitute
+		ai->setState("manual-control");
+		return;
+	}
+
+	Object* ball = visionResults->getClosestBall();
+
+	// configuration parameters
+	float maximumFetchDistance = 0.15f;
+	float minimumMovingDeltaY = 0.1f;
+	float goalKeepDistance = 0.5f;
+	float forwardSpeedMultiplier = 10.0f;
+	float sidewaysSpeedMultiplier = 10.0f;
+
+	//if can't see ball
+	if (ball == NULL) {
+		//if ball has not been seen before, start scanning for ball
+		if (!ballWasSeen)
+		{
+			//temporary substitute
+			ai->setState("manual-control");
+			return;
+		} //if ball was seen, do something like track robot closest to centre or something
+		else {
+			//temporary substitute
+			ai->setState("manual-control");
+			return;
+		}
+	} //ball found
+	else {
+		if (!ballWasSeen) ballWasSeen = true;
+
+		bool shouldIntercept = false;
+		float forwardSpeed = 0.0f, sideWaysSpeed = 0.0f;
+		
+		//check if ball is close enough to fetch
+		if (ball->distance < maximumFetchDistance) {
+			//temporary substitute
+			ai->setState("manual-control");
+			return;
+		}
+		
+		//check if ball is moving fast enough toward robot
+		if (ball->relativeMovement.dY > minimumMovingDeltaY) {
+			shouldIntercept = true;
+		}
+
+		if (shouldIntercept) {
+			//calculate optimal movement parameters
+			forwardSpeed = (goalKeepDistance - defendedGoal->distance) * forwardSpeedMultiplier;
+			sideWaysSpeed = ball->relativeMovement.dX * sidewaysSpeedMultiplier;
+		}
+		else {
+			//centre robot in front of goal, this one is not a very good solution, but temporary
+			forwardSpeed = (goalKeepDistance - defendedGoal->distance) * forwardSpeedMultiplier;
+			sideWaysSpeed = defendedGoal->distanceX * sidewaysSpeedMultiplier;
+		}
+		robot->setTargetDir(forwardSpeed, sideWaysSpeed);
+		robot->lookAt(ball);
+		
+	}
 }

@@ -172,7 +172,7 @@
 * - should not see goal in invalid places
 */
 
-TestController::TestController(Robot* robot, AbstractCommunication* com) : BaseAI(robot, com), targetSide(Side::BLUE), manualSpeedX(0.0f), manualSpeedY(0.0f), manualOmega(0.0f), manualDribblerSpeed(0), manualKickStrength(0), blueGoalDistance(0.0f), yellowGoalDistance(0.0f), lastCommandTime(-1.0), lastBallTime(-1.0), lastNearLineTime(-1.0), lastNearGoalTime(-1.0), lastInCornerTime(-1.0), lastGoalObstructedTime(-1.0), lastTargetGoalAngle(0.0f), lastBall(NULL), lastTurnAroundTime(-1.0), lastClosestGoalDistance(-1.0f), lastTargetGoalDistance(-1.0f), framesRobotOutFront(0), framesRobotOutRear(0), isRobotOutFront(false), isRobotOutRear(false), isNearLine(false), isInCorner(false), isBallInWay(false), isAvoidingBallInWay(false), inCornerFrames(0), nearLineFrames(0), nearGoalFrames(0), visibleBallCount(0), visionResults(NULL) {
+TestController::TestController(Robot* robot, AbstractCommunication* com) : BaseAI(robot, com), targetSide(Side::BLUE), defendSide(Side::YELLOW), manualSpeedX(0.0f), manualSpeedY(0.0f), manualOmega(0.0f), manualDribblerSpeed(0), manualKickStrength(0), blueGoalDistance(0.0f), yellowGoalDistance(0.0f), lastCommandTime(-1.0), lastBallTime(-1.0), lastNearLineTime(-1.0), lastNearGoalTime(-1.0), lastInCornerTime(-1.0), lastGoalObstructedTime(-1.0), lastTargetGoalAngle(0.0f), lastBall(NULL), lastTurnAroundTime(-1.0), lastClosestGoalDistance(-1.0f), lastTargetGoalDistance(-1.0f), framesRobotOutFront(0), framesRobotOutRear(0), isRobotOutFront(false), isRobotOutRear(false), isNearLine(false), isInCorner(false), isBallInWay(false), isAvoidingBallInWay(false), inCornerFrames(0), nearLineFrames(0), nearGoalFrames(0), visibleBallCount(0), visionResults(NULL) {
 	setupStates();
 
 	speedMultiplier = 1.0f;
@@ -363,15 +363,18 @@ void TestController::handleToggleSideCommand() {
 
 	if (targetSide == Side::BLUE) {
 		targetSide = Side::YELLOW;
+		defendSide = Side::BLUE;
 
 		robot->setPosition(Config::fieldWidth - Config::robotRadius, Config::robotRadius, Math::PI - Math::PI / 8.0f);
 	} else {
 		targetSide = Side::BLUE;
+		defendSide = Side::YELLOW;
 
 		robot->setPosition(Config::robotRadius, Config::fieldHeight - Config::robotRadius, -Math::PI / 8.0f);
 	}
 
 	std::cout << "! Now targeting " << (targetSide == Side::BLUE ? "blue" : "yellow") << " side" << std::endl;
+	std::cout << "! Now defending " << (defendSide == Side::BLUE ? "blue" : "yellow") << " side" << std::endl;
 
 	com->send("target:" + Util::toString(targetSide));
 
@@ -743,6 +746,7 @@ std::string TestController::getJSON() {
 	stream << "\"travelledDistance\": \"" << robot->getTravelledDistance() << "\",";
 	stream << "\"travelledTurns\": \"" << (robot->getTravelledRotation() / Math::TWO_PI) << "\",";
 	stream << "\"targetSide\": \"" << (targetSide == Side::BLUE ? "blue" : targetSide == Side::YELLOW ? "yellow" : "not chosen") << "\",";
+	stream << "\"defendSide\": \"" << (defendSide == Side::BLUE ? "blue" : defendSide == Side::YELLOW ? "yellow" : "not chosen") << "\",";
 	stream << "\"whiteDistance\": " << whiteDistance.min << ",";
 	stream << "\"blackDistance\": " << blackDistance.min << ",";
 	stream << "\"blueGoalDistance\": " << blueGoalDistance << ",";

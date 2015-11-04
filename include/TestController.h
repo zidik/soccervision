@@ -322,6 +322,7 @@ public:
 
     void step(float dt, Vision::Results* visionResults);
 	Side getTargetSide() { return targetSide; }
+	Side getDefendSide() { return defendSide; }
 	void dbgs(std::string key, std::string value) { messages[key] = value; }
 	void dbg(std::string key, int value) { messages[key] = Util::toString(value); }
 	void dbg(std::string key, float value) { messages[key] = Util::toString(value); }
@@ -351,6 +352,7 @@ protected:
 	DebouncedButton resetBtn;
 
 	Side targetSide;
+	Side defendSide;
 	float speedMultiplier;
 	float manualSpeedX;
 	float manualSpeedY;
