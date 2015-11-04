@@ -401,6 +401,13 @@ void SoccerBot::loadConfiguration() {
 
 	std::string configurationFolderPath = "../Config/";
 	std::ifstream infile(configurationFolderPath + "ID.txt");
+	if (infile.fail()) {
+		throw std::runtime_error(
+			"Could not open " + configurationFolderPath + "ID.txt\n"
+			"Please create ID.txt in configuration folder and insert robot's name in it.\n"
+			"Refer to INSTALL.txt for more information."
+		);
+	}
 	std::string postfix;
 	std::vector<std::string> configurationFilePaths{ configurationFolderPath + "configuration.json" };
 	while (std::getline(infile, postfix)){
