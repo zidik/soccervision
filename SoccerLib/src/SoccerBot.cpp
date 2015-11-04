@@ -65,7 +65,7 @@ SoccerBot::~SoccerBot() {
 	if (frontCameraTranslator != NULL) delete frontCameraTranslator; frontCameraTranslator = NULL;
 	if (rearCameraTranslator != NULL) delete rearCameraTranslator; rearCameraTranslator = NULL;
 	if (fpsCounter != NULL) delete fpsCounter; fpsCounter = NULL;
-	if (frontProcessor != NULL) frontBlobber->saveOptions(Config::blobberConfigFilename); delete frontProcessor; frontProcessor = NULL;
+	if (frontProcessor != NULL) frontBlobber->saveOptions(config->camera.pathBlobberConf); delete frontProcessor; frontProcessor = NULL;
 	if (rearProcessor != NULL) delete rearProcessor; rearProcessor = NULL;
 	if (visionResults != NULL) delete visionResults; visionResults = NULL;
 	if (frontVision != NULL) delete frontVision; frontVision = NULL;
@@ -365,7 +365,7 @@ void SoccerBot::broadcastFrame(unsigned char* rgb, unsigned char* classification
 }
 
 void SoccerBot::broadcastScreenshots() {
-	std::vector<std::string> screenshotFiles = Util::getFilesInDir(Config::screenshotsDirectory);
+	std::vector<std::string> screenshotFiles = Util::getFilesInDir(config->camera.pathScreenshotsDir);
 	std::vector<std::string> screenshotNames;
 	std::string filename;
 	std::string screenshotName;
@@ -435,8 +435,8 @@ void SoccerBot::setupVision() {
 	frontBlobber->initialize(config->camera.width, config->camera.height);
 	rearBlobber->initialize(config->camera.width, config->camera.height);
 
-	frontBlobber->loadOptions(Config::blobberConfigFilename);
-	rearBlobber->loadOptions(Config::blobberConfigFilename);
+	frontBlobber->loadOptions(config->camera.pathBlobberConf);
+	rearBlobber->loadOptions(config->camera.pathBlobberConf);
 
 	frontCameraTranslator = new CameraTranslator();
 	rearCameraTranslator = new CameraTranslator();
@@ -473,8 +473,8 @@ void SoccerBot::setupVision() {
 
 	std::cout << "  > loading front camera distortion mappings.. ";
 	frontCameraTranslator->loadDistortionMapping(
-		Config::distortMappingFilenameFrontX,
-		Config::distortMappingFilenameFrontY
+		config->camera.pathDistortFrontX,
+		config->camera.pathDistortFrontY
 	);
 	std::cout << "done!" << std::endl;
 
@@ -494,8 +494,8 @@ void SoccerBot::setupVision() {
 
 	std::cout << "  > loading rear camera distortion mappings.. ";
 	rearCameraTranslator->loadDistortionMapping(
-		Config::distortMappingFilenameRearX,
-		Config::distortMappingFilenameRearY
+		config->camera.pathDistortRearX,
+		config->camera.pathDistortRearY
 	);
 	std::cout << "done!" << std::endl;
 
@@ -887,8 +887,8 @@ void SoccerBot::handleStreamChoiceCommand(Command::Parameters parameters) {
 		activeStreamName = requestedStream;
 	} else {
 		try {
-			bool frontSuccess = virtualFrontCamera->loadImage(Config::screenshotsDirectory + "/" + requestedStream + "-front.scr", config->camera.width * config->camera.height * 4);
-			bool rearSuccess = virtualRearCamera->loadImage(Config::screenshotsDirectory + "/" + requestedStream + "-rear.scr", config->camera.width * config->camera.height * 4);
+			bool frontSuccess = virtualFrontCamera->loadImage(config->camera.pathScreenshotsDir + "/" + requestedStream + "-front.scr", config->camera.width * config->camera.height * 4);
+			bool rearSuccess = virtualRearCamera->loadImage(config->camera.pathScreenshotsDir + "/" + requestedStream + "-rear.scr", config->camera.width * config->camera.height * 4);
 
 			if (!frontSuccess || !rearSuccess) {
 				std::cout << "- Loading screenshot '" << requestedStream << "' failed" << std::endl;
@@ -956,14 +956,14 @@ void SoccerBot::handleScreenshotCommand(Command::Parameters parameters) {
 
 	std::cout << "! Storing screenshot: " << name << std::endl;
 
-	ImageProcessor::saveBitmap(frontProcessor->frame, Config::screenshotsDirectory + "/" + name + "-front.scr", config->camera.width * config->camera.height * 4);
-	ImageProcessor::saveBitmap(rearProcessor->frame, Config::screenshotsDirectory + "/" + name + "-rear.scr", config->camera.width * config->camera.height * 4);
+	ImageProcessor::saveBitmap(frontProcessor->frame, config->camera.pathScreenshotsDir + "/" + name + "-front.scr", config->camera.width * config->camera.height * 4);
+	ImageProcessor::saveBitmap(rearProcessor->frame, config->camera.pathScreenshotsDir + "/" + name + "-rear.scr", config->camera.width * config->camera.height * 4);
 	
-	ImageProcessor::saveJPEG(frontProcessor->rgb, Config::screenshotsDirectory + "/" + name + "-rgb-front.jpeg", config->camera.width, config->camera.height, 3);
-	ImageProcessor::saveJPEG(frontProcessor->classification, Config::screenshotsDirectory + "/" + name + "-classification-front.jpeg", config->camera.width, config->camera.height, 3);
+	ImageProcessor::saveJPEG(frontProcessor->rgb, config->camera.pathScreenshotsDir + "/" + name + "-rgb-front.jpeg", config->camera.width, config->camera.height, 3);
+	ImageProcessor::saveJPEG(frontProcessor->classification, config->camera.pathScreenshotsDir + "/" + name + "-classification-front.jpeg", config->camera.width, config->camera.height, 3);
 
-	ImageProcessor::saveJPEG(rearProcessor->rgb, Config::screenshotsDirectory + "/" + name + "-rgb-rear.jpeg", config->camera.width, config->camera.height, 3);
-	ImageProcessor::saveJPEG(rearProcessor->classification, Config::screenshotsDirectory + "/" + name + "-classification-rear.jpeg", config->camera.width, config->camera.height, 3);
+	ImageProcessor::saveJPEG(rearProcessor->rgb, config->camera.pathScreenshotsDir + "/" + name + "-rgb-rear.jpeg", config->camera.width, config->camera.height, 3);
+	ImageProcessor::saveJPEG(rearProcessor->classification, config->camera.pathScreenshotsDir + "/" + name + "-classification-rear.jpeg", config->camera.width, config->camera.height, 3);
 
 	broadcastScreenshots();
 }

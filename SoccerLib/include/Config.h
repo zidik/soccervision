@@ -188,11 +188,6 @@ namespace Config {
 	const int goalKickValidFrames = 3;
 	//const int goalKickValidFrames = 10;
 
-	// particle filter robot localizer parameters
-	const int robotLocalizerParticleCount = 1000;
-	const float robotLocalizerForwardNoise = 0.75f;
-	const float robotLocalizerTurnNoise = 1.57f; //90deg
-
 	// maximum acceleration/deacceleration the robot should attempt
 	const float robotMaxAcceleration = 2.0f;
 
@@ -225,14 +220,6 @@ namespace Config {
 
 	// how close to the field-of-view must the object be to be considered in view
 	const float objectFovCloseEnough = 0.5f;
-
-	// configuration filenames
-	const std::string blobberConfigFilename = "config/blobber.cfg";
-	const std::string distortMappingFilenameFrontX = "../config/distort-mapping-front-x.csv";
-	const std::string distortMappingFilenameFrontY = "../config/distort-mapping-front-y.csv";
-	const std::string distortMappingFilenameRearX = "../config/distort-mapping-rear-x.csv";
-	const std::string distortMappingFilenameRearY = "../config/distort-mapping-rear-y.csv";
-	const std::string screenshotsDirectory = "screenshots";
 
 } // namespace Config
 

@@ -12,11 +12,19 @@
         "settings": {
             "gain": 1,
             "exposure": 10000
+        },
+        "path": {
+            "blobber": "config/blobber.cfg",
+            "distortFrontX": "../config/distort-mapping-front-x.csv",
+            "distortFrontY": "../config/distort-mapping-front-y.csv",
+            "distortRearX": "../config/distort-mapping-rear-x.csv",
+            "distortRearY": "../config/distort-mapping-rear-y.csv",
+            "screenshotsDir": "screenshots"
         }
     },
 
     "mBed": {
-        "communicationMode":  "ETHERNET",
+        "communicationMode": "ETHERNET",
         "ethernet": {
             "ip": "192.168.4.1",
             "port": 8042
@@ -43,5 +51,11 @@
             "diagonalOffset": 0.1167,
             "radius": 0.035
         }
+    },
+
+    "particleFilter": {
+        "particleCount": 1000,
+        "forwardNoise": 0.75,
+        "turnNoise" : 1.2
     }
 }

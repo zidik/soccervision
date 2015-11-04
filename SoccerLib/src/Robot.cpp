@@ -92,7 +92,13 @@ void Robot::setupCameraFOV() {
 }
 
 void Robot::setupRobotLocalizer() {
-	robotLocalizer = new ParticleFilterLocalizer(frontCameraTranslator, rearCameraTranslator);
+	robotLocalizer = new ParticleFilterLocalizer(
+		frontCameraTranslator,
+		rearCameraTranslator,
+		conf->particleFilter.particleCount,
+		conf->particleFilter.forwardNoise,
+		conf->particleFilter.turnNoise
+	);
 
 	robotLocalizer->addLandmark(
 		"yellow-center",

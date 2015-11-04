@@ -63,7 +63,8 @@ protected:
 		camera	{ pt.get_child("camera") },
 		mBed	{ pt.get_child("mBed"), communicationModeMap },
 		field	{ pt.get_child("field") },
-		robot	{ pt.get_child("robot") } {}
+		robot	{ pt.get_child("robot") },
+		particleFilter{ pt.get_child("particleFilter") } {}
 
 
 public:
@@ -104,15 +105,21 @@ public:
 	}
 
 
-	struct CameraConfiguration
+	struct CameraConf
 	{
-		CameraConfiguration(PropertyTree pt) :
+		CameraConf(PropertyTree pt) :
 			frontSerial{ pt.get<int>("serial.front") },
 			rearSerial{ pt.get<int>("serial.rear") },
 			width{ pt.get<int>("resolution.width") },
 			height{ pt.get<int>("resolution.height") },
 			gain{ pt.get<int>("settings.gain") },
-			exposure{ pt.get<int>("settings.exposure") }
+			exposure{ pt.get<int>("settings.exposure") },
+			pathBlobberConf( pt.get<std::string>("path.blobber") ),
+			pathDistortFrontX( pt.get<std::string>("path.distortFrontX") ),
+			pathDistortFrontY( pt.get<std::string>("path.distortFrontY") ),
+			pathDistortRearX( pt.get<std::string>("path.distortRearX") ),
+			pathDistortRearY( pt.get<std::string>("path.distortRearY") ),
+			pathScreenshotsDir( pt.get<std::string>("path.screenshotsDir") )
 
 		{}
 		const int frontSerial;
@@ -121,11 +128,19 @@ public:
 		const int height;
 		const int gain;
 		const int exposure;
+
+		const std::string pathBlobberConf;
+		const std::string pathDistortFrontX;
+		const std::string pathDistortFrontY;
+		const std::string pathDistortRearX;
+		const std::string pathDistortRearY;
+		const std::string pathScreenshotsDir;
+
 	}camera;
 
-	struct MBedConfiguration
+	struct MBedConf
 	{
-		MBedConfiguration(PropertyTree pt, CommunicationModeMap communicationModeMap) :
+		MBedConf(PropertyTree pt, CommunicationModeMap communicationModeMap) :
 			communicationMode(communicationModeMap.at(pt.get<std::string>("communicationMode"))),
 			ethernetIp(pt.get<std::string>("ethernet.ip")),
 			ethernetPort{ pt.get<int>("ethernet.port") },
@@ -139,19 +154,19 @@ public:
 		const int serialBaud;
 	}mBed;
 
-	struct Field
+	struct FieldConf
 	{
-		Field(boost::property_tree::ptree pt) :
+		FieldConf(boost::property_tree::ptree pt) :
 			width{ pt.get<float>("width") },
 			height{ pt.get<float>("height") } {}
 
 		const float width;
 		const float height;
 	}field;
-
-	struct Robot
+	
+	struct RobotConf
 	{
-		Robot(boost::property_tree::ptree pt) :
+		RobotConf(boost::property_tree::ptree pt) :
 			radius{ pt.get<float>("radius") },
 			dribblerDistance{ pt.get<float>("dribblerDistance") },
 			wheelRadius{ pt.get<float>("wheel.radius") },
@@ -173,6 +188,18 @@ public:
 	private:
 		float _wheelAngles[4];
 	}robot;
+
+	struct ParticleFilterConf
+	{
+		ParticleFilterConf(boost::property_tree::ptree pt) :
+			particleCount{ pt.get<int>("particleCount") },
+			forwardNoise{ pt.get<float>("forwardNoise") },
+			turnNoise{ pt.get<float>("turnNoise") } {}
+
+		const int particleCount;
+		const float forwardNoise;
+		const float turnNoise;
+	}particleFilter;
 	
 };
 

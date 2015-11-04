@@ -73,6 +73,8 @@ void ParticleFilterLocalizer::move(float velocityX, float velocityY, float veloc
 		
 		if (!exact)
 		{
+			//TODO: actually this should maybe not be gaussian noise but linear
+			//also, noise should be higher when speed/acceleration is high
 			particleVelocityX		+= Math::randomGaussian(forwardNoise);
 			particleVelocityY		+= Math::randomGaussian(forwardNoise);
 			particleVelocityOmega	+= Math::randomGaussian(turnNoise);
@@ -178,6 +180,7 @@ void ParticleFilterLocalizer::resample() {
 	}
 	else {
 		//All particles had probability 0.0
+		std::cout << "All particles had probability 0.0" << std::endl;
 		generateRandomParticles(newParticles, particleCount);
 	}
 	

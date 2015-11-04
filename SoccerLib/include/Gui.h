@@ -5,12 +5,11 @@
 #include <windows.h>
 
 #include "DisplayWindow.h"
-#include "Canvas.h"
 #include "MouseListener.h"
-#include "Config.h"
 #include <vector>
 #include <string>
 
+class Canvas;
 class CameraTranslator;
 class Command;
 class Vision;
@@ -23,7 +22,7 @@ public:
 	class Element : public MouseListener {
 		public:
 			Element();
-			virtual void draw(unsigned char* image, int imageWidth = Config::cameraWidth, int imageHeight = Config::cameraHeight) = 0;
+			virtual void draw(unsigned char* image, int imageWidth, int imageHeight) = 0;
 			virtual bool contains(int x, int y) { return false; };
 			Canvas canvas;
 			double lastInteractionTime;
@@ -32,7 +31,7 @@ public:
 	class Button : public Element {
 		public:
 			Button(std::string text, int x, int y, int width = 0, int type = 0, bool visible = true, void* data = NULL);
-			void draw(unsigned char* image, int imageWidth = Config::cameraWidth, int imageHeight = Config::cameraHeight);
+			void draw(unsigned char* image, int imageWidth, int imageHeight);
 			bool contains(int x, int y);
 			void onMouseMove(int x, int y, DisplayWindow* win);
 			void setVisible(bool visible) { this->visible = visible; }

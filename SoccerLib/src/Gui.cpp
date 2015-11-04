@@ -4,8 +4,6 @@
 #include "ImageProcessor.h"
 #include "Util.h"
 
-#include <iostream>
-
 LRESULT CALLBACK WinProc(HWND hWnd,UINT message,WPARAM wParam,LPARAM lParam);
 
 Gui::Gui(HINSTANCE instance, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator, Blobber* blobberFront, Blobber* blobberRear, int width, int height) : instance(instance), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), blobberFront(blobberFront), blobberRear(blobberRear), width(width), height(height), activeWindow(NULL), quitRequested(false) {
