@@ -5,7 +5,46 @@
 #include <unordered_map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/bind.hpp>
 
+
+class PropertyTreeMerger
+{
+	boost::property_tree::ptree mPt;
+public:
+	void set_ptree(const boost::property_tree::ptree &pt) {
+		mPt = pt;
+	}
+
+	void update_ptree(const boost::property_tree::ptree &pt) {
+		traverse(pt, boost::bind(&PropertyTreeMerger::merge, this, _1, _2, _3));
+	}
+
+	boost::property_tree::ptree get_ptree() {
+		return mPt;
+	}
+
+protected:
+	void merge(const boost::property_tree::ptree &parent, const boost::property_tree::ptree::path_type &childPath, const boost::property_tree::ptree &child) {
+		mPt.put(childPath, child.data());
+	}
+	template<typename T>
+	void traverse_recursive(const boost::property_tree::ptree &parent, const boost::property_tree::ptree::path_type &childPath, const boost::property_tree::ptree &child, T &method)
+	{
+		using boost::property_tree::ptree;
+
+		method(parent, childPath, child);
+		for (ptree::const_iterator it = child.begin(); it != child.end(); ++it) {
+			ptree::path_type curPath = childPath / ptree::path_type(it->first);
+			traverse_recursive(parent, curPath, it->second, method);
+		}
+	}
+	template<typename T>
+	void traverse(const boost::property_tree::ptree &parent, T &method)
+	{
+		traverse_recursive(parent, "", parent, method);
+	}
+};
 
 struct Configuration
 {
@@ -26,16 +65,24 @@ protected:
 		field	{ pt.get_child("field") },
 		robot	{ pt.get_child("robot") } {}
 
+
 public:
-	static Configuration* newInstance(std::string configFileName)
+	static Configuration* newInstance(std::vector<std::string> configFilePaths)
 	{
-		PropertyTree propertyTree;
-		boost::property_tree::read_json(configFileName, propertyTree);
+		PropertyTreeMerger merger;
+		for(std::string path : configFilePaths)
+		{
+			PropertyTree tree;
+			boost::property_tree::read_json(path, tree);
+			merger.update_ptree(tree);
+		}
 		CommunicationModeMap communicationModeMap = CommunicationModeMap({
 			{ "ETHERNET", ETHERNET },
 			{ "SERIAL", SERIAL },
 			{ "COM", COM }
 		});
+
+		PropertyTree propertyTree = merger.get_ptree();
 		try {
 			return new Configuration(propertyTree, communicationModeMap);
 		}

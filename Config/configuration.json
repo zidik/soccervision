@@ -1,8 +1,8 @@
 {
     "camera": {
         "serial": {
-            "front": 857769553,
-            "rear": 857735761
+            "front": null,
+            "rear": null
         },
         "resolution": {
             "width": 1280,

@@ -396,14 +396,21 @@ void SoccerBot::broadcastScreenshots() {
 	server->broadcast(response);
 }
 
-void SoccerBot::loadConfiguration()
-{
-	std::cout << "! Loading configuration file.. " << std::endl;
-	try{
-		config = Configuration::newInstance("..\\config\\configuration.json");
+void SoccerBot::loadConfiguration() {
+	std::cout << "! Loading configuration files.. " << std::endl;
+
+	std::string configurationFolderPath = "../Config/";
+	std::ifstream infile(configurationFolderPath + "ID.txt");
+	std::string postfix;
+	std::vector<std::string> configurationFilePaths{ configurationFolderPath + "configuration.json" };
+	while (std::getline(infile, postfix)){
+		configurationFilePaths.push_back(configurationFolderPath + "configuration-" + postfix + ".json");
 	}
-	catch(const runtime_error& e)
-	{
+
+	try {
+		config = Configuration::newInstance(configurationFilePaths);
+	}
+	catch(const runtime_error& e) {
 		std::cout
 			<< "Exception whas thrown while loading configuration file:" << std::endl
 			<< e.what();
