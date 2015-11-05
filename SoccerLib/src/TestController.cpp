@@ -786,13 +786,13 @@ std::string TestController::getJSON() {
 	
 	stream << "\"measurements\": {";
 	bool first = true;
-	for(std::pair<std::string, ParticleFilterLocalizer::Measurement> pair : robot->getMeasurements()) {
-		std::string name = pair.first;
+	for(const std::pair<ParticleFilterLocalizer::Landmark::Type, ParticleFilterLocalizer::Measurement> pair : robot->getMeasurements()) {
+		ParticleFilterLocalizer::Landmark::Type type = pair.first;
 		ParticleFilterLocalizer::Measurement measurement = pair.second;
 		Math::Vector position = robot->robotLocalizer->getMeasurementVector(measurement);
 		if (first) { first = false; }
 		else { stream << ","; }
-		stream << "\"" << name << "\": { x: " << position.x << ", y: " << position.y << "}";
+		stream << "\"" << "NAME_HERE" << "\": { x: " << position.x << ", y: " << position.y << "}";
 	}
 	stream << "}";
 	

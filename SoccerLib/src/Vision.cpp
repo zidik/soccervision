@@ -965,36 +965,11 @@ int Vision::getPixelsBelow(int startX, int startY, std::vector<std::string> vali
 	return validPixelCount;
 }
 
-/*int Vision::getPixelRowAt(float distance) {
-	CameraTranslator::CameraPosition pos = cameraTranslator->getCameraPosition(0, distance);
-
-	return pos.y;
-}*/
-
 Pixel Vision::getPixelAt(float distanceX, float distanceY) {
 	return cameraTranslator->DEPRECATEDgetCameraPosition(distanceX, distanceY);
 }
 
-// TODO Implement..
-Math::Vector Vision::getScreenCoords(float distanceX, float distanceY) {
-	return Math::Vector(0, 0);
-}
-
 Vision::Distance Vision::getDistance(int x, int y) {
-	/*int realX = x;
-	int realY = y;
-
-	Util::correctCameraPoint(realX, realY);
-
-	float distance;
-
-    if (dir == FRONT) {
-		distance = frontDistanceLookup.getValue((float)realY);
-    } else {
-        distance = rearDistanceLookup.getValue((float)realY);
-    }
-
-	return Math::max(distance + Config::distanceCorrection, 0.01f);*/
 
 	CameraTranslator::DEPRECATEDWorldPosition pos = cameraTranslator->DEPRECATEDgetWorldPosition(x, y);
 
@@ -1006,24 +981,6 @@ Vision::Distance Vision::getDistance(int x, int y) {
 }
 
 float Vision::getAngle(int x, int y) {
-	/*int realX = x;
-	int realY = y;
-
-	Util::correctCameraPoint(realX, realY);
-
-	// last working
-	float centerOffset = (float)(realX - (Config::cameraWidth / 2.0f)),
-		angle = Math::degToRad(centerOffset / 11.5f);
-
-	if (dir == Dir::REAR) {
-		if (angle < 0.0f) {
-			angle += Math::PI;
-		} else {
-			angle -= Math::PI;
-		}
-	}
-
-	return angle;*/
 
 	CameraTranslator::DEPRECATEDWorldPosition pos = cameraTranslator->DEPRECATEDgetWorldPosition(x, y);
 

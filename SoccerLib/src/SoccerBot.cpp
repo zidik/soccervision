@@ -986,11 +986,11 @@ std::string SoccerBot::getStateJSON() {
 	/*
 	stream << "\"measurements\": {";
 
-	const Measurements measurements = robot->getMeasurements();
+	const MeasurementMap measurements = robot->getMeasurements();
 
 	first = true;
 
-	for (Measurements::const_iterator it = measurements.begin(); it != measurements.end(); it++) {
+	for (MeasurementMap::const_iterator it = measurements.begin(); it != measurements.end(); it++) {
 		if (!first) {
 			stream << ",";
 		} else {
