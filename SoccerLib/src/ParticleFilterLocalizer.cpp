@@ -22,8 +22,8 @@ ParticleFilterLocalizer::ParticleFilterLocalizer(
 	forwardNoise(forwardNoise), 
 	turnNoise(turnNoise) {
 		particles.reserve(particleCount);
-	generateRandomParticles(particles, particleCount);
-}
+		generateRandomParticles(particles, particleCount);
+	}
 
 ParticleFilterLocalizer::~ParticleFilterLocalizer() {
 	for (Particle* particle : particles){
@@ -77,6 +77,8 @@ void ParticleFilterLocalizer::move(float velocityX, float velocityY, float veloc
 		
 		if (!exact)
 		{
+			//TODO: actually this should maybe not be gaussian noise but linear
+			//also, noise should be higher when speed/acceleration is high
 			particleVelocityX		+= Math::randomGaussian(forwardNoise);
 			particleVelocityY		+= Math::randomGaussian(forwardNoise);
 			particleVelocityOmega	+= Math::randomGaussian(turnNoise);
@@ -104,10 +106,10 @@ void ParticleFilterLocalizer::update(const MeasurementMap& measurements) {
 			particle->location.y + 3 < 0
 			) {
 			particle->probability = 0;
-        }
+		}
 
 		maxProbability = Math::max(maxProbability, particle->probability);
-	}
+    }
 
 	if (maxProbability != 0) {
 		for (Particle* particle : particles){
@@ -133,7 +135,7 @@ double ParticleFilterLocalizer::getMeasurementProbability(Particle* const partic
         }
 		Landmark* landmark = landmarkSearch->second;
 		probability *= evaluateParticleProbabilityPart(*particle, *landmark, measurement);
-		
+
     }
 
     return probability;
@@ -153,7 +155,7 @@ double ParticleFilterLocalizer::evaluateParticleProbabilityPart(const Particle& 
 		//Remove this line, and do the conversion after getting the result (unconv.y = Fieldheight - conv.y)
 		diff = Math::Vector(diff.x, -diff.y);
 		//HACK END
-
+		
 		diff = diff.getRotated(particle.orientation);
 
 		CameraTranslator* translator;
@@ -170,12 +172,12 @@ double ParticleFilterLocalizer::evaluateParticleProbabilityPart(const Particle& 
 			// Camera can not see behind itself
 		}
 		else {
-			Pixel expectation = translator->getCameraPosition(diff);
-			float error = measurement.bottomPixel.distanceTo(expectation);
+		Pixel expectation = translator->getCameraPosition(diff);
+		float error = measurement.bottomPixel.distanceTo(expectation);
 			double probability = Math::getGaussian(0.0, 50.0, (double)error);
 			maximumProbability = Math::max(maximumProbability, probability);
-		}
-		
+    }
+
     }
 	return maximumProbability; //TODO:Maybe this should not find the maximum but just multiply them all together? (would cause reallly small numbers, but maybe better represetation?)
 }
@@ -183,16 +185,17 @@ double ParticleFilterLocalizer::evaluateParticleProbabilityPart(const Particle& 
 void ParticleFilterLocalizer::resample() {
 	removeZeroProbabilityParticles(); // Is that a good idea?
 
-    ParticleList newParticles;
+	ParticleList newParticles;
 	newParticles.reserve(particleCount);
 	if (particles.size() > 0) {
 		int randomParticleCount = particleCount / 10;
 		int resampledParticleCount = particleCount - randomParticleCount;
-			generateRandomParticles(newParticles, randomParticleCount);
-			sampleParticles(newParticles, resampledParticleCount);
+		generateRandomParticles(newParticles, randomParticleCount);
+		sampleParticles(newParticles, resampledParticleCount);
 	}
 	else {
-		//All particles had probability 0.0, generate all by random
+		//All particles had probability 0.0
+		std::cout << "All particles had probability 0.0" << std::endl;
 		generateRandomParticles(newParticles, particleCount);
 	}
 	
@@ -227,42 +230,42 @@ void ParticleFilterLocalizer::sampleParticles(ParticleList& newParticles, int re
 	const double maxProbability = 1.0;
 	double beta = 0.0;
 	int index = Math::randomInt(0, particles.size() - 1);
-    for (int i = 0; i < resampledParticleCount; i++) {
+	for (int i = 0; i < resampledParticleCount; i++) {
         beta += Math::randomFloat() * 2.0 * maxProbability;
 
-        while (beta > particles[index]->probability) {
-            beta -= particles[index]->probability;
+		while (beta > particles[index]->probability) {
+			beta -= particles[index]->probability;
 			index = (index + 1) % particles.size();
-        }
+		}
 
 		newParticles.push_back(new Particle(*particles[index]));
-    }
+	}
 }
 
 
 void ParticleFilterLocalizer::calculatePosition()
 {
-    float xSum = 0.0f;
-    float ySum = 0.0f;
-    float orientationSum = 0.0f;
+	float xSum = 0.0f;
+	float ySum = 0.0f;
+	float orientationSum = 0.0f;
 	double weightSum = 0.0;
-    unsigned int particleCount = particles.size();
-    Particle* particle;
+	unsigned int particleCount = particles.size();
+	Particle* particle;
 
 	if (particleCount == 0) {
 		std::cout << "@ NO PARTICLES FOR POSITION" << std::endl;
 		return;
 	}
 
-    for (unsigned int i = 0; i < particleCount; i++) {
-        particle = particles[i];
+	for (unsigned int i = 0; i < particleCount; i++) {
+		particle = particles[i];
 		double weight = particle->probability;
 
         xSum += (float)(particle->location.x * weight);
         ySum += (float)(particle->location.y * weight);
         orientationSum += (float)(particle->orientation * weight);
 		weightSum += weight;
-    }
+	}
 
 	if (weightSum != 0.0f) {
 		x = (float)(xSum / weightSum);
@@ -274,7 +277,7 @@ void ParticleFilterLocalizer::calculatePosition()
 std::string ParticleFilterLocalizer::getJSON() const {
 	std::stringstream stream;
 
-    stream << "{";
+	stream << "{";
 	stream << "\"x\": " << x << ",";
 	stream << "\"y\": " << y << ",";
 	stream << "\"orientation\": " << orientation << ",";
@@ -289,7 +292,7 @@ std::string ParticleFilterLocalizer::getJSON() const {
 		}
 
 		stream << "[" << particle->location.x << ", " << particle->location.y << "]";
-	 }
+	}
 
 	stream << "]}";
 

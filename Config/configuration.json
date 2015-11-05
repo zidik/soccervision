@@ -1,0 +1,61 @@
+{
+    "camera": {
+        "serial": {
+            "front": null,
+            "rear": null
+        },
+        "resolution": {
+            "width": 1280,
+            "height": 1024,
+            "_comment": "Is only partially migrated - some of the code still uses values in Conf.h - Also change there!"
+        },
+        "settings": {
+            "gain": 1,
+            "exposure": 10000
+        },
+        "path": {
+            "blobber": "config/blobber.cfg",
+            "distortFrontX": "../config/distort-mapping-front-x.csv",
+            "distortFrontY": "../config/distort-mapping-front-y.csv",
+            "distortRearX": "../config/distort-mapping-rear-x.csv",
+            "distortRearY": "../config/distort-mapping-rear-y.csv",
+            "screenshotsDir": "screenshots"
+        }
+    },
+
+    "mBed": {
+        "communicationMode": "ETHERNET",
+        "ethernet": {
+            "ip": "192.168.4.1",
+            "port": 8042
+        },
+        "serial": {
+            "identificationString": "Mbed Virtual",
+            "baud": 115200
+        }
+    },
+
+    "field": {
+        "width": 4.5,
+        "height": 3.0
+    },
+
+    "robot": {
+        "radius": 0.12425,
+        "dribblerDistance": 0.17,
+        "wheel": {
+            "angle1": -135.0,
+            "angle2": -45.0,
+            "angle3": 45.0,
+            "angle4": 135.0,
+            "diagonalOffset": 0.1167,
+            "radius": 0.035
+        }
+    },
+
+    "particleFilter": {
+        "particleCount": 1000,
+        "forwardNoise": 0.75,
+        "turnNoise" : 1.2
+    }
+}

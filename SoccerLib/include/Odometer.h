@@ -25,7 +25,7 @@ public:
 		float RR;
 	};
 
-    Odometer(float angle1, float angle2, float angle3, float angle4, float wheelOffset, float wheelRadius);
+    Odometer(const float * angles, float wheelOffset, float wheelRadius);
 
 	WheelSpeeds calculateWheelSpeeds(float targetDirX, float targetDirY, float targetOmega);
 	Movement calculateMovement(float omegaFL, float omegaFR, float omegaRL, float omegaRR);

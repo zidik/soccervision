@@ -17,6 +17,7 @@ class FpsCounter;
 class Robot;
 class AbstractCommunication;
 class CameraTranslator;
+struct Configuration;
 
 class SoccerBot {
 
@@ -27,6 +28,7 @@ public:
 	void setup();
 	void run();
 
+	void loadConfiguration();
 	void setupVision();
 	void setupProcessors();
 	void setupFpsCounter();
@@ -72,6 +74,7 @@ private:
 	void broadcastFrame(unsigned char* rgb, unsigned char* classification);
 	void broadcastScreenshots();
 
+	Configuration* config;
 	BaseCamera* frontCamera;
 	BaseCamera* rearCamera;
 	XimeaCamera* ximeaFrontCamera;

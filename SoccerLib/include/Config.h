@@ -4,26 +4,6 @@
 #include <string>
 
 namespace Config {
-	enum CommunicationMode {
-		ETHERNET,
-		SERIAL,
-		COM
-	};
-
-	const CommunicationMode communicationMode = ETHERNET;
-	//const CommunicationMode communicationMode = SERIAL;
-	//const CommunicationMode communicationMode = COM;
-
-	// camera serials
-	//telliskivi kaamerad
-	const int frontCameraSerial = 857769553;
-	const int rearCameraSerial = 857735761;
-
-	//Oskari kodus olev kaamera
-	//const int frontCameraSerial = 391119441;
-
-	//Üks laboris olevatest kaameratest, mille oskar kokku pani
-	//const int frontCameraSerial = 374363729;
 
 	// indexes of motors according to the communication messages
 	const int wheelFLId = 0;
@@ -32,39 +12,22 @@ namespace Config {
 	const int wheelRRId = 3;
 	const int dribblerId = 4;
 
-	// ethernet communication host and port
-	const std::string communicationHost = "192.168.4.1";
-	const int communicationPort = 8042;
-
-	// serial device and baud
-	//const std::string serialDeviceContains = "mbed";
-	const std::string serialDeviceContains = "Mbed Virtual";
-	//const int serialBaud = 230400;
-	const int serialBaud = 115200;
-	//const int serialBaud = 57600;
-
 	// camera resolution
+	//Partially migrated to configuration JSON file - also change there!
 	const int cameraWidth = 1280;
 	const int cameraHeight = 1024;
+
+
 	const float cameraFovDistance = 5.0f;
-	//const float cameraFovAngle = 56.0f * 3.14f / 180.0f;
 	const float cameraFovAngle = 100.0f * 3.14f / 180.0f;
 	const float cameraFovWidth = tan(cameraFovAngle / 2.0f) * cameraFovDistance * 2.0f;
-	const int cameraGain = 1;
-	//const int cameraGain = 6;
-	const int cameraExposure = 10000;
+
 
 	// default startup controller name
 	const std::string defaultController = "test";
 
 	// how big of a buffer to allocate for generating jpeg images
 	const int jpegBufferSize = 5000 * 1024;
-
-	// constants for camera correction
-	//const float cameraCorrectionK = 0.00000049f;
-	//const float cameraCorrectionZoom = 0.969f;
-	//const float cameraCorrectionK = -0.00000013f;
-	//const float cameraCorrectionZoom = 1.100f;
 
 	// field dimensions
 	const float fieldWidth = 4.5f;
@@ -104,7 +67,6 @@ namespace Config {
 	const int goalCertainArea = 10000;
 
 	// if a goal starts lower than this value then it's not considered valid
-	//const int goalTopMaxY = 10;
 	const int goalTopMaxY = 165; // the wide-angle lens is very distorted..
 
 	// goal top corners should be at least this far away
@@ -154,14 +116,6 @@ namespace Config {
 	const int obstructionsSenseHeight = 150;
 	const float obstructedThreshold = 0.5f;
 
-	// robot wheen angles
-	const float robotWheelAngle1 = -135.0f;
-	const float robotWheelAngle2 = -45.0f;
-	const float robotWheelAngle3 = 45.0f;
-	const float robotWheelAngle4 = 135.0f;
-
-	// distance between two robot wheels diagonally
-	const float robotWheelOffset = 0.1167f;
 
 	// how much to substract from observed distance to calculate distance from dribbler
 	const float robotDribblerDistance = 0.17f;
@@ -169,8 +123,6 @@ namespace Config {
 	// robot radius
 	const float robotRadius = 0.12425f;
 
-	// radius of a wheel
-	const float robotWheelRadius = 0.035f;
 
 	// in how many seconds to spin around the dribbler
 	//const float robotSpinAroundDribblerPeriod = 2.0f;
@@ -236,11 +188,6 @@ namespace Config {
 	const int goalKickValidFrames = 3;
 	//const int goalKickValidFrames = 10;
 
-	// particle filter robot localizer parameters
-	const int robotLocalizerParticleCount = 1000;
-	const float robotLocalizerForwardNoise = 0.75f;
-	const float robotLocalizerTurnNoise = 1.57f; //90deg
-
 	// maximum acceleration/deacceleration the robot should attempt
 	const float robotMaxAcceleration = 2.0f;
 
@@ -273,22 +220,6 @@ namespace Config {
 
 	// how close to the field-of-view must the object be to be considered in view
 	const float objectFovCloseEnough = 0.5f;
-
-	// configuration filenames
-	const std::string blobberConfigFilename = "../Config/blobber.cfg";
-	const std::string frontDistanceLookupFilename = "../Config/distance-front.cfg";
-	const std::string rearDistanceLookupFilename = "../Config/distance-rear.cfg";
-	const std::string frontAngleLookupFilename = "../Config/angle-front.cfg";
-	const std::string rearAngleLookupFilename = "../Config/angle-rear.cfg";
-	const std::string undistortMappingFilenameFrontX = "../Config/undistort-mapping-front-x.csv";
-	const std::string undistortMappingFilenameFrontY = "../Config/undistort-mapping-front-y.csv";
-	const std::string undistortMappingFilenameRearX = "../Config/undistort-mapping-rear-x.csv";
-	const std::string undistortMappingFilenameRearY = "../Config/undistort-mapping-rear-y.csv";
-	const std::string distortMappingFilenameFrontX = "../Config/distort-mapping-front-x.csv";
-	const std::string distortMappingFilenameFrontY = "../Config/distort-mapping-front-y.csv";
-	const std::string distortMappingFilenameRearX = "../Config/distort-mapping-rear-x.csv";
-	const std::string distortMappingFilenameRearY = "../Config/distort-mapping-rear-y.csv";
-	const std::string screenshotsDirectory = "screenshots";
 
 } // namespace Config
 

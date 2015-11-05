@@ -26,10 +26,11 @@ struct F {
 	void loadDistortionMap()
 	{
 		BOOST_TEST_MESSAGE("Loading distortion map...");
-		cameraTranslator.loadDistortionMapping(
-			Config::distortMappingFilenameFrontX,
-			Config::distortMappingFilenameFrontY
-		);
+		throw std::runtime_error("not completely implemented");
+		//cameraTranslator.loadDistortionMapping(
+			//Config::distortMappingFilenameFrontX,
+			//Config::distortMappingFilenameFrontY
+		//);
 		BOOST_TEST_MESSAGE("Done!");
 
 		BOOST_TEST_MESSAGE("generating undistortion mappings..");

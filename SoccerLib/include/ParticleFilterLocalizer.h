@@ -3,7 +3,6 @@
 
 #include "Localizer.h"
 #include "Maths.h"
-#include "Config.h"
 
 #include <string>
 #include <unordered_map>
@@ -52,9 +51,9 @@ public:
 	ParticleFilterLocalizer(
 		CameraTranslator* frontCameraTranslator,
 		CameraTranslator* rearCameraTranslator,
-		int particleCount = Config::robotLocalizerParticleCount,
-		float forwardNoise = Config::robotLocalizerForwardNoise,
-		float turnNoise = Config::robotLocalizerTurnNoise
+		int particleCount,
+		float forwardNoise,
+		float turnNoise
 	);
     ~ParticleFilterLocalizer();
 
