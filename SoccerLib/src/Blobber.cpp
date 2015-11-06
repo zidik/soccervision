@@ -785,7 +785,7 @@ bool Blobber::loadOptions(std::string filename) {
 	Color* color;
 
 	if (!file) {
-		return false;
+		throw std::runtime_error("Could not open Blobber options file: \"" + filename + "\"");
 	}
 
 	colorCount = 0;

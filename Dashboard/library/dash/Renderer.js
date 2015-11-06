@@ -156,13 +156,17 @@ Dash.Renderer.prototype.drawBall = function(ball, color, radius, useEffects) {
 };
 
 Dash.Renderer.prototype.drawMeasurements = function(measurements) {
-	var measurement = measurements.yellow-center;
+	var measurement = measurements.yellowGoalCenter;
 	if (measurement !== null && typeof(measurement) === 'object') {
 		this.drawMeasurement(measurement, '#FF0')
 	}
-	measurement = measurements.blue-center;
+	measurement = measurements.blueGoalCenter;
 	if (measurement !== null && typeof(measurement) === 'object') {
 		this.drawMeasurement(measurement, '#07F')
+	}
+	measurement = measurements.fieldCorner;
+	if (measurement !== null && typeof(measurement) === 'object') {
+		this.drawMeasurement(measurement, '#FFF')
 	}
 };
 
@@ -397,7 +401,7 @@ Dash.Renderer.prototype.renderState = function(state) {
 			//this.drawPath(state, 'particleLocalizer', '#060');
 		}
 
-		this.drawMeasurements(state.controllerState.measurements);
+		this.drawMeasurements(state.controllerState.measurementsPositions);
 
 		if (state.controllerState.blueGoalDistance || state.controllerState.yellowGoalDistance) {
 			this.drawIntersections(

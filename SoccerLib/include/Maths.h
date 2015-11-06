@@ -322,6 +322,10 @@ inline Vector operator/(Vector left, float divisor) {
 	return left /= divisor;
 }
 
+inline std::ostream& operator<<(std::ostream& os, const Vector& vec) {
+	return os << "{\"x\":" << vec.x << ", \"y\":" << vec.y << "}";
+}
+
 struct Position {
 	Position() = default;
 	Position(float x, float y, float orientation) : location(x, y), orientation(orientation) {}

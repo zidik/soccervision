@@ -219,6 +219,10 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	odometerLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt);
 	robotLocalizer->calculatePosition();
 	Math::Position localizerPosition = robotLocalizer->getPosition();
+	//HACK START
+	//As rest of the code uses unconventional coordinate system, result must be changed:
+	localizerPosition.location.y = conf->field.height - localizerPosition.location.y;
+	//HACK END
 	Math::Position odometerPosition = odometerLocalizer->getPosition();
 
 	// use localizer position

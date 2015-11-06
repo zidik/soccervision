@@ -782,17 +782,23 @@ std::string TestController::getJSON() {
 
 	stream << "\"timeSinceLastKicked\": \"" << (timeSinceLastKicked < 170000 ? Util::toString(timeSinceLastKicked) : "never") << "\",";
 
-	stream << "\"particleLocalizer\": " << robot->robotLocalizer->getJSON();
+	stream << "\"particleLocalizer\": " << robot->robotLocalizer->getJSON() << ", ";
 	
-	stream << "\"measurements\": {";
+	stream << "\"measurementsPositions\": {";
 	bool first = true;
 	for(const std::pair<ParticleFilterLocalizer::Landmark::Type, ParticleFilterLocalizer::Measurement> pair : robot->getMeasurements()) {
 		ParticleFilterLocalizer::Landmark::Type type = pair.first;
 		ParticleFilterLocalizer::Measurement measurement = pair.second;
-		Math::Vector position = robot->robotLocalizer->getMeasurementVector(measurement);
+		Math::Vector position = robot->robotLocalizer->getWorldPosition(measurement);
 		if (first) { first = false; }
 		else { stream << ","; }
-		stream << "\"" << "NAME_HERE" << "\": { x: " << position.x << ", y: " << position.y << "}";
+		
+		position = position.getRotated(-robot->robotLocalizer->getPosition().orientation) + robot->robotLocalizer->getPosition().location;
+		//HACK START
+		//As rest of the code uses unconventional coordinate system, result must be changed:
+		position.y = Config::fieldHeight - position.y;
+		//HACK END
+		stream << "\"" << type << "\": " << position;
 	}
 	stream << "}";
 	

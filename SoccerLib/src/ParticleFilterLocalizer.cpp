@@ -147,14 +147,6 @@ double ParticleFilterLocalizer::evaluateParticleProbabilityPart(const Particle& 
 	for (Location landmarkLocation : landmark.locations)
 	{
 		Math::Vector diff = (landmarkLocation - particle.location);
-
-		//HACK START
-		// - rest of the code currently uses unconventional coordinate system
-		//This line currenlty converts conventional to unconventional, so the Particlefilter returns the result in unconventional, which can be directly used
-		// TODO - make rest of the code to also use conventional coordinate system.
-		//Remove this line, and do the conversion after getting the result (unconv.y = Fieldheight - conv.y)
-		diff = Math::Vector(diff.x, -diff.y);
-		//HACK END
 		
 		diff = diff.getRotated(particle.orientation);
 
@@ -299,19 +291,19 @@ std::string ParticleFilterLocalizer::getJSON() const {
 	return stream.str();
 }
 
-Math::Vector ParticleFilterLocalizer::getMeasurementVector(Measurement measurement)
-{
-	CameraTranslator* translator;
-	if (measurement.cameraDirection == Dir::FRONT) {
-		translator = frontCameraTranslator;
-	}
-	else if(measurement.cameraDirection == Dir::REAR) {
-		translator = rearCameraTranslator;
-	}
-	else {
+CameraTranslator* ParticleFilterLocalizer::getTranslator(const Dir cameraDirection) const {
+	switch (cameraDirection) {
+	case FRONT:
+		return frontCameraTranslator;
+	case REAR:
+		return rearCameraTranslator;
+	default:
 		throw std::runtime_error("Unexpected camera direction - can not choose translator");
 	}
+}
 
+Math::Vector ParticleFilterLocalizer::getWorldPosition(Measurement measurement) {
+	CameraTranslator* translator = getTranslator(measurement.cameraDirection);
 	Math::Vector position = translator->getWorldPosition(measurement.bottomPixel);
 
 	if (measurement.cameraDirection == Dir::REAR) {
@@ -326,4 +318,14 @@ Math::Position ParticleFilterLocalizer::getPosition() const {
         y,
         orientation
     );
+}
+
+std::ostream& operator<< (std::ostream & os, ParticleFilterLocalizer::Landmark::Type type) {
+	switch (type) {
+		case ParticleFilterLocalizer::Landmark::Type::BlueGoalCenter: return os << "blueGoalCenter";
+		case ParticleFilterLocalizer::Landmark::Type::YellowGoalCenter: return os << "yellowGoalCenter";
+		case ParticleFilterLocalizer::Landmark::Type::FieldCorner: return os << "fieldCorner";
+		// omit default case to trigger compiler warning for missing cases
+	};
+	return os << "Error: No string specified for this landmark type!";
 }

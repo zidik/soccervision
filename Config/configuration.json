@@ -14,11 +14,11 @@
             "exposure": 10000
         },
         "path": {
-            "blobber": "config/blobber.cfg",
-            "distortFrontX": "../config/distort-mapping-front-x.csv",
-            "distortFrontY": "../config/distort-mapping-front-y.csv",
-            "distortRearX": "../config/distort-mapping-rear-x.csv",
-            "distortRearY": "../config/distort-mapping-rear-y.csv",
+            "blobber": "../Config/blobber.cfg",
+            "distortFrontX": "../Config/distort-mapping-front-x.csv",
+            "distortFrontY": "../Config/distort-mapping-front-y.csv",
+            "distortRearX": "../Config/distort-mapping-rear-x.csv",
+            "distortRearY": "../Config/distort-mapping-rear-y.csv",
             "screenshotsDir": "screenshots"
         }
     },
@@ -55,7 +55,7 @@
 
     "particleFilter": {
         "particleCount": 1000,
-        "forwardNoise": 0.75,
+        "forwardNoise": 0.2,
         "turnNoise" : 1.2
     }
 }

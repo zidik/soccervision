@@ -10,7 +10,6 @@
 #include "CameraTranslator.h"
 #include "Pixel.h"
 
-// TODO Move this into the actual class
 
 class ParticleFilterLocalizer : public Localizer {
 
@@ -73,13 +72,14 @@ public:
 	Math::Position getPosition() const;
 	const ParticleList& getParticles() const { return particles; }
 	std::string getJSON() const;
-	Math::Vector getMeasurementVector(Measurement measurement);
+	CameraTranslator* getTranslator(const Dir cameraDirection) const;
+	Math::Vector getWorldPosition(Measurement measurement);
+
 private:
 	void removeZeroProbabilityParticles();
 	void sampleParticles(ParticleList& newParticles, int resampledParticleCount);
 	void generateRandomParticles(std::vector<Particle*>& particleVector, int particleCount);
 
-private:
 	CameraTranslator* frontCameraTranslator;
 	CameraTranslator* rearCameraTranslator;
     const int particleCount;
@@ -88,5 +88,7 @@ private:
     LandmarkMap landmarks;
     ParticleList particles;
 };
+
+std::ostream& operator<< (std::ostream & os, ParticleFilterLocalizer::Landmark::Type type);
 
 #endif // PARTICLEFILTERLOCALIZER_H

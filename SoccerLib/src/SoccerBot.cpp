@@ -1032,26 +1032,6 @@ std::string SoccerBot::getStateJSON() {
     stream << "\"totalTime\":" << totalTime << ",";
 	stream << "\"gotBall\":" << (robot->dribbler->gotBall() ? "true" : "false") << ",";
 
-	/*
-	stream << "\"measurements\": {";
-
-	const MeasurementMap measurements = robot->getMeasurements();
-
-	first = true;
-
-	for (MeasurementMap::const_iterator it = measurements.begin(); it != measurements.end(); it++) {
-		if (!first) {
-			stream << ",";
-		} else {
-			first = false;
-		}
-
-		stream << "\"" + it->first + "\": \"" + Util::toString(it->second) + "\"";
-	}
-
-	stream << "},";
-	*/
-
 	if (activeController != NULL) {
 		stream << "\"controllerName\": \"" + activeControllerName + "\",";
 		std::string controllerInfo = activeController->getJSON();
