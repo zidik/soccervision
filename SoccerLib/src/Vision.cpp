@@ -76,6 +76,9 @@ Vision::Result* Vision::process() {
 	result->whiteDistance = whiteDistance;
 	result->blackDistance = blackDistance;
 
+	//getColorTransitionPoint("white", "black", 0, 0.15, -Math::sqrt(2), Math::sqrt(2));
+	getCornerPoint(0, Math::PI, 2.f, 20);
+
 	return result;
 }
 
@@ -2022,6 +2025,120 @@ Vision::ColorDistance Vision::getColorDistance(std::string colorName) {
 	);*/
 
 	return ColorDistance(left, leftMiddle, center, rightMiddle, right);
+}
+
+Vision::Distance Vision::getColorTransitionPoint(std::string firstColor, std::string secondColor, float x1, float y1, float x2, float y2)
+{
+	Distance colorDistance = Distance();
+	Math::PointList points = cameraTranslator->getPointsBetween(x1, y1, x2, y2, 0.01f);
+
+	std::cout << "colorDistanceSize: " << points.size() << std::endl;
+	bool debug = canvas.data != NULL;
+	for (Math::PointListIt it = points.begin(); it != points.end(); it++) {
+		Math::Vector point = *it;
+		CameraTranslator::CameraPosition camPos = cameraTranslator->getCameraPosition(point.x, point.y);
+		int x = camPos.x;
+		int y = camPos.y;
+		
+		//if (it == points.begin())
+		//{
+		//	std::cout << "(x,y):" << x << ", " << y << std::endl;
+		//}
+
+		if (debug)
+		{
+			canvas.drawMarker(x, y, 255, 255, 255);
+		}
+
+		Blobber::Color *color = getColorAt(x, y);
+
+		if (color != NULL) {
+			if (strcmp(color->name, secondColor.c_str()) == 0) {
+				//colorDistance = getDistance(x, y);
+				//if (debug) canvas.fillCircle(x, y, 3, 255, 127, 127);
+				for (int i = 0; i < 3; i++)
+				{
+					point = *(--it);
+					CameraTranslator::CameraPosition camPos = cameraTranslator->getCameraPosition(point.x, point.y);
+					x = camPos.x;
+					y = camPos.y;					
+					
+					//if (debug) canvas.fillCircle(x, y, 3, 127, 255, 127);
+					Blobber::Color *color2 = getColorAt(x, y);
+
+					if (color2 != NULL && strcmp(color2->name, firstColor.c_str()) == 0) {
+						colorDistance = getDistance(x, y);
+						if (debug) {
+							canvas.fillBoxCentered(x, y, 10, 10, 255, 255, 255);
+							//std::string = "" + colorDistance.straight;
+							canvas.drawText(x, y, std::to_string(colorDistance.straight));
+						}
+
+						break;
+					}
+				}
+				
+				break;
+			}
+		}
+	}
+	return colorDistance;
+}
+
+Math::Vector Vision::getCornerPoint(float startAngle, float endAngle, float r, int numberOfPoints)
+{
+	bool debug = canvas.data != NULL;
+	float dAngle = Math::abs(endAngle - startAngle) / (float)numberOfPoints;
+	
+	float x;
+	float y;
+	std::vector<Vision::Distance> transitionVec;
+
+	for (int i = 0; i < numberOfPoints + 1; i++)
+	{
+		x = r * Math::cos(startAngle + dAngle * i);
+		y = 0.15 + r * Math::sin(startAngle + dAngle * i);
+		Vision::Distance transition = getColorTransitionPoint("white", "black", 0, 0.17, x, y);
+		if (transition.straight != 0)
+		{
+			transitionVec.push_back(transition);
+		}
+	}
+	int state = 0;
+	int oldState = 0;
+
+	Math::Vector corner(0,0);
+	if (transitionVec.size() < 2) return corner;
+
+	for (int i = 0; i < transitionVec.size() - 1; i++)
+	{
+		if (transitionVec.at(i).straight <= transitionVec.at(i+1).straight)
+		{
+			oldState = state;
+			state = 1;			
+		}
+		else
+		{
+			oldState = state;
+			state = -1;
+		}
+
+		if (state == -1 && oldState == 1)
+		{
+			corner = Math::Vector(transitionVec.at(i).x, transitionVec.at(i).y);
+			CameraTranslator::CameraPosition camPos = cameraTranslator->getCameraPosition(corner.x, corner.y);
+			int x = camPos.x;
+			int y = camPos.y;
+			if (debug)
+			{
+				canvas.fillBoxCentered(x, y, 15, 15, 127, 127, 255);
+			}
+			break;
+			
+		}
+	}
+
+	return corner;
 }
 
 Vision::ColorList Vision::getViewColorOrder() {
