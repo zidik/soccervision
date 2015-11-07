@@ -13,6 +13,20 @@
             "gain": 1,
             "exposure": 10000
         },
+        "translation": {
+            "front": {
+                "A": null,
+                "B": null,
+                "C": null,
+                "horizon": null
+            },
+            "rear": {
+                "A": null,
+                "B": null,
+                "C": null,
+                "horizon": null
+            }
+        },
         "path": {
             "blobber": "../Config/blobber.cfg",
             "distortFrontX": "../Config/distort-mapping-front-x.csv",

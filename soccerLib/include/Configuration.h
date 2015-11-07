@@ -114,6 +114,14 @@ public:
 			height{ pt.get<int>("resolution.height") },
 			gain{ pt.get<int>("settings.gain") },
 			exposure{ pt.get<int>("settings.exposure") },
+			frontA{pt.get<float>("translation.front.A")},
+			frontB{ pt.get<float>("translation.front.B") },
+			frontC{ pt.get<float>("translation.front.C") },
+			frontHorizon{ pt.get<float>("translation.front.horizon") },
+			rearA{ pt.get<float>("translation.rear.A") },
+			rearB{ pt.get<float>("translation.rear.B") },
+			rearC{ pt.get<float>("translation.rear.C") },
+			rearHorizon{ pt.get<float>("translation.rear.horizon") },
 			pathBlobberConf( pt.get<std::string>("path.blobber") ),
 			pathDistortFrontX( pt.get<std::string>("path.distortFrontX") ),
 			pathDistortFrontY( pt.get<std::string>("path.distortFrontY") ),
@@ -128,6 +136,15 @@ public:
 		const int height;
 		const int gain;
 		const int exposure;
+
+		const float frontA;
+		const float frontB;
+		const float frontC;
+		const float frontHorizon;
+		const float rearA;
+		const float rearB;
+		const float rearC;
+		const float rearHorizon;
 
 		const std::string pathBlobberConf;
 		const std::string pathDistortFrontX;

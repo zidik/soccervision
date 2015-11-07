@@ -441,34 +441,23 @@ void SoccerBot::setupVision() {
 	frontCameraTranslator = new CameraTranslator();
 	rearCameraTranslator = new CameraTranslator();
 
-
-	//float A = 290.0f;
-	//float B = -0.04f;
-	//float C = 0.20689130201672276f;
-	//float horizon = -300.0f;
-	float A = 120.11218157847301f;
-	float B = -0.037205566171594123f;
-	float C = 0.2124259596292023f;
-	float horizon = 119.40878f;
-
-
-	// TODO Add to config or load from file
 	frontCameraTranslator->setConstants(
-		A, B, C,
-		horizon, 
-		config->camera.width, config->camera.height
+		config->camera.frontA,
+		config->camera.frontB,
+		config->camera.frontC,
+		config->camera.frontHorizon,
+		config->camera.width,
+		config->camera.height
 	);
 
-	// rear parameters
-	A = 116.87509670118826f;
-	B = -0.024224799830663904f;
-	C = 0.20843106680747164f;
-	horizon = 123.73853f;
 
 	rearCameraTranslator->setConstants(
-		A, B, C,
-		horizon,
-		config->camera.width, config->camera.height
+		config->camera.rearA,
+		config->camera.rearB,
+		config->camera.rearC,
+		config->camera.rearHorizon,
+		config->camera.width,
+		config->camera.height
 	);
 
 	std::cout << "  > loading front camera distortion mappings.. ";

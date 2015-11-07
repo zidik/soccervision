@@ -180,7 +180,7 @@ void ParticleFilterLocalizer::resample() {
 	ParticleList newParticles;
 	newParticles.reserve(particleCount);
 	if (particles.size() > 0) {
-		int randomParticleCount = particleCount / 10;
+		int randomParticleCount = particleCount / 100;
 		int resampledParticleCount = particleCount - randomParticleCount;
 		generateRandomParticles(newParticles, randomParticleCount);
 		sampleParticles(newParticles, resampledParticleCount);
@@ -240,30 +240,21 @@ void ParticleFilterLocalizer::calculatePosition()
 	float xSum = 0.0f;
 	float ySum = 0.0f;
 	float orientationSum = 0.0f;
-	double weightSum = 0.0;
 	unsigned int particleCount = particles.size();
-	Particle* particle;
 
 	if (particleCount == 0) {
-		std::cout << "@ NO PARTICLES FOR POSITION" << std::endl;
-		return;
+		throw std::runtime_error("Cannot calculate position with 0 particles");
 	}
 
-	for (unsigned int i = 0; i < particleCount; i++) {
-		particle = particles[i];
-		double weight = particle->probability;
-
-        xSum += (float)(particle->location.x * weight);
-        ySum += (float)(particle->location.y * weight);
-        orientationSum += (float)(particle->orientation * weight);
-		weightSum += weight;
+	for (Particle* particle : particles){
+		xSum += particle->location.x;
+		ySum += particle->location.y;
+		orientationSum += particle->orientation;
 	}
 
-	if (weightSum != 0.0f) {
-		x = (float)(xSum / weightSum);
-		y = (float)(ySum / weightSum);
-		orientation = Math::floatModulus((float)(orientationSum / weightSum), Math::TWO_PI);
-	}
+	x = (float)(xSum / particleCount);
+	y = (float)(ySum / particleCount);
+	orientation = Math::floatModulus((float)(orientationSum / particleCount), Math::TWO_PI);
 }
 
 std::string ParticleFilterLocalizer::getJSON() const {

@@ -103,12 +103,12 @@ void Robot::setupRobotLocalizer() {
 
 	robotLocalizer->addLandmark(
 		LandmarkType::YellowGoalCenter,
-		Math::Vector(0.0f, conf->field.height / 2.0f)
+		Math::Vector(0.0f - 0.25f - 0.05f, conf->field.height / 2.0f)
 	);
 
 	robotLocalizer->addLandmark(
 		LandmarkType::BlueGoalCenter,
-		Math::Vector(conf->field.width, conf->field.height / 2.0f)
+		Math::Vector(conf->field.width + 0.25f + 0.05f, conf->field.height / 2.0f)
 	);
 
 	std::vector<Math::Vector> locations = {
