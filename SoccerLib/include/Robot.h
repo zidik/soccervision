@@ -72,7 +72,7 @@ public:
     Task* getCurrentTask();
     TaskQueue getTasks() { return tasks; }
 	Odometer::Movement getMovement() { return movement; }
-	const ParticleFilterLocalizer::MeasurementMap& getMeasurements() const { return measurements; } // TODO Here?
+	const ParticleFilterLocalizer::Measurements& getMeasurements() const { return measurements; } // TODO Here?
 
 	void handleCommunicationMessage(std::string message);
 	bool handleCommand(const Command& cmd);
@@ -136,7 +136,7 @@ private:
 	Vision::Results* visionResults;
 	Odometer* odometer;
 	Odometer::Movement movement;
-	ParticleFilterLocalizer::MeasurementMap measurements;
+	ParticleFilterLocalizer::Measurements measurements;
 	BallLocalizer::BallList visibleBalls;
 	Math::Polygon currentCameraFOV;
 

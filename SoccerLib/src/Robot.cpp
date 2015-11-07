@@ -334,12 +334,26 @@ void Robot::updateMeasurements() {
 	Object* blueGoal = visionResults->getLargestGoal(Side::BLUE);
 
 	if (yellowGoal != NULL) {
-		measurements[LandmarkType::YellowGoalCenter] = ParticleFilterLocalizer::Measurement(Pixel(yellowGoal->x, yellowGoal->y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
+		ParticleFilterLocalizer::Measurement measurement(LandmarkType::YellowGoalCenter, Pixel(yellowGoal->x, yellowGoal->y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
+		measurements.push_back(measurement);
 	}
 
 	if (blueGoal != NULL) {
-		measurements[LandmarkType::BlueGoalCenter] = ParticleFilterLocalizer::Measurement(Pixel(blueGoal->x, blueGoal->y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
+		ParticleFilterLocalizer::Measurement measurement(LandmarkType::BlueGoalCenter, Pixel(blueGoal->x, blueGoal->y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
+		measurements.push_back(measurement);
 	}
+
+	for (Pixel pixel : visionResults->front->fieldCorners)
+	{
+		ParticleFilterLocalizer::Measurement measurement(LandmarkType::FieldCorner, pixel, Dir::FRONT);
+		measurements.push_back(measurement);
+	}
+	for (Pixel pixel : visionResults->rear->fieldCorners)
+	{
+		ParticleFilterLocalizer::Measurement measurement(LandmarkType::FieldCorner, pixel, Dir::REAR);
+			measurements.push_back(measurement);
+	}
+
 }
 
 void Robot::updateBallLocalizer(Vision::Results* visionResults, float dt) {

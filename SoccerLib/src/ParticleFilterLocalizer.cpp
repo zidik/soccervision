@@ -93,7 +93,7 @@ void ParticleFilterLocalizer::move(float velocityX, float velocityY, float veloc
 	}
 }
 
-void ParticleFilterLocalizer::update(const MeasurementMap& measurements) {
+void ParticleFilterLocalizer::update(const Measurements& measurements) {
     double maxProbability = 0.0;
 
 	for (Particle* particle : particles){
@@ -120,15 +120,12 @@ void ParticleFilterLocalizer::update(const MeasurementMap& measurements) {
     resample();
 }
 
-double ParticleFilterLocalizer::getMeasurementProbability(Particle* const particle, const MeasurementMap& measurements) const {
+double ParticleFilterLocalizer::getMeasurementProbability(Particle* const particle, const Measurements& measurements) const {
     double probability = 1.0;
 
-	for (const std::pair<Landmark::Type, Measurement> pair : measurements)
+	for (const Measurement measurement : measurements)
 	{
-		Landmark::Type landmarkType = pair.first;
-		Measurement measurement = pair.second;
-
-		LandmarkMap::const_iterator landmarkSearch = landmarks.find(landmarkType);
+		LandmarkMap::const_iterator landmarkSearch = landmarks.find(measurement.type);
         if (landmarkSearch == landmarks.end()) {
             std::cout << "- Didnt find landmark, this should not happen" << std::endl;
             continue;

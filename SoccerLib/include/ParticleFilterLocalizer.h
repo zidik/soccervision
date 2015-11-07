@@ -29,7 +29,8 @@ public:
 	struct Measurement
 	{
 		Measurement() = default;
-		Measurement(Pixel bottomPixel, Dir cameraDirection) : bottomPixel{ bottomPixel }, cameraDirection{ cameraDirection } {};
+		Measurement(Landmark::Type type, Pixel bottomPixel, Dir cameraDirection) : type(type), bottomPixel{ bottomPixel }, cameraDirection{ cameraDirection } {};
+		Landmark::Type type;
 		Pixel bottomPixel;
 		Dir cameraDirection;
 	};
@@ -43,7 +44,7 @@ public:
 	};
 
 	typedef std::unordered_map<Landmark::Type, Landmark*> LandmarkMap;
-	typedef std::unordered_map<Landmark::Type, Measurement> MeasurementMap;
+	typedef std::vector<Measurement> Measurements;
 	typedef std::vector<Particle*> ParticleList;
 	
 
@@ -62,10 +63,10 @@ public:
 
 	void move(float velocityX, float velocityY, float omega, float dt) override { move(velocityX, velocityY, omega, dt, false); }
     void move(float velocityX, float velocityY, float omega, float dt, bool exact);
-    double getMeasurementProbability(Particle* const particle, const MeasurementMap& measurements) const;
+    double getMeasurementProbability(Particle* const particle, const Measurements& measurements) const;
 	double evaluateParticleProbabilityPart(const Particle& particle, const Landmark& landmark, const Measurement& measurement) const;
 	void setPosition(float x, float y, float orientation) override;
-    void update(const MeasurementMap& measurements);
+    void update(const Measurements& measurements);
     void resample();
 	
 	void calculatePosition();

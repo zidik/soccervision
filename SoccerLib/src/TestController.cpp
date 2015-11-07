@@ -786,9 +786,7 @@ std::string TestController::getJSON() {
 	
 	stream << "\"measurementsPositions\": {";
 	bool first = true;
-	for(const std::pair<ParticleFilterLocalizer::Landmark::Type, ParticleFilterLocalizer::Measurement> pair : robot->getMeasurements()) {
-		ParticleFilterLocalizer::Landmark::Type type = pair.first;
-		ParticleFilterLocalizer::Measurement measurement = pair.second;
+	for(const  ParticleFilterLocalizer::Measurement measurement : robot->getMeasurements()) {
 		Math::Vector position = robot->robotLocalizer->getWorldPosition(measurement);
 		if (first) { first = false; }
 		else { stream << ","; }
@@ -798,7 +796,7 @@ std::string TestController::getJSON() {
 		//As rest of the code uses unconventional coordinate system, result must be changed:
 		position.y = Config::fieldHeight - position.y;
 		//HACK END
-		stream << "\"" << type << "\": " << position;
+		stream << "\"" << measurement.type << "\": " << position;
 	}
 	stream << "}";
 	

@@ -76,10 +76,18 @@ Vision::Result* Vision::process() {
 	result->whiteDistance = whiteDistance;
 	result->blackDistance = blackDistance;
 
-	//getColorTransitionPoint("white", "black", 0, 0.15, -Math::sqrt(2), Math::sqrt(2));
-	getCornerPoint(0, Math::PI, 2.f, 20);
+	processCorners(result->fieldCorners);
 
 	return result;
+}
+
+void Vision::processCorners(std::vector<Pixel>& fieldCorners)
+{
+	try{
+		Pixel cornerPixel = getCornerPixel(0, Math::PI, 2.f, 20);
+		fieldCorners.push_back(cornerPixel);
+	}
+	catch (const CouldNotFindCorner &e) {}
 }
 
 ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
@@ -2036,7 +2044,7 @@ Vision::Distance Vision::getColorTransitionPoint(std::string firstColor, std::st
 	bool debug = canvas.data != NULL;
 	for (Math::PointListIt it = points.begin(); it != points.end(); it++) {
 		Math::Vector point = *it;
-		CameraTranslator::CameraPosition camPos = cameraTranslator->getCameraPosition(point.x, point.y);
+		Pixel camPos = cameraTranslator->getCameraPosition(point);
 		int x = camPos.x;
 		int y = camPos.y;
 		
@@ -2059,7 +2067,7 @@ Vision::Distance Vision::getColorTransitionPoint(std::string firstColor, std::st
 				for (int i = 0; i < 3; i++)
 				{
 					point = *(--it);
-					CameraTranslator::CameraPosition camPos = cameraTranslator->getCameraPosition(point.x, point.y);
+					camPos = cameraTranslator->getCameraPosition(point);
 					x = camPos.x;
 					y = camPos.y;					
 					
@@ -2085,60 +2093,53 @@ Vision::Distance Vision::getColorTransitionPoint(std::string firstColor, std::st
 	return colorDistance;
 }
 
-Math::Vector Vision::getCornerPoint(float startAngle, float endAngle, float r, int numberOfPoints)
+Pixel Vision::getCornerPixel(float startAngle, float endAngle, float r, int numberOfPoints)
 {
 	bool debug = canvas.data != NULL;
 	float dAngle = Math::abs(endAngle - startAngle) / (float)numberOfPoints;
 	
-	float x;
-	float y;
 	std::vector<Vision::Distance> transitionVec;
 
 	for (int i = 0; i < numberOfPoints + 1; i++)
 	{
-		x = r * Math::cos(startAngle + dAngle * i);
-		y = 0.15 + r * Math::sin(startAngle + dAngle * i);
+		float x = r * Math::cos(startAngle + dAngle * i);
+		float y = 0.15 + r * Math::sin(startAngle + dAngle * i);
 		Vision::Distance transition = getColorTransitionPoint("white", "black", 0, 0.17, x, y);
 		if (transition.straight != 0)
 		{
 			transitionVec.push_back(transition);
 		}
 	}
+
+	if (transitionVec.size() < 3) throw CouldNotFindCorner();
+
 	int state = 0;
-	int oldState = 0;
-
-	Math::Vector corner(0,0);
-	if (transitionVec.size() < 2) return corner;
-
 	for (int i = 0; i < transitionVec.size() - 1; i++)
 	{
+		int oldState = state;
 		if (transitionVec.at(i).straight <= transitionVec.at(i+1).straight)
 		{
-			oldState = state;
 			state = 1;			
 		}
 		else
 		{
-			oldState = state;
 			state = -1;
 		}
 
 		if (state == -1 && oldState == 1)
 		{
-			corner = Math::Vector(transitionVec.at(i).x, transitionVec.at(i).y);
-			CameraTranslator::CameraPosition camPos = cameraTranslator->getCameraPosition(corner.x, corner.y);
-			int x = camPos.x;
-			int y = camPos.y;
+			Math::Vector corner = Math::Vector(transitionVec.at(i).x, transitionVec.at(i).y);
+			Pixel cornerPixel = cameraTranslator->getCameraPosition(corner);
 			if (debug)
 			{
-				canvas.fillBoxCentered(x, y, 15, 15, 127, 127, 255);
+				canvas.fillBoxCentered(cornerPixel.x, cornerPixel.y, 15, 15, 127, 127, 255);
 			}
-			break;
+			
+			return cornerPixel;
 			
 		}
 	}
-
-	return corner;
+	throw CouldNotFindCorner();
 }
 
 Vision::ColorList Vision::getViewColorOrder() {
