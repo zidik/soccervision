@@ -22,6 +22,7 @@ void TeamController::reset() {
 
 	com->send("reset");
 	targetSide = Side::YELLOW; // will be switched to blue in handleToggleSideCommand()
+	defendSide = Side::BLUE;
 	totalDuration = 0.0f;
 	currentStateDuration = 0.0f;
 	currentState = NULL;
