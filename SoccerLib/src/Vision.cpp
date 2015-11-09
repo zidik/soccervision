@@ -83,7 +83,7 @@ Vision::Result* Vision::process() {
 void Vision::processCorners(std::vector<Pixel>& fieldCorners)
 {
 	try{
-		Pixel cornerPixel = getCornerPixel(Math::PI/4, Math::PI/4*3, 2.f, 20);
+		Pixel cornerPixel = getCornerPixel(-Math::PI*2/5, Math::PI*2/5, 2.f, 20);
 		fieldCorners.push_back(cornerPixel);
 	}
 	catch (const CouldNotFindCorner &) {}
@@ -2229,8 +2229,8 @@ Pixel Vision::getCornerPixel(float startAngle, float endAngle, float r, int numb
 
 	for (int i = 0; i < numberOfPoints + 1; i++)
 	{
-		float x = 0.15f + r * Math::sin(startAngle + dAngle * i);
-		float y = r * Math::cos(startAngle + dAngle * i);
+		float x = r * Math::cos(startAngle + dAngle * i) + 0.15f;
+		float y = r * Math::sin(startAngle + dAngle * i);
 		Math::Vector transition = getColorTransitionPoint("white", "black", 0.17f, 0, x, y);
 		if (transition.getLength() != 0)
 		{
