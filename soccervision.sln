@@ -1,20 +1,32 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "soccervision", "soccervision.vcxproj", "{E559BAAF-ABF0-4B58-B040-F15350FF6E8B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoccerLib", "SoccerLib\soccerLib.vcxproj", "{173A809E-9477-44CC-A938-759803732737}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoccerApp", "SoccerApp\SoccerApp.vcxproj", "{1D399D3E-3CC9-4BAF-93FF-673F6EEFB45A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tests", "Tests\Tests.vcxproj", "{DA55B774-C343-447D-8AE0-CF7682A84020}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Win32 = Debug|Win32
-		Release|Win32 = Release|Win32
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E559BAAF-ABF0-4B58-B040-F15350FF6E8B}.Debug|Win32.ActiveCfg = Debug|Win32
-		{E559BAAF-ABF0-4B58-B040-F15350FF6E8B}.Debug|Win32.Build.0 = Debug|Win32
-		{E559BAAF-ABF0-4B58-B040-F15350FF6E8B}.Release|Win32.ActiveCfg = Release|Win32
-		{E559BAAF-ABF0-4B58-B040-F15350FF6E8B}.Release|Win32.Build.0 = Release|Win32
+		{173A809E-9477-44CC-A938-759803732737}.Debug|x86.ActiveCfg = Debug|Win32
+		{173A809E-9477-44CC-A938-759803732737}.Debug|x86.Build.0 = Debug|Win32
+		{173A809E-9477-44CC-A938-759803732737}.Release|x86.ActiveCfg = Release|Win32
+		{173A809E-9477-44CC-A938-759803732737}.Release|x86.Build.0 = Release|Win32
+		{1D399D3E-3CC9-4BAF-93FF-673F6EEFB45A}.Debug|x86.ActiveCfg = Debug|Win32
+		{1D399D3E-3CC9-4BAF-93FF-673F6EEFB45A}.Debug|x86.Build.0 = Debug|Win32
+		{1D399D3E-3CC9-4BAF-93FF-673F6EEFB45A}.Release|x86.ActiveCfg = Release|Win32
+		{1D399D3E-3CC9-4BAF-93FF-673F6EEFB45A}.Release|x86.Build.0 = Release|Win32
+		{DA55B774-C343-447D-8AE0-CF7682A84020}.Debug|x86.ActiveCfg = Debug|Win32
+		{DA55B774-C343-447D-8AE0-CF7682A84020}.Debug|x86.Build.0 = Debug|Win32
+		{DA55B774-C343-447D-8AE0-CF7682A84020}.Release|x86.ActiveCfg = Release|Win32
+		{DA55B774-C343-447D-8AE0-CF7682A84020}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
