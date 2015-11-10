@@ -233,6 +233,12 @@
     <ClInclude Include="include\PID.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ClientConnectionMetadata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\DisplayWindow.cpp">
@@ -431,6 +437,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\PID.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ClientConnectionMetadata.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

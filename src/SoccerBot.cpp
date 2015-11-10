@@ -34,7 +34,7 @@ SoccerBot::SoccerBot() :
 	frontVision(NULL), rearVision(NULL),
 	frontProcessor(NULL), rearProcessor(NULL),
 	frontCameraTranslator(NULL), rearCameraTranslator(NULL),
-	gui(NULL), fpsCounter(NULL), visionResults(NULL), robot(NULL), activeController(NULL), server(NULL), com(NULL),
+	gui(NULL), fpsCounter(NULL), visionResults(NULL), robot(NULL), activeController(NULL), server(NULL), client(NULL), com(NULL),
 	jpegBuffer(NULL), screenshotBufferFront(NULL), screenshotBufferRear(NULL),
 	running(false), debugVision(false), showGui(false), controllerRequested(false), stateRequested(false), frameRequested(false), useScreenshot(false),
 	dt(0.01666f), lastStepTime(0.0), totalTime(0.0f),
@@ -55,6 +55,7 @@ SoccerBot::~SoccerBot() {
 
 	if (gui != NULL) delete gui; gui = NULL;
 	if (server != NULL) delete server; server = NULL;
+	if (client != NULL) delete client; client = NULL;
 	if (robot != NULL) delete robot; robot = NULL;
 	if (ximeaFrontCamera != NULL) delete ximeaFrontCamera; ximeaFrontCamera = NULL;
 	if (ximeaRearCamera != NULL) delete ximeaRearCamera; ximeaRearCamera = NULL;
@@ -89,6 +90,7 @@ void SoccerBot::setup() {
 	setupControllers();
 	setupSignalHandler();
 	setupServer();
+	setupClient();
 
 	if (showGui) {
 		setupGui();
@@ -100,10 +102,10 @@ void SoccerBot::run() {
 
 	running = true;
 
-	com->start();
+	//com->start();
 	server->start();
 
-	com->send("reset");
+	//com->send("reset");
 
 	setController(Config::defaultController);
 
@@ -115,11 +117,42 @@ void SoccerBot::run() {
 		rearCamera->startAcquisition();
 	}
 
+	if (slaveMode) {
+		// Connect to master
+		client->connect("ws://localhost:8000");
+		std::cout << "> Created client connection with id " << "ws://localhost:8000" << std::endl;
+		Sleep(1000);
+		client->send("<melon>");
+	}
+
 	if (!frontCamera->isOpened() && !rearCamera->isOpened()) {
 		std::cout << "! Neither of the cameras was opened, running in test mode" << std::endl;
 
+		double time;
+
+		//server->broadcast("<potato>");
+
 		while (running) {
-			Sleep(100);
+			Sleep(1000);
+
+			time = Util::millitime();
+
+			if (lastStepTime != 0.0) {
+				dt = (float)(time - lastStepTime);
+			}
+			else {
+				dt = 1.0f / 60.0f;
+			}
+
+			if (slaveMode) {
+				// Send state to master
+				//client->send("Potato");
+				handleClientMessages();
+			}
+
+			handleServerMessages();
+			
+			handleCommunicationMessages();
 
 			if (SignalHandler::exitRequested) {
 				running = false;
@@ -613,6 +646,12 @@ void SoccerBot::setupSignalHandler() {
 
 void SoccerBot::setupServer() {
 	server = new Server();
+	if (slaveMode)
+		server->setPort(8080);
+}
+
+void SoccerBot::setupClient() {
+	client = new Client();
 }
 
 void SoccerBot::setupCommunication() {
@@ -801,6 +840,8 @@ void SoccerBot::handleServerMessage(Server::Message* message) {
                 handleListScreenshotsCommand(message);
 			} else if (command.name == "camera-translator") {
 				handleCameraTranslatorCommand(command.parameters);
+			} else if (command.name == "melon") {
+				handleClientTestMessage();
 			}
 			else {
 				std::cout << "- Unsupported command: " << command.name << " " << Util::toString(command.parameters) << std::endl;
@@ -979,6 +1020,43 @@ void SoccerBot::handleCameraTranslatorCommand(Command::Parameters parameters) {
 	rearCameraTranslator->k3 = k3;
 	rearCameraTranslator->horizon = horizon;
 	rearCameraTranslator->distortionFocus = distortionFocus;
+}
+
+void SoccerBot::handleClientTestMessage() {
+	std::cout << "Server got melon from client" << std::endl;
+	server->broadcast("<potato>");
+}
+
+void SoccerBot::handleClientMessages() {
+	std::string message;
+	while ((message = client->dequeueMessage()) != "") {
+		handleClientMessage(message);
+	}
+}
+
+void SoccerBot::handleClientMessage(std::string message) {
+	if (Command::isValid(message)) {
+		Command command = Command::parse(message);
+
+		if (
+			activeController == NULL
+			|| (!activeController->handleCommand(command) && !activeController->handleRequest(message))
+			) {
+			if (command.name == "potato") {
+				handleClientMessageTesting();
+			}
+			else {
+				std::cout << "- Unsupported command: " << command.name << " " << Util::toString(command.parameters) << std::endl;
+			}
+		}
+	}
+	else {
+		std::cout << "- Message '" << message << "' is not a valid client command" << std::endl;
+	}
+}
+void SoccerBot::handleClientMessageTesting() {
+	client->send("<melon>");
+	std::cout << "Client got potato from server" << std::endl;
 }
 
 void SoccerBot::handleCommunicationMessages() {

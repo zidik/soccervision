@@ -94,6 +94,7 @@
     <ClInclude Include="include\BaseCamera.h" />
     <ClInclude Include="include\Blobber.h" />
     <ClInclude Include="include\CameraTranslator.h" />
+    <ClInclude Include="include\Client.h" />
     <ClInclude Include="include\Coilgun.h" />
     <ClInclude Include="include\Command.h" />
     <ClInclude Include="include\ComPortCommunication.h" />
@@ -106,6 +107,7 @@
     <ClInclude Include="include\Dribbler.h" />
     <ClInclude Include="include\FpsCounter.h" />
     <ClInclude Include="include\Canvas.h" />
+    <ClInclude Include="include\ClientConnectionMetadata.h" />
     <ClInclude Include="include\ImageProcessor.h" />
     <ClInclude Include="include\Localizer.h" />
     <ClInclude Include="include\LookupTable.h" />
@@ -190,6 +192,8 @@
     <ClCompile Include="src\BaseAI.cpp" />
     <ClCompile Include="src\Blobber.cpp" />
     <ClCompile Include="src\CameraTranslator.cpp" />
+    <ClCompile Include="src\Client.cpp" />
+    <ClCompile Include="src\ClientConnectionMetadata.cpp" />
     <ClCompile Include="src\Coilgun.cpp" />
     <ClCompile Include="src\Command.cpp" />
     <ClCompile Include="src\ComPortCommunication.cpp" />
