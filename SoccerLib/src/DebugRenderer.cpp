@@ -61,7 +61,7 @@ void DebugRenderer::renderBalls(unsigned char* image, Vision* vision, const Obje
 
 	Object* ball = NULL;
 	float ballFutureX, ballFutureY;
-	CameraTranslator::CameraPosition futureBallPos, realBallPos;
+	Pixel futureBallPos, realBallPos;
 	size_t ballNumber;
     char buf[256];
 	//int correctedX, correctedY;
@@ -76,8 +76,8 @@ void DebugRenderer::renderBalls(unsigned char* image, Vision* vision, const Obje
 		ballFutureY = ball->distanceY + 6 * ball->relativeMovement.dY;
 
 		//get pixel on screen where ball should be
-		futureBallPos = vision->getCameraTranslator()->getCameraPosition(ballFutureX, ballFutureY);
-		realBallPos = vision->getCameraTranslator()->getCameraPosition(ball->distanceX, ball->distanceY);
+		futureBallPos = vision->getCameraTranslator()->getCameraPosition(Math::Vector(ballFutureX, ballFutureY));
+		realBallPos = vision->getCameraTranslator()->getCameraPosition(Math::Vector(ball->distanceX, ball->distanceY));
 
         canvas.drawBoxCentered(ball->x, ball->y, ball->width, ball->height);
 		//canvas.drawLine(ball->x - ball->width / 2, ball->y - ball->height / 2, ball->x + ball->width / 2, ball->y + ball->height / 2);
@@ -143,7 +143,7 @@ void DebugRenderer::renderRobots(unsigned char* image, Vision* vision, const Obj
 
 	Object* robot = NULL;
 	float robotFutureX, robotFutureY;
-	CameraTranslator::CameraPosition futureRobotPos, realRobotPos;
+	Pixel futureRobotPos, realRobotPos;
 	size_t robotNumber;
 	char buf[256];
 	int r, g, b;
@@ -177,8 +177,8 @@ void DebugRenderer::renderRobots(unsigned char* image, Vision* vision, const Obj
 		robotFutureY = robot->distanceY + 6 * robot->relativeMovement.dY;
 
 		//get pixel on screen where robot should be
-		futureRobotPos = vision->getCameraTranslator()->getCameraPosition(robotFutureX, robotFutureY);
-		realRobotPos = vision->getCameraTranslator()->getCameraPosition(robot->distanceX, robot->distanceY);
+		futureRobotPos = vision->getCameraTranslator()->getCameraPosition(Math::Vector(robotFutureX, robotFutureY));
+		realRobotPos = vision->getCameraTranslator()->getCameraPosition(Math::Vector(robot->distanceX, robot->distanceY));
 
 		canvas.drawBoxCentered(robot->x, robot->y, robot->width, robot->height, r, g, b);
 		canvas.drawCircle(robot->x, robot->y, std::min(robot->width / 2, robot->height / 2), r, g, b);

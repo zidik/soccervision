@@ -48,8 +48,11 @@ void TeamController::setupStates() {
 	states["take-cornerkick"] = new TakeCornerKickState(this);
 	states["take-penalty"] = new TakePenaltyState(this);
 	states["find-ball"] = new FindBallState(this);
+	states["find-ball-goalkeeper"] = new FindBallGoalkeeperState(this);
 	states["fetch-ball-front"] = new FetchBallFrontState(this);
 	states["fetch-ball-rear"] = new FetchBallRearState(this);
+	states["drive-to-own-goal"] = new DriveToOwnGoalState(this);
+	states["aim-kick"] = new AimKickState(this);
 }
 
 void TeamController::WaitForRefereeState::onEnter(Robot* robot, Parameters parameters) {
@@ -59,9 +62,7 @@ void TeamController::WaitForRefereeState::onEnter(Robot* robot, Parameters param
 }
 
 void TeamController::WaitForRefereeState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-
-
-	//choose proper state based on game situation and team in possession and send states to teammates
+	//this state will be entered after the referee sends stop and waits for the next command from the referee to choose next state
 }
 
 void TeamController::WaitForKickState::onEnter(Robot* robot, Parameters parameters) {
@@ -72,6 +73,10 @@ void TeamController::WaitForKickState::onEnter(Robot* robot, Parameters paramete
 
 void TeamController::WaitForKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 	Object* ball = visionResults->getClosestBall();
+
+	// configuration parameters
+	float kickDetectionDeltaPosition = 0.1f;
+	float kickDetectionMovingSpeed = 0.6f;
 
 	if (ball != NULL) {
 		//write down initial ball location if not done already, relative coordinates
@@ -85,7 +90,7 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 			Math::Vector currentBallPos = Math::Vector(ball->distanceX, ball->distanceY);
 
 			//check if ball has drifted significantly away from starting position or is moving with high enough speed (not using speed currently, speed calculation has too many errors it seems)
-			if (abs(currentBallPos.x - startingBallPos.x) > 0.15f || abs(currentBallPos.y - startingBallPos.y) > 0.15f /*|| ball->relativeMovement.speed > 0.6f*/) {
+			if (abs(currentBallPos.x - startingBallPos.x) > kickDetectionDeltaPosition || abs(currentBallPos.y - startingBallPos.y) > kickDetectionDeltaPosition /*|| ball->relativeMovement.speed > kickDetectionMovingSpeed*/) {
 				//kick detected
 
 				//TO-DO write here what states to go to based on game situation, currently
@@ -112,11 +117,12 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		return;
 	}
 
+	//probably should add function to vision to get fastest moving ball instead, but in 2v2 this should work, as there is only one ball
 	Object* ball = visionResults->getClosestBall();
 
 	// configuration parameters
 	float maximumFetchDistance = 0.15f;
-	float minimumMovingDeltaY = 0.1f;
+	float minimumMovingDeltaY = 0.05f;
 	float goalKeepDistance = 0.5f;
 	float forwardSpeedMultiplier = 10.0f;
 	float sidewaysSpeedMultiplier = 10.0f;
@@ -126,17 +132,14 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		//if ball has not been seen before, start scanning for ball
 		if (!ballWasSeen)
 		{
-			//TODO temporary substitute
-			ai->setState("manual-control");
+			ai->setState("find-ball-goalkeeper");
 			return;
-		} //if ball was seen, do something like track robot closest to centre or something
+		} //if ball was seen, do something like track robot closest to centre or just keep current position or something whatever
 		else {
-			//TODO temporary substitute
-			ai->setState("manual-control");
-			return;
+			//TODO write something here
 		}
-	} //ball found
-	else {
+	} //ball found, check if it isn't in a goal
+	else if (!visionResults->isBallInGoal(ball)) {
 		if (!ballWasSeen) ballWasSeen = true;
 
 		bool shouldIntercept = false;
@@ -144,9 +147,14 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		
 		//check if ball is close enough to fetch
 		if (ball->distance < maximumFetchDistance) {
-			//TODO temporary substitute
-			ai->setState("manual-control");
-			return;
+			if (ball->behind) {
+				ai->setState("fetch-ball-rear");
+				return;
+			}
+			else {
+				ai->setState("fetch-ball-front");
+				return;
+			}
 		}
 		
 		//check if ball is moving fast enough toward robot
@@ -155,12 +163,11 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		}
 
 		if (shouldIntercept) {
-			//calculate optimal movement parameters
-			forwardSpeed = (goalKeepDistance - defendedGoal->distance) * forwardSpeedMultiplier;
-			sideWaysSpeed = ball->relativeMovement.dX * sidewaysSpeedMultiplier;
+			ai->setState("intercept-ball");
+			return;
 		}
 		else {
-			//centre robot in front of goal, this one is not a very good solution, but temporary
+			//calculate parameters to keep robot in front of goal, current calculation doesn't probably really work
 			forwardSpeed = (goalKeepDistance - defendedGoal->distance) * forwardSpeedMultiplier;
 			sideWaysSpeed = defendedGoal->distanceX * sidewaysSpeedMultiplier;
 		}
@@ -242,6 +249,14 @@ void TeamController::FindBallState::step(float dt, Vision::Results* visionResult
 	//TODO fill this out
 }
 
+void TeamController::FindBallGoalkeeperState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::FindBallGoalkeeperState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
 void TeamController::FetchBallFrontState::onEnter(Robot* robot, Parameters parameters) {
 	//TODO fill this out
 }
@@ -255,5 +270,21 @@ void TeamController::FetchBallRearState::onEnter(Robot* robot, Parameters parame
 }
 
 void TeamController::FetchBallRearState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::DriveToOwnGoalState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::DriveToOwnGoalState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::AimKickState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::AimKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 	//TODO fill this out
 }

@@ -122,7 +122,7 @@ public:
 		bool ballWasSeen;
 	};
 
-	//This state is for the goalkeeper
+	//For intercepting a moving ball
 	class InterceptBallState : public State {
 
 	public:
@@ -143,6 +143,15 @@ public:
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 	};
 
+	//Find the ball while defending the goal
+	class FindBallGoalkeeperState : public State {
+
+	public:
+		FindBallGoalkeeperState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	};
+
 	//Fetch the ball @front
 	class FetchBallFrontState : public State {
 
@@ -157,6 +166,24 @@ public:
 
 	public:
 		FetchBallRearState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	};
+
+	//Drive in front of own goal
+	class DriveToOwnGoalState : public State {
+
+	public:
+		DriveToOwnGoalState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	};
+
+	//Aim for a kick
+	class AimKickState : public State {
+
+	public:
+		AimKickState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 	};
