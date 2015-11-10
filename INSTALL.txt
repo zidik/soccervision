@@ -15,5 +15,14 @@ INSTALL BOOST
 1. download latest (1.59.0) http://www.boost.org/users/download/
 2. in boost folder execute
    > bootstrap
-   > .\b2 runtime-link=static --with-date_time --with-thread --with-regex
+   > .\b2 runtime-link=static --with-date_time --with-thread --with-regex --with-test
 3. create BOOSTROOT environment variable pointing to the library path (C:\boost etc)
+
+CONFIGURE
+1)Create file "ID.txt" in folder "Config/"
+2)Add a robot's name in there (for example "Telliskivi" or "001TRT")
+	[This loads robot specific configuration file after loading the global configuration file.
+	Specifying 001TRT will load "configuration-001TRT.json" after loading "configuration.json".
+	Multiple values can be added by separating each by newline. 
+	Each loaded configuration file overwrites values in previous ones if the keys have the same path.]
+
