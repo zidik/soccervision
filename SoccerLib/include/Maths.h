@@ -211,6 +211,7 @@ static double getGaussian(double mu, double sigma, double x) {
 	return Math::exp(-Math::pow(mu - x, 2.0) / Math::pow(sigma, 2.0) / 2.0) / Math::sqrt(2.0 * Math::PI * Math::pow(sigma, 2.0));
 }
 
+
 class Matrix3x1;
 
 class Matrix3x3 {
@@ -325,6 +326,28 @@ inline Vector operator/(Vector left, float divisor) {
 inline std::ostream& operator<<(std::ostream& os, const Vector& vec) {
 	return os << "{\"x\":" << vec.x << ", \"y\":" << vec.y << "}";
 }
+
+static float getSlope(std::vector<Vector> points)
+{
+	int n = points.size();
+	std::vector<float> x;
+	std::vector<float> y;
+	for (int i = 0; i < n; i++)
+	{
+		x.push_back(points.at(i).x);
+		y.push_back(points.at(i).y);
+	}
+
+	float sX = (float)std::accumulate(x.begin(), x.end(), 0.0);
+	float sY = (float)std::accumulate(y.begin(), y.end(), 0.0);
+	float sXX = (float)std::inner_product(x.begin(), x.end(), x.begin(), 0.0);
+	float sXY = (float)std::inner_product(x.begin(), x.end(), y.begin(), 0.0);
+
+	float a = (n * sXY - sX * sY) / (n * sXX - sX * sX);
+
+	return a;
+}
+
 
 struct Position {
 	Position() = default;

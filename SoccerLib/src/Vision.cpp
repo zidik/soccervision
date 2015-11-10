@@ -2040,7 +2040,7 @@ Math::Vector Vision::getColorTransitionPoint(std::string firstColor, std::string
 	Math::Vector colorWorldPos;
 	Math::PointList points = cameraTranslator->getPointsBetween(x1, y1, x2, y2, 0.01f);
 
-	std::cout << "colorDistanceSize: " << points.size() << std::endl;
+	//std::cout << "colorDistanceSize: " << points.size() << std::endl;
 	bool debug = canvas.data != NULL;
 	for (Math::PointListIt it = points.begin(); it != points.end(); it++) {
 		Math::Vector point = *it;
@@ -2066,6 +2066,8 @@ Math::Vector Vision::getColorTransitionPoint(std::string firstColor, std::string
 				//if (debug) canvas.fillCircle(x, y, 3, 255, 127, 127);
 				for (int i = 0; i < 3; i++)
 				{
+					if (it == points.begin()) break;
+
 					point = *(--it);
 					camPos = cameraTranslator->getCameraPosition(point);
 					x = camPos.x;
@@ -2079,7 +2081,7 @@ Math::Vector Vision::getColorTransitionPoint(std::string firstColor, std::string
 						if (debug) {
 							canvas.fillBoxCentered(x, y, 10, 10, 255, 255, 255);
 							//std::string = "" + colorDistance.straight;
-							canvas.drawText(x, y, std::to_string(point.getLength()));
+							//canvas.drawText(x, y, std::to_string(point.getLength()));
 						}
 
 						break;
@@ -2130,13 +2132,21 @@ Pixel Vision::getCornerPixel(float startAngle, float endAngle, float r, int numb
 		{
 			Math::Vector corner(transitionVec.at(i).x, transitionVec.at(i).y);
 			Pixel cornerPixel = cameraTranslator->getCameraPosition(corner);
-			if (debug)
+			float a1 = Math::getSlope(std::vector<Math::Vector>(transitionVec.begin(), transitionVec.begin() + i));
+			float a2 = Math::getSlope(std::vector<Math::Vector>(transitionVec.begin() + i, transitionVec.end()));
+			float productA = a1 * a2;
+			if (productA >= -1.2 && productA <= 0.8)
 			{
-				canvas.fillBoxCentered(cornerPixel.x, cornerPixel.y, 15, 15, 127, 127, 255);
-			}
-			
-			return cornerPixel;
-			
+				if (debug)
+				{
+					canvas.fillBoxCentered(cornerPixel.x, cornerPixel.y, 15, 15, 127, 127, 255);
+					//std::ostringstream ss;
+					//ss << "a1:" << a1 << ", a2:" << a2 << ", " << a1*a2;
+					//canvas.drawText(cornerPixel.x, cornerPixel.y, ss.str());
+				}
+
+				return cornerPixel;
+			}		
 		}
 	}
 	throw CouldNotFindCorner();
