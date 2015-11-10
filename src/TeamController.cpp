@@ -33,11 +33,35 @@ void TeamController::reset() {
 }
 
 void TeamController::setupStates() {
+	states["wait-for-referee"] = new WaitForRefereeState(this);
 	states["manual-control"] = new ManualControlState(this);
 	states["drive-to"] = new DriveToState(this);
 	states["turn-by"] = new TurnByState(this);
 	states["wait-for-kick"] = new WaitForKickState(this);
 	states["defend-goal"] = new DefendGoalState(this);
+	states["intercept-ball"] = new InterceptBallState(this);
+	states["take-kickoff"] = new TakeKickoffState(this);
+	states["take-freekick-direct"] = new TakeFreeKickDirectState(this);
+	states["take-freekick-indirect"] = new TakeFreeKickIndirectState(this);
+	states["take-goalkick"] = new TakeGoalkickState(this);
+	states["take-throwin"] = new TakeThrowInState(this);
+	states["take-cornerkick"] = new TakeCornerKickState(this);
+	states["take-penalty"] = new TakePenaltyState(this);
+	states["find-ball"] = new FindBallState(this);
+	states["fetch-ball-front"] = new FetchBallFrontState(this);
+	states["fetch-ball-rear"] = new FetchBallRearState(this);
+}
+
+void TeamController::WaitForRefereeState::onEnter(Robot* robot, Parameters parameters) {
+	//Nullify previous referee state
+	ai->whoHasBall = TeamInPossession::NOONE;
+	ai->currentSituation = GameSituation::UNKNOWN;
+}
+
+void TeamController::WaitForRefereeState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+
+
+	//choose proper state based on game situation and team in possession and send states to teammates
 }
 
 void TeamController::WaitForKickState::onEnter(Robot* robot, Parameters parameters) {
@@ -83,7 +107,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 
 	//if goal is not visible in back camera, switch to driving in front of goal state.
 	if (defendedGoal == NULL) {
-		//temporary substitute
+		//TODO temporary substitute
 		ai->setState("manual-control");
 		return;
 	}
@@ -102,12 +126,12 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		//if ball has not been seen before, start scanning for ball
 		if (!ballWasSeen)
 		{
-			//temporary substitute
+			//TODO temporary substitute
 			ai->setState("manual-control");
 			return;
 		} //if ball was seen, do something like track robot closest to centre or something
 		else {
-			//temporary substitute
+			//TODO temporary substitute
 			ai->setState("manual-control");
 			return;
 		}
@@ -120,7 +144,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		
 		//check if ball is close enough to fetch
 		if (ball->distance < maximumFetchDistance) {
-			//temporary substitute
+			//TODO temporary substitute
 			ai->setState("manual-control");
 			return;
 		}
@@ -144,4 +168,92 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		robot->lookAt(ball);
 		
 	}
+}
+
+void TeamController::InterceptBallState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::InterceptBallState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::TakeKickoffState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::TakeFreeKickDirectState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::TakeFreeKickIndirectState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::TakeFreeKickIndirectState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::TakeGoalkickState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::TakeGoalkickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::TakeThrowInState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::TakeThrowInState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::TakeCornerKickState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::TakeCornerKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::TakePenaltyState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::FindBallState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::FindBallState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::FetchBallFrontState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::FetchBallFrontState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::FetchBallRearState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::FetchBallRearState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
 }
