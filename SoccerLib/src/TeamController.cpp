@@ -11,6 +11,7 @@ TeamController::TeamController(Robot* robot, AbstractCommunication* com) : TestC
 	speedMultiplier = 1.0f;
 	whoHasBall = TeamInPossession::NOONE;
 	currentSituation = GameSituation::UNKNOWN;
+	passNeeded = true;
 };
 
 TeamController::~TeamController() {
@@ -53,6 +54,8 @@ void TeamController::setupStates() {
 	states["fetch-ball-rear"] = new FetchBallRearState(this);
 	states["drive-to-own-goal"] = new DriveToOwnGoalState(this);
 	states["aim-kick"] = new AimKickState(this);
+	states["pass-ball"] = new PassBallState(this);
+	states["get-pass"] = new GetPassState(this);
 }
 
 void TeamController::WaitForRefereeState::onEnter(Robot* robot, Parameters parameters) {
@@ -286,5 +289,21 @@ void TeamController::AimKickState::onEnter(Robot* robot, Parameters parameters) 
 }
 
 void TeamController::AimKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::PassBallState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::PassBallState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::GetPassState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::GetPassState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 	//TODO fill this out
 }

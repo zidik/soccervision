@@ -188,6 +188,25 @@ public:
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 	};
 
+	//Pass the ball
+	class PassBallState : public State {
+
+	public:
+		PassBallState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	};
+
+	//Receive passed ball
+	class GetPassState : public State {
+
+	public:
+		GetPassState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	};
+
+	
 	TeamController(Robot* robot, AbstractCommunication* com);
 	~TeamController();
 
@@ -197,6 +216,7 @@ private:
 	void setupStates();
 	GameSituation currentSituation;
 	TeamInPossession whoHasBall;
+	bool passNeeded;
 };
 
 #endif // TEAMCONTROLLER_H
