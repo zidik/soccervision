@@ -12,6 +12,7 @@
 
 #include <string>
 #include <vector>
+#include <utility>
 
 class Vision {
 
@@ -77,10 +78,13 @@ public:
 	};
 
 	struct Result {
-		Result() : vision(NULL) {}
+		Result() : vision(NULL) {
+			balls = new ObjectList();
+			robots = new ObjectList();
+		}
 
-		ObjectList balls;
-		ObjectList robots;
+		ObjectList* balls;
+		ObjectList* robots;
 		ObjectList goals;
 		std::vector<Pixel> fieldCorners;
 		ColorList colorOrder;
@@ -136,11 +140,40 @@ public:
 		int newWidth;
 	};
 
+	struct PersistenceMatchPair {
+		PersistenceMatchPair(size_t persistentIndex, size_t newIndex, float distance) : persistentIndex(persistentIndex), newIndex(newIndex), distance(distance) {}
+
+		size_t persistentIndex;
+		size_t newIndex;
+		float distance;
+
+		enum property {
+			PERSISTENTINDEX = 1,
+			NEWINDEX = 2,
+			DISTANCE = 3
+		};
+
+		struct EntityComp {
+			int property;
+			EntityComp(int property) : property(property) {}
+			bool operator()(PersistenceMatchPair* s1, PersistenceMatchPair* s2) const {
+				if (property == PERSISTENTINDEX)
+					return s1->persistentIndex < s2->persistentIndex;
+				else if (property == NEWINDEX)
+					return s1->newIndex < s2->newIndex;
+				else if (property == DISTANCE)
+					return s1->distance < s2->distance;
+				else
+					return s1->distance < s2->distance;
+			}
+		};
+	};
+
     Vision(Blobber* blobber, CameraTranslator* cameraTranslator, Dir dir, int width, int height);
     ~Vision();
 
 	void setDebugImage(unsigned char* image, int width, int height);
-    Result* process();
+	Result* process();
 	void processCorners(std::vector<Pixel>& fieldCorners);
 	Blobber::Color* getColorAt(int x, int y);
 	CameraTranslator* getCameraTranslator() { return cameraTranslator; }
@@ -154,7 +187,10 @@ public:
 
 private:
 	std::pair<ObjectList, ObjectList> processGoalsAndRobots(Dir dir);
+	ObjectList processGoalsUpdateRobots(Dir dir);
 	ObjectList processBalls(Dir dir, ObjectList& goals);
+	bool updateBalls(Dir dir, ObjectList& goals);
+	bool updatePersistentObjects(ObjectList* persistentObjects, ObjectList newObjects);
 	float getSurroundMetric(int x, int y, int radius, std::vector<std::string> validColors, std::string requiredColor = "", int side = 0, bool allowNone = false);
     PathMetric getPathMetric(int x1, int y1, int x2, int y2, std::vector<std::string> validColors, std::string requiredColor = "");
 	EdgeDistanceMetric getEdgeDistanceMetric(int x, int y, int width, int height, std::string color1, std::string color2);
@@ -200,6 +236,8 @@ private:
 	ColorList colorOrder;
 	ColorDistance whiteDistance;
 	ColorDistance blackDistance;
+	ObjectList persistentBalls;
+	ObjectList persistentRobots;
 
 };
 

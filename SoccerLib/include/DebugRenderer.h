@@ -14,7 +14,7 @@ public:
 	static void renderFPS(unsigned char* image, int fps, int width = Config::cameraWidth, int height = Config::cameraHeight);
 	static void renderBlobs(unsigned char* image, Blobber* blobber, int width = Config::cameraWidth, int height = Config::cameraHeight);
 	static void renderBalls(unsigned char* image, Vision* vision, const ObjectList& balls, int width = Config::cameraWidth, int height = Config::cameraHeight);
-	static void renderRobots(unsigned char* image, const ObjectList& robots, int width = Config::cameraWidth, int height = Config::cameraHeight);
+	static void renderRobots(unsigned char* image, Vision* vision, const ObjectList& robots, int width = Config::cameraWidth, int height = Config::cameraHeight);
 	static void renderGoals(unsigned char* image, const ObjectList& goals, int width = Config::cameraWidth, int height = Config::cameraHeight);
 	static void renderBrush(unsigned char* image, int x, int y, int radius, bool active, int width = Config::cameraWidth, int height = Config::cameraHeight);
 	//static void renderObstructions(unsigned char* image, Vision::Obstruction obstruction, int width = Config::cameraWidth, int height = Config::cameraHeight);

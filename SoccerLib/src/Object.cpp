@@ -3,8 +3,71 @@
 #include "Maths.h"
 #include "Config.h"
 
-Object::Object(int x, int y, int width, int height, int area, float distance, float distanceX, float distanceY, float angle, int type, bool behind) : x(x), y(y), width(width), height(height), area(area), distance(distance), distanceX(distanceX), distanceY(distanceY), angle(angle), type(type), behind(behind), processed(false) {
+movementVector::movementVector(float dX, float dY, ObjectLocationList locationBuffer) : dX(dX), dY(dY), locationBuffer(locationBuffer) {
+	speed = sqrt(pow(dX, 2) + pow(dY, 2));
+	angle = atan2(dX, dY);
+}
+
+bool movementVector::addLocation(float posX, float posY) {
+	ObjectLocation* newLocation = new ObjectLocation(posX, posY);
+	locationBuffer.push_back(newLocation);
+	return true;
+}
+
+bool movementVector::incrementLocationsAge() {
+	for (ObjectLocationList::iterator it = locationBuffer.begin(); it != locationBuffer.end(); it++) {
+		ObjectLocation* currentLocation = *it;
+		currentLocation->age++;
+	}
+	return true;
+}
+
+bool movementVector::removeOldLocations() {
+	for (ObjectLocationList::iterator it = locationBuffer.begin(); it != locationBuffer.end(); ) {
+		ObjectLocation* currentLocation = *it;
+		if (currentLocation->age > Config::objectLocationMaxAge) {
+			locationBuffer.erase(it);
+		}
+		else {
+			it++;
+		}
+	}
+	return true;
+}
+
+bool movementVector::updateSpeedAndAngle(float dt) {
+	speed = sqrt(pow(dX, 2) + pow(dY, 2)) / dt;
+	angle = atan2(dX, dY);
+	return true;
+}
+
+bool movementVector::calculateVector(float currentX, float currentY, float dt) {
+	float deltaXsum = 0;
+	float deltaYsum = 0;
+	int weightSum = 0;
+	//update relative movement
+	for (ObjectLocationList::iterator jt = locationBuffer.begin(); jt != locationBuffer.end(); jt++) {
+		ObjectLocation* currentViewedLocation = *jt;
+		//check if location is newest inserted (current)
+		if (currentViewedLocation->age <= 1) continue;
+
+		deltaXsum += (currentX - currentViewedLocation->locationX) / ((float)currentViewedLocation->age - 1.0f) * (float)(Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
+		deltaYsum += (currentY - currentViewedLocation->locationY) / ((float)currentViewedLocation->age - 1.0f) * (float)(Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
+		weightSum += (Config::objectLocationMaxAge + 1 - currentViewedLocation->age);
+	}
+
+	if (weightSum == 0) return false;
+
+	dX = deltaXsum / (float)weightSum;
+	dY = deltaYsum / (float)weightSum;
+	updateSpeedAndAngle(dt);
+
+	return true;
+}
+
+Object::Object(int x, int y, int width, int height, int area, float distance, float distanceX, float distanceY, float angle, movementVector relativeMovement, movementVector absoluteMovement, int type, bool behind) : x(x), y(y), width(width), height(height), area(area), distance(distance), distanceX(distanceX), distanceY(distanceY), angle(angle), relativeMovement(relativeMovement), absoluteMovement(absoluteMovement), type(type), behind(behind), processed(false) {
 	lastSeenTime = Util::millitime();
+	notSeenFrames = 0;
 }
 
 void Object::copyFrom(const Object* other) {
@@ -17,10 +80,40 @@ void Object::copyFrom(const Object* other) {
 	distanceX = other->distanceX;
 	distanceY = other->distanceY;
 	angle = other->angle;
+	relativeMovement = other->relativeMovement;
+	absoluteMovement = other->absoluteMovement;
 	type = other->type;
 	lastSeenTime = other->lastSeenTime;
+	notSeenFrames = other->notSeenFrames;
 	behind = other->behind;
 	processed = other->processed;
+}
+
+void Object::copyWithoutMovement(const Object* other) {
+	x = other->x;
+	y = other->y;
+	width = other->width;
+	height = other->height;
+	area = other->area;
+	distance = other->distance;
+	distanceX = other->distanceX;
+	distanceY = other->distanceY;
+	angle = other->angle;
+	type = other->type;
+	lastSeenTime = other->lastSeenTime;
+	notSeenFrames = other->notSeenFrames;
+	behind = other->behind;
+	processed = other->processed;
+}
+
+bool Object::updateMovement(float objectGlobalX, float objectGlobalY, float dt) {
+	//check if there is new data
+	if (notSeenFrames > 0) return false;
+
+	relativeMovement.calculateVector(distanceX, distanceY, dt);
+	absoluteMovement.calculateVector(objectGlobalX, objectGlobalY, dt);
+
+	return true;
 }
 
 bool Object::intersects(Object* other, int margin) const {
