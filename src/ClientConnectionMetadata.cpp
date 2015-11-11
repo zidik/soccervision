@@ -42,7 +42,7 @@ void ClientConnectionMetadata::on_message(websocketpp::connection_hdl, client::m
 	}
 	*/
 	m_messages.push(msg->get_payload());
-	std::cout << msg->get_payload() << std::endl;
+	// std::cout << msg->get_payload() << std::endl;
 }
 
 websocketpp::connection_hdl ClientConnectionMetadata::get_hdl() const {

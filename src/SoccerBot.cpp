@@ -141,9 +141,12 @@ void SoccerBot::run() {
 			}
 
 			if (slaveMode) {
-				// Send state to master
 				handleClientMessages();
-				client->send("<clientstate:client_mystate>");
+
+				// send client state to server
+				std::stringstream ss;
+				ss << "<clientstate>" << getStateJSON();
+				client->send(ss.str());
 			}
 
 			handleServerMessages();
@@ -1019,10 +1022,13 @@ void SoccerBot::handleCameraTranslatorCommand(Command::Parameters parameters) {
 }
 
 void SoccerBot::handleClientToServerStateMessage(Server::Message* message) {
-	// TODO Store the state from the client
-	// message->content; // JSON after ">"?
-	message->respond("<serverstate:server_mystate>");
-	// std::cout << "Server got state from client" << std::endl;
+	// store client state
+	clientStateDOM.Parse(Command::getTrailingJSON(message->content).c_str());
+	// respond with own state
+	std::stringstream ss;
+	ss << "<serverstate>" << getStateJSON();
+	message->respond(ss.str());
+	//std::cout << "Server got state from client" << std::endl;
 }
 
 void SoccerBot::handleClientMessages() {
@@ -1041,7 +1047,7 @@ void SoccerBot::handleClientMessage(std::string message) {
 			|| (!activeController->handleCommand(command) && !activeController->handleRequest(message))
 			) {
 			if (command.name == "serverstate") {
-				handleServerToClientStateMessage(message);
+				handleServerToClientStateMessage(Command::getTrailingJSON(message));
 			}
 			else {
 				std::cout << "- Unsupported command: " << command.name << " " << Util::toString(command.parameters) << std::endl;
@@ -1053,9 +1059,9 @@ void SoccerBot::handleClientMessage(std::string message) {
 	}
 }
 void SoccerBot::handleServerToClientStateMessage(std::string message) {
-	// TODO Store the state from the server response
-	// message; // JSON after ">"?
-	// std::cout << "Client got state from server" << std::endl;
+	// store server state
+	serverStateDOM.Parse(Command::getTrailingJSON(message).c_str());
+	// std::cout << "Client got state from server:" << serverStateDOM["totalTime"].GetString() << std::endl;
 }
 
 void SoccerBot::handleCommunicationMessages() {

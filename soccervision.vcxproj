@@ -71,7 +71,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>include;$(BOOSTROOT);$(XIMEAROOT)\API;$(WEBSOCKETPPROOT);lib\libyuv\include;lib\pthread\include;lib\websocketpp;lib\jpeg;lib\enumser;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;$(BOOSTROOT);$(XIMEAROOT)\API;$(WEBSOCKETPPROOT);lib\libyuv\include;lib\pthread\include;lib\websocketpp;lib\jpeg;lib\enumser;lib\rapidjson\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NOMINMAX;WIN32;_WIN32_WINNT=0x0601;CENUMERATESERIAL_USE_STL;NO_ENUMSERIAL_USING_CREATEFILE;NO_ENUMSERIAL_USING_QUERYDOSDEVICE;NO_ENUMSERIAL_USING_GETDEFAULTCOMMCONFIG;NO_ENUMSERIAL_USING_SETUPAPI1;NO_ENUMSERIAL_USING_ENUMPORTS;NO_ENUMSERIAL_USING_WMI;NO_ENUMSERIAL_USING_COMDB;NO_ENUMSERIAL_USING_REGISTRY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>

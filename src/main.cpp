@@ -37,10 +37,8 @@ int main(int argc, char* argv[]) {
 
                 std::cout << "  > Showing the GUI" << std::endl;
 			}
-			else if (strcmp(argv[i], "dev") == 0)
+			else if (strcmp(argv[i], "client") == 0)
 			{
-				//clientTest();
-				//return 0;
 				clientMode = true;
 			}
 			else {
