@@ -289,13 +289,14 @@ public:
 		bool drivePerformed;
 
 	};
+
 	
 	TestController(Robot* robot, AbstractCommunication* com);
 	~TestController();
 
 	void onEnter();
 	void onExit();
-	void reset();
+	virtual void reset();
 	
 	virtual void setState(std::string state);
 	virtual void setState(std::string state, Parameters parameters);
@@ -321,6 +322,7 @@ public:
 
     void step(float dt, Vision::Results* visionResults);
 	Side getTargetSide() { return targetSide; }
+	Side getDefendSide() { return defendSide; }
 	void dbgs(std::string key, std::string value) { messages[key] = value; }
 	void dbg(std::string key, int value) { messages[key] = Util::toString(value); }
 	void dbg(std::string key, float value) { messages[key] = Util::toString(value); }
@@ -328,8 +330,7 @@ public:
 	void dbg(std::string key, bool value) { messages[key] = value ? "true" : "false"; }
 	std::string getJSON();
 
-private:
-	void setupStates();
+protected:
 	void updateVisionInfo(Vision::Results* visionResults);
 	bool isRobotNearLine(Vision::Results* visionResults, bool ignoreCenterSample = false);
 	bool isRobotInCorner(Vision::Results* visionResults);
@@ -351,6 +352,7 @@ private:
 	DebouncedButton resetBtn;
 
 	Side targetSide;
+	Side defendSide;
 	float speedMultiplier;
 	float manualSpeedX;
 	float manualSpeedY;
@@ -394,6 +396,10 @@ private:
 	Params parameters;
 	Messages messages;
 	StateList stateChanges;
-};
+
+
+private:
+	void setupStates();
+	};
 
 #endif // TESTCONTROLLER_H

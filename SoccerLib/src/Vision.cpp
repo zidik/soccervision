@@ -2,7 +2,6 @@
 #include "Config.h"
 #include "Pixel.h"
 #include "Util.h"
-#include <utility>
 
 #include <iostream>
 #include <algorithm>
@@ -60,14 +59,14 @@ void Vision::setDebugImage(unsigned char* image, int width, int height) {
 
 Vision::Result* Vision::process() {
 	Result* result = new Result();
-	std::pair<ObjectList, ObjectList> goalsAndRobots;
+	ObjectList goals;
 
 	result->vision = this;
-
-	goalsAndRobots = processGoalsAndRobots(dir);
-	result->robots = goalsAndRobots.second;
-	result->goals = goalsAndRobots.first;
-	result->balls = processBalls(dir, result->goals);
+	
+	result->goals = processGoalsUpdateRobots(dir);
+	result->robots = &persistentRobots;
+	updateBalls(dir, result->goals);
+	result->balls = &persistentBalls;
 
 	updateColorDistances();
 	updateColorOrder();
@@ -88,6 +87,17 @@ void Vision::processCorners(std::vector<Pixel>& fieldCorners)
 		fieldCorners.push_back(cornerPixel);
 	}
 	catch (const CouldNotFindCorner &e) {}
+}
+
+ObjectList Vision::processGoalsUpdateRobots(Dir dir) {
+	std::pair<ObjectList, ObjectList> goalsAndRobots;
+
+	goalsAndRobots = processGoalsAndRobots(dir);
+
+	//this is the real deal
+	bool updateSuccess = updatePersistentObjects(&(this->persistentRobots), goalsAndRobots.second);
+
+	return goalsAndRobots.first;
 }
 
 ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
@@ -133,6 +143,8 @@ ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
 			distance.x,
 			distance.y,
             distance.angle,
+			movementVector(0.0f, 0.0f),
+			movementVector(0.0f, 0.0f),
 			3,
 			dir == Dir::FRONT ? false : true
         );
@@ -185,6 +197,111 @@ ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
 	return filteredBalls;
 }
 
+bool Vision::updateBalls(Dir dir, ObjectList& goals) {
+	ObjectList newBalls;
+
+	newBalls = processBalls(dir, goals);
+
+	//std::cout << "Number of new balls : " << newBalls.size() << std::endl;
+	//std::cout << "Number of persistent balls : " << this->persistentBalls.size() << std::endl;
+
+	return updatePersistentObjects(&(this->persistentBalls), newBalls);
+}
+
+bool Vision::updatePersistentObjects(ObjectList* persistentObjects, ObjectList newObjects) {
+	for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end(); it++) {
+		Object* persistentObject = *it;
+
+		persistentObject->notSeenFrames++;
+	}
+
+	//vector for holding pairs close enough to each other
+	std::vector<PersistenceMatchPair*> matchList;
+
+	//find close enough pairs of old and new objects
+	for (ObjectListItc it = newObjects.begin(); it != newObjects.end(); it++) {
+		Object* newObject = *it;
+
+		for (ObjectListItc jt = persistentObjects->begin(); jt != persistentObjects->end(); jt++) {
+			Object* persistentObject = *jt;
+
+			//check if objects are the same type
+			if (persistentObject->type != newObject->type) continue;
+
+			//calculate estimated position of persistent object
+			float estimateX = persistentObject->distanceX + persistentObject->relativeMovement.dX * persistentObject->notSeenFrames;
+			float estimateY = persistentObject->distanceY + persistentObject->relativeMovement.dY * persistentObject->notSeenFrames;
+
+			//calculate distance between estimated persistent object and new object
+			float deltaX = estimateX - newObject->distanceX;
+			float deltaY = estimateY - newObject->distanceY;
+			float distance = Math::sqrt(Math::pow(deltaX, 2.0f) + Math::pow(deltaY, 2.0f));
+
+			if (distance < Config::objectPersistenceMinDistance) {
+				PersistenceMatchPair* matchPair = new PersistenceMatchPair(jt - persistentObjects->begin(), it - newObjects.begin(), distance);
+				matchList.push_back(matchPair);
+			}
+		}
+	}
+
+	//sort matchlist by distance, smallest elements at the back
+	std::sort(matchList.begin(), matchList.end(), PersistenceMatchPair::EntityComp(PersistenceMatchPair::property::DISTANCE));
+	std::reverse(matchList.begin(), matchList.end());
+
+
+	//std::cout << "starting matchlist loop" << std::endl;
+	//go through matchlist until empty
+	while (!matchList.empty()) {
+		PersistenceMatchPair* currentPair = matchList.back();
+		matchList.pop_back();
+
+		//std::cout << "current match distance : " << currentPair->distance << std::endl;
+
+		//check if persistent object has already been updated
+		Object* persistentObject = *(persistentObjects->begin() + currentPair->persistentIndex);
+		if (persistentObject->notSeenFrames == 0) continue;
+
+		//check if new object has already been used
+		Object* newObject = *(newObjects.begin() + currentPair->newIndex);
+		if (newObject->notSeenFrames < 0) continue;
+
+		//update persistent object with new information
+		persistentObject->relativeMovement.addLocation(newObject->distanceX, newObject->distanceY);
+		persistentObject->copyWithoutMovement(newObject);
+
+		//mark new object as used
+		newObject->notSeenFrames = -1;
+	}
+
+	//add other new objects to persistent objects
+	while (!newObjects.empty()) {
+		Object* newObject = newObjects.back();
+		newObjects.pop_back();
+		
+		if (newObject->notSeenFrames < 0) continue;
+
+		newObject->relativeMovement.addLocation(newObject->distanceX, newObject->distanceY);
+		persistentObjects->push_back(newObject);
+	}
+
+	//increase locations ages
+	for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end();) {
+		Object* persistentObject = *it;
+
+		persistentObject->relativeMovement.incrementLocationsAge();
+		persistentObject->relativeMovement.removeOldLocations();
+
+		if (persistentObject->relativeMovement.locationBuffer.size() <= 0) {
+			persistentObjects->erase(it);
+		}
+		else {
+			it++;
+		}
+	}
+
+	return true;
+}
+
 std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 	ObjectList robots;
 	ObjectList mergedRobots;
@@ -232,6 +349,8 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 				distance.x,
 				distance.y,
 				distance.angle,
+				movementVector(0.0f, 0.0f),
+				movementVector(0.0f, 0.0f),
 				i == 0 ? Side::YELLOW : Side::BLUE,
 				dir == Dir::FRONT ? false : true
 			);
@@ -388,6 +507,8 @@ bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
 				goal->distanceX,
 				goal->distanceY,
 				goal->angle,
+				goal->relativeMovement,
+				goal->absoluteMovement,
 				goal->type == Side::BLUE ? RobotColor::BLUEHIGH : RobotColor::YELLOWHIGH,
 				dir == Dir::FRONT ? false : true
 				);
@@ -420,6 +541,8 @@ bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
 					goal->distanceX,
 					goal->distanceY,
 					goal->angle,
+					goal->relativeMovement,
+					goal->absoluteMovement,
 					goal->type == Side::BLUE ? RobotColor::YELLOWHIGH : RobotColor::BLUEHIGH,
 					dir == Dir::FRONT ? false : true
 					);
@@ -453,7 +576,7 @@ ObjectList Vision::mergeRobotBlobs(Dir dir, ObjectList blobs) {
 		if (focusBlob->angle < (Math::PI / -2.0f)) focusBlob->angle += (2.0f * Math::PI);
 	}
 
-	std::sort(blobs.begin(), blobs.end(), EntityComp(property::ANGLE));
+	std::sort(blobs.begin(), blobs.end(), Object::EntityComp(Object::property::ANGLE));
 
 	while (!blobs.empty()) {
 		focusBlob = blobs.back();
@@ -607,7 +730,6 @@ Vision::Distance Vision::getRobotDistance(int x, int y, int iterations, Dir dir)
 	}
 	return Distance(-1, -1, -1, -1);
 }
-
 
 bool Vision::isValidGoal(Object* goal, Side side) {
 	/*int x1, y1, x2, y2;
@@ -2500,7 +2622,7 @@ Object* Vision::Results::getClosestBall(Dir dir, bool nextClosest, bool preferLe
 	Object* nextClosestBall = NULL;
 
 	if (front != NULL && dir != Dir::REAR) {
-		for (ObjectListItc it = front->balls.begin(); it != front->balls.end(); it++) {
+		for (ObjectListItc it = front->balls->begin(); it != front->balls->end(); it++) {
 			ball = *it;
 
 			if (isBallInGoal(ball, blueGoal, yellowGoal)) {
@@ -2533,7 +2655,7 @@ Object* Vision::Results::getClosestBall(Dir dir, bool nextClosest, bool preferLe
 	}
 
 	if (rear != NULL && dir != Dir::FRONT) {
-		for (ObjectListItc it = rear->balls.begin(); it != rear->balls.end(); it++) {
+		for (ObjectListItc it = rear->balls->begin(); it != rear->balls->end(); it++) {
 			ball = *it;
 
 			if (isBallInGoal(ball, blueGoal, yellowGoal)) {
@@ -2576,7 +2698,7 @@ Object* Vision::Results::getFurthestBall(Dir dir) {
 	Object* furthestBall = NULL;
 
 	if (front != NULL && dir != Dir::REAR) {
-		for (ObjectListItc it = front->balls.begin(); it != front->balls.end(); it++) {
+		for (ObjectListItc it = front->balls->begin(); it != front->balls->end(); it++) {
 			ball = *it;
 
 			if (isBallInGoal(ball, blueGoal, yellowGoal)) {
@@ -2591,7 +2713,7 @@ Object* Vision::Results::getFurthestBall(Dir dir) {
 	}
 
 	if (rear != NULL && dir != Dir::FRONT) {
-		for (ObjectListItc it = rear->balls.begin(); it != rear->balls.end(); it++) {
+		for (ObjectListItc it = rear->balls->begin(); it != rear->balls->end(); it++) {
 			ball = *it;
 
 			if (isBallInGoal(ball, blueGoal, yellowGoal)) {
@@ -2835,5 +2957,5 @@ bool Vision::Results::isRobotOut(Dir dir) {
 }
 
 int Vision::Results::getVisibleBallCount() {
-	return front->balls.size() + rear->balls.size();
+	return front->balls->size() + rear->balls->size();
 }

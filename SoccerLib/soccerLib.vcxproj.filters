@@ -255,6 +255,9 @@
     <ClInclude Include="include\Configuration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\TeamController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\BallLocalizer.cpp">
@@ -397,6 +400,9 @@
     </ClCompile>
     <ClCompile Include="lib\libyuv\source\compare_neon.cc">
       <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\TeamController.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="lib\libyuv\source\convert.cc">
       <Filter>libs</Filter>

@@ -21,6 +21,7 @@
 #include "ManualController.h"
 #include "TestController.h"
 #include "OffensiveAI.h"
+#include "TeamController.h"
 #include "ImageProcessor.h"
 #include "Configuration.h"
 
@@ -592,6 +593,7 @@ void SoccerBot::setupControllers() {
 	addController("manual", new ManualController(robot, com));
 	addController("test", new TestController(robot, com));
 	addController("offensive-ai", new OffensiveAI(robot, com));
+	addController("teamplay", new TeamController(robot, com));
 
 	std::cout << "done!" << std::endl;
 }

@@ -189,6 +189,7 @@
     <ClInclude Include="include\stdafx.h" />
     <ClInclude Include="include\targetver.h" />
     <ClInclude Include="include\Tasks.h" />
+    <ClInclude Include="include\TeamController.h" />
     <ClInclude Include="include\TestController.h" />
     <ClInclude Include="include\Thread.h" />
     <ClInclude Include="include\Util.h" />
@@ -285,6 +286,7 @@
     <ClCompile Include="src\SoccerBot.cpp" />
     <ClCompile Include="src\stdafx.cpp" />
     <ClCompile Include="src\Tasks.cpp" />
+    <ClCompile Include="src\TeamController.cpp" />
     <ClCompile Include="src\TestController.cpp" />
     <ClCompile Include="src\Thread.cpp" />
     <ClCompile Include="src\Util.cpp" />

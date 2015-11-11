@@ -221,6 +221,12 @@ namespace Config {
 	// how close to the field-of-view must the object be to be considered in view
 	const float objectFovCloseEnough = 0.5f;
 
+	// maximum number of frames after which a persistent object location is deletied
+	const int objectLocationMaxAge = 8;
+
+	//Maximum distance delta between estimated position and new found object position for it to be considered the same object
+	const float objectPersistenceMinDistance = 0.5f;
+
 } // namespace Config
 
 enum Side {
@@ -230,9 +236,9 @@ enum Side {
 };
 
 enum RobotColor {
-	YELLOWHIGH = 0,
-	BLUEHIGH = 1,
-	WHATEVER = 2
+	YELLOWHIGH = 4,
+	BLUEHIGH = 5,
+	WHATEVER = 6
 };
 
 enum Dir {
