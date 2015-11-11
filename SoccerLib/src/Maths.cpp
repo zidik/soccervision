@@ -134,13 +134,6 @@ Vector Vector::createForwardVec(float dir, float magnitude) {
     );
 }
 
-Vector Vector::createDirVec(const Vector& from, const Vector& to) {
-    return Vector(
-        from.x - to.x,
-        from.y - to.y
-    ).getNormalized();
-}
-
 float Vector::getLength() const {
     return sqrt(pow(x, 2) + pow(y, 2));
 }

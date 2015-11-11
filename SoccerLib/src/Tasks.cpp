@@ -81,7 +81,7 @@ bool DriveToTask::onStep(Robot& robot, float dt) {
         useSpeed = speed * currentDistance * 5.0f;
     }
 
-    Math::Vector globalDir = Math::Vector::createDirVec(target, pos.location).getNormalized().getScaled(useSpeed);
+    Math::Vector globalDir = (target - pos.location).getNormalized().getScaled(useSpeed);
     Math::Vector localDir = globalDir.getRotated(-currentOrientation);
 
     //std::cout << "[" << Util::round(Math::radToDeg(currentOrientation)) << "] " << Util::round(globalDir.x, 1) << "x" << Util::round(globalDir.y) << " > " << Util::round(localDir.x, 1) << "x" << Util::round(localDir.y) << std::endl;
@@ -153,7 +153,7 @@ bool DrivePathTask::onStep(Robot& robot, float dt) {
         useSpeed = speed * currentDistance * 5.0f;
     }
 
-    Math::Vector globalDir = Math::Vector::createDirVec(targetPos.location, currentPos.location).getNormalized().getScaled(useSpeed);
+    Math::Vector globalDir = (targetPos.location - currentPos.location).getNormalized().getScaled(useSpeed);
     Math::Vector localDir = globalDir.getRotated(-currentPos.orientation);
 
     if (omega < -3.0f) {
@@ -209,7 +209,7 @@ bool DriveFacingTask::onStep(Robot& robot, float dt) {
 
     currentDistance = pos.location.distanceTo(target);
 
-    Math::Vector targetVec = Math::Vector::createDirVec(pos.location, Math::Vector(targetX, targetY));
+    Math::Vector targetVec = (pos.location - target).getNormalized();
     float targetOrientation = Math::floatModulus(targetVec.getAngleBetween(Math::Vector(1.0f, 0.0f)) + Math::PI, Math::TWO_PI);
     float currentOrientation = pos.orientation;
     float orientationDiff = Math::getAngleDiff(currentOrientation, targetOrientation);
@@ -225,7 +225,7 @@ bool DriveFacingTask::onStep(Robot& robot, float dt) {
         useSpeed = speed * currentDistance * 5.0f;
     }
 
-    Math::Vector globalDir = Math::Vector::createDirVec(target, pos.location).getNormalized().getScaled(useSpeed);
+    Math::Vector globalDir = (target - pos.location).getNormalized().getScaled(useSpeed);
     Math::Vector localDir = globalDir.getRotated(-currentOrientation);
 
     //std::cout << "[" << Util::round(Math::radToDeg(currentOrientation)) << "] " << Util::round(globalDir.x, 1) << "x" << Util::round(globalDir.y) << " > " << Util::round(localDir.x, 1) << "x" << Util::round(localDir.y) << std::endl;

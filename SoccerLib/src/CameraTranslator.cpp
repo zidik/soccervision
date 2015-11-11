@@ -53,7 +53,7 @@ Pixel CameraTranslator::DEPRECATEDgetCameraPosition(float worldX, float worldY) 
 	return distort(cameraPosition);
 }
 
-Pixel CameraTranslator::getCameraPosition(const Math::Vector &worldPosition, bool distortion) const {
+Pixel CameraTranslator::getCameraPosition(const Math::Vector& worldPosition, bool distortion) const {
 	float pixelVerticalCoord = this->A / (worldPosition.x - this->B);
 	float pixelLeft = worldPosition.y * pixelVerticalCoord / this->C;
 
