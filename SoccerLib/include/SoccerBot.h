@@ -8,10 +8,6 @@
 #include "Command.h"
 #include <string>
 
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
-
 class BaseCamera;
 class XimeaCamera;
 class VirtualCamera;
@@ -78,9 +74,8 @@ public:
 
 	bool debugVision;
 	bool showGui;
-	bool slaveMode;
-	rapidjson::Document clientStateDOM;
-	rapidjson::Document serverStateDOM;
+	std::string clientStateJSON;
+	std::string serverStateJSON;
 
 private:
 	void setupXimeaCamera(std::string name, XimeaCamera* camera);

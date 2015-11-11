@@ -11,13 +11,15 @@ public:
 
 	~Client();
 
-	void connect(std::string const & uri);
+	void connect();
 
 	void close(websocketpp::close::status::value code, std::string reason);
 
 	void send(std::string message);
 
 	//ClientConnectionMetadata::ptr get_metadata() const;
+
+	void set_uri(std::string uri);
 
 	std::string Client::dequeueMessage();
 private:

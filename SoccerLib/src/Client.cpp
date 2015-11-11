@@ -29,9 +29,8 @@ Client::~Client() {
 	m_thread->join();
 }
 
-void Client::connect(std::string const & uri) {
+void Client::connect() {
 	websocketpp::lib::error_code ec;
-	this->uri = uri;
 
 	client::connection_ptr con = m_endpoint.get_connection(uri, ec);
 
@@ -88,7 +87,7 @@ void Client::send(std::string message) {
 		std::cout << "> Error sending message: " << ec.message() << std::endl;
 		if (metadata_ptr->get_status() != "Connecting"){
 			// reconnect if the socket was closed but a new message is sent
-			connect(uri);
+			connect();
 		}
 		return;
 	}
@@ -105,6 +104,11 @@ ClientConnectionMetadata::ptr Client::get_metadata() const {
 	}
 }
 */
+
+void set_uri(std::string uri) {
+	this.uri = uri;
+}
+
 std::string Client::dequeueMessage() {
 
 	return metadata_ptr->dequeueMessage();

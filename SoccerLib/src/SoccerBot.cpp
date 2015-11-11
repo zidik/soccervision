@@ -36,7 +36,7 @@ SoccerBot::SoccerBot() :
 	frontVision(NULL), rearVision(NULL),
 	frontProcessor(NULL), rearProcessor(NULL),
 	frontCameraTranslator(NULL), rearCameraTranslator(NULL),
-	gui(NULL), fpsCounter(NULL), visionResults(NULL), robot(NULL), activeController(NULL), server(NULL), com(NULL),
+	gui(NULL), fpsCounter(NULL), visionResults(NULL), robot(NULL), activeController(NULL), server(NULL), client(NULL), com(NULL),
 	jpegBuffer(NULL), screenshotBufferFront(NULL), screenshotBufferRear(NULL),
 	running(false), debugVision(false), showGui(false), controllerRequested(false), stateRequested(false), frameRequested(false), useScreenshot(false),
 	dt(0.01666f), lastStepTime(0.0), totalTime(0.0f),
@@ -57,6 +57,7 @@ SoccerBot::~SoccerBot() {
 
 	if (gui != NULL) delete gui; gui = NULL;
 	if (server != NULL) delete server; server = NULL;
+	if (client != NULL) delete client; client = NULL;
 	if (robot != NULL) delete robot; robot = NULL;
 	if (ximeaFrontCamera != NULL) delete ximeaFrontCamera; ximeaFrontCamera = NULL;
 	if (ximeaRearCamera != NULL) delete ximeaRearCamera; ximeaRearCamera = NULL;
@@ -94,6 +95,7 @@ void SoccerBot::setup() {
 	setupControllers();
 	setupSignalHandler();
 	setupServer();
+	setupClient();
 
 	if (showGui) {
 		setupGui();
@@ -280,6 +282,14 @@ void SoccerBot::run() {
 
 		handleServerMessages();
 		handleCommunicationMessages();
+
+		if (false) { // TODO set true if this is the slave robot
+			handleClientMessages();
+			// send client state to server
+			std::stringstream ss;
+			ss << "<clientstate>" << getStateJSON();
+			client->send(ss.str());
+		}
 
 		if (activeController != NULL) {
 			activeController->step(dt, visionResults);
@@ -625,6 +635,11 @@ void SoccerBot::setupServer() {
 	server = new Server();
 }
 
+void SoccerBot::setupClient() {
+	client = new Client();
+	client->set_uri("ws://localhost:8000"); // TODO get correct uri from conf
+}
+
 void SoccerBot::setupCommunication() {
 
 	try {
@@ -812,6 +827,8 @@ void SoccerBot::handleServerMessage(Server::Message* message) {
                 handleListScreenshotsCommand(message);
 			} else if (command.name == "camera-translator") {
 				handleCameraTranslatorCommand(command.parameters);
+			} else if (command.name == "clientstate") {
+				handleClientToServerStateMessage(message);
 			}
 			else {
 				std::cout << "- Unsupported command: " << command.name << " " << Util::toString(command.parameters) << std::endl;
@@ -978,6 +995,49 @@ void SoccerBot::handleCameraTranslatorCommand(Command::Parameters parameters) {
 	rearCameraTranslator->B = B;
 	rearCameraTranslator->C = C;
 	rearCameraTranslator->horizon = horizon;
+}
+
+void SoccerBot::handleClientToServerStateMessage(Server::Message* message) {
+	// store client state
+	clientStateJSON = Command::getTrailingJSON(message->content);
+	// respond with own state
+	std::stringstream ss;
+	ss << "<serverstate>" << getStateJSON();
+	message->respond(ss.str());
+	//std::cout << "Server got state from client" << std::endl;
+}
+
+void SoccerBot::handleClientMessages() {
+	std::string message;
+	while ((message = client->dequeueMessage()) != "") {
+		handleClientMessage(message);
+	}
+}
+
+void SoccerBot::handleClientMessage(std::string message) {
+	if (Command::isValid(message)) {
+		Command command = Command::parse(message);
+
+		if (
+			activeController == NULL
+			|| (!activeController->handleCommand(command) && !activeController->handleRequest(message))
+			) {
+			if (command.name == "serverstate") {
+				handleServerToClientStateMessage(Command::getTrailingJSON(message));
+			}
+			else {
+				std::cout << "- Unsupported command: " << command.name << " " << Util::toString(command.parameters) << std::endl;
+			}
+		}
+	}
+	else {
+		std::cout << "- Message '" << message << "' is not a valid client command" << std::endl;
+	}
+}
+void SoccerBot::handleServerToClientStateMessage(std::string message) {
+	// store server state
+	serverStateJSON = Command::getTrailingJSON(message);
+	// std::cout << "Client got state from server:" << serverStateDOM["totalTime"].GetString() << std::endl;
 }
 
 void SoccerBot::handleCommunicationMessages() {
