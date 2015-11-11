@@ -121,16 +121,12 @@ void SoccerBot::run() {
 		// Connect to master
 		client->connect("ws://localhost:8000");
 		std::cout << "> Created client connection with id " << "ws://localhost:8000" << std::endl;
-		Sleep(1000);
-		client->send("<melon>");
 	}
 
 	if (!frontCamera->isOpened() && !rearCamera->isOpened()) {
 		std::cout << "! Neither of the cameras was opened, running in test mode" << std::endl;
 
 		double time;
-
-		//server->broadcast("<potato>");
 
 		while (running) {
 			Sleep(1000);
@@ -146,8 +142,8 @@ void SoccerBot::run() {
 
 			if (slaveMode) {
 				// Send state to master
-				//client->send("Potato");
 				handleClientMessages();
+				client->send("<clientstate:client_mystate>");
 			}
 
 			handleServerMessages();
@@ -840,8 +836,8 @@ void SoccerBot::handleServerMessage(Server::Message* message) {
                 handleListScreenshotsCommand(message);
 			} else if (command.name == "camera-translator") {
 				handleCameraTranslatorCommand(command.parameters);
-			} else if (command.name == "melon") {
-				handleClientTestMessage();
+			} else if (command.name == "clientstate") {
+				handleClientToServerStateMessage(message);
 			}
 			else {
 				std::cout << "- Unsupported command: " << command.name << " " << Util::toString(command.parameters) << std::endl;
@@ -1022,9 +1018,11 @@ void SoccerBot::handleCameraTranslatorCommand(Command::Parameters parameters) {
 	rearCameraTranslator->distortionFocus = distortionFocus;
 }
 
-void SoccerBot::handleClientTestMessage() {
-	std::cout << "Server got melon from client" << std::endl;
-	server->broadcast("<potato>");
+void SoccerBot::handleClientToServerStateMessage(Server::Message* message) {
+	// TODO Store the state from the client
+	// message->content; // JSON after ">"?
+	message->respond("<serverstate:server_mystate>");
+	// std::cout << "Server got state from client" << std::endl;
 }
 
 void SoccerBot::handleClientMessages() {
@@ -1042,8 +1040,8 @@ void SoccerBot::handleClientMessage(std::string message) {
 			activeController == NULL
 			|| (!activeController->handleCommand(command) && !activeController->handleRequest(message))
 			) {
-			if (command.name == "potato") {
-				handleClientMessageTesting();
+			if (command.name == "serverstate") {
+				handleServerToClientStateMessage(message);
 			}
 			else {
 				std::cout << "- Unsupported command: " << command.name << " " << Util::toString(command.parameters) << std::endl;
@@ -1054,9 +1052,10 @@ void SoccerBot::handleClientMessage(std::string message) {
 		std::cout << "- Message '" << message << "' is not a valid client command" << std::endl;
 	}
 }
-void SoccerBot::handleClientMessageTesting() {
-	client->send("<melon>");
-	std::cout << "Client got potato from server" << std::endl;
+void SoccerBot::handleServerToClientStateMessage(std::string message) {
+	// TODO Store the state from the server response
+	// message; // JSON after ">"?
+	// std::cout << "Client got state from server" << std::endl;
 }
 
 void SoccerBot::handleCommunicationMessages() {

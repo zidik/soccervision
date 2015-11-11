@@ -87,6 +87,7 @@ void Client::send(std::string message) {
 	if (ec) {
 		std::cout << "> Error sending message: " << ec.message() << std::endl;
 		if (metadata_ptr->get_status() != "Connecting"){
+			// reconnect if the socket was closed but a new message is sent
 			connect(uri);
 		}
 		return;

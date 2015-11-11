@@ -7,6 +7,9 @@
 #include <websocketpp/common/thread.hpp>
 #include <websocketpp/common/memory.hpp>
 
+#include <string>
+#include <queue>
+#include <iostream>
 
 class ClientConnectionMetadata {
 public:

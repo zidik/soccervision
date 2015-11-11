@@ -59,11 +59,11 @@ public:
 	void handleScreenshotCommand(Command::Parameters parameters);
 	void handleListScreenshotsCommand(Server::Message* message);
 	void handleCameraTranslatorCommand(Command::Parameters parameters);
-	void handleClientTestMessage();
+	void handleClientToServerStateMessage(Server::Message* message);
 
 	void handleClientMessages();
 	void handleClientMessage(std::string message);
-	void handleClientMessageTesting();
+	void handleServerToClientStateMessage(std::string message);
 
 	void handleCommunicationMessages();
 	void handleCommunicationMessage(std::string message);
