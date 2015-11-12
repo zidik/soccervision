@@ -1,0 +1,37 @@
+{
+    "camera": {
+        "serial": {
+            "front": 374359121,
+            "rear": 374354001
+        },
+        "translation": {
+            "front": {
+                "A": 113.98,
+                "B": -0.03321,
+                "C": 0.20726,
+                "horizon": 147.09
+            },
+            "rear": {
+                "A": 115.99,
+                "B": -0.03221,
+                "C": 0.20766,
+                "horizon": 137.75
+            }
+        }
+    },
+	
+	"robot": {
+        "radius": 0.12425,
+        "dribblerDistance": 0.17,
+        "wheel": {
+            "angle1": 45.0,
+            "angle2": 135.0,
+            "angle3": -135.0,
+            "angle4": -45.0,
+            "diagonalOffset": 0.1167,
+            "radius": 0.035,
+			"maxSpeed": 6000,
+			"speedToMetric": 225.0
+        }
+    }
+}

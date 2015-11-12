@@ -55,15 +55,17 @@
     },
 
     "robot": {
-        "radius": 0.12425,
-        "dribblerDistance": 0.17,
+        "radius": null,
+        "dribblerDistance": null,
         "wheel": {
-            "angle1": -135.0,
-            "angle2": -45.0,
-            "angle3": 45.0,
-            "angle4": 135.0,
-            "diagonalOffset": 0.1167,
-            "radius": 0.035
+            "angle1": null,
+            "angle2": null,
+            "angle3": null,
+            "angle4": null,
+            "diagonalOffset": null,
+            "radius": null,
+			"maxSpeed": null,
+			"speedToMetric": null
         }
     },
 
