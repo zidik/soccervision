@@ -12,6 +12,7 @@ TeamController::TeamController(Robot* robot, AbstractCommunication* com) : TestC
 	whoHasBall = TeamInPossession::NOONE;
 	currentSituation = GameSituation::UNKNOWN;
 	passNeeded = true;
+	isCaptain = false;
 };
 
 TeamController::~TeamController() {
@@ -56,6 +57,7 @@ void TeamController::setupStates() {
 	states["aim-kick"] = new AimKickState(this);
 	states["pass-ball"] = new PassBallState(this);
 	states["get-pass"] = new GetPassState(this);
+	states["maneuver"] = new ManeuverState(this);
 }
 
 void TeamController::WaitForRefereeState::onEnter(Robot* robot, Parameters parameters) {
@@ -99,6 +101,14 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 				//TO-DO write here what states to go to based on game situation, currently
 				ai->setState("manual-control");
 				return;
+				//if ()
+				switch (ai->currentSituation) {
+				case GameSituation::KICKOFF:
+					ai->setState("");
+					//TODO send to teammate to defend goal
+					return;
+				}
+
 			}
 		}
 	}	
@@ -111,12 +121,23 @@ void TeamController::DefendGoalState::onEnter(Robot* robot, Parameters parameter
 void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 	//TODO write goal defending logic here.
 
+	if (robot->dribbler->gotBall()) {
+		Parameters parameters;
+		parameters["next-state"] = "defend-goal";
+		if (ai->passNeeded) {
+			ai->setState("pass-ball", parameters);
+		}
+		else {
+			ai->setState("aim-kick", parameters);
+		}
+		return;
+	}
+
 	Object* defendedGoal = visionResults->getLargestGoal(ai->getDefendSide(), Dir::REAR);
 
 	//if goal is not visible in back camera, switch to driving in front of goal state.
 	if (defendedGoal == NULL) {
-		//TODO temporary substitute
-		ai->setState("manual-control");
+		ai->setState("drive-to-own-goal");
 		return;
 	}
 
@@ -125,13 +146,19 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 
 	// configuration parameters
 	float maximumFetchDistance = 0.15f;
-	float minimumMovingDeltaY = 0.05f;
+	float minimumMovingDeltaY = -0.05f;
 	float goalKeepDistance = 0.5f;
 	float forwardSpeedMultiplier = 10.0f;
 	float sidewaysSpeedMultiplier = 10.0f;
 
 	//if can't see ball
 	if (ball == NULL) {
+		//scan for ball
+		ai->setState("find-ball-goalkeeper");
+		return;
+		
+		//using simpler solution for now, where robot will search for ball whenever it doesn't see it
+		/*
 		//if ball has not been seen before, start scanning for ball
 		if (!ballWasSeen)
 		{
@@ -141,6 +168,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		else {
 			//TODO write something here
 		}
+		*/
 	} //ball found, check if it isn't in a goal
 	else if (!visionResults->isBallInGoal(ball)) {
 		if (!ballWasSeen) ballWasSeen = true;
@@ -152,16 +180,15 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		if (ball->distance < maximumFetchDistance) {
 			if (ball->behind) {
 				ai->setState("fetch-ball-rear");
-				return;
 			}
 			else {
 				ai->setState("fetch-ball-front");
-				return;
 			}
+			return;
 		}
 		
 		//check if ball is moving fast enough toward robot
-		if (ball->relativeMovement.dY > minimumMovingDeltaY) {
+		if (ball->relativeMovement.dY < minimumMovingDeltaY) {
 			shouldIntercept = true;
 		}
 
@@ -170,7 +197,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 			return;
 		}
 		else {
-			//calculate parameters to keep robot in front of goal, current calculation doesn't probably really work
+			//calculate parameters to keep robot in front of goal, this version untested and likely doesn't work
 			forwardSpeed = (goalKeepDistance - defendedGoal->distance) * forwardSpeedMultiplier;
 			sideWaysSpeed = defendedGoal->distanceX * sidewaysSpeedMultiplier;
 		}
@@ -277,11 +304,82 @@ void TeamController::FetchBallRearState::step(float dt, Vision::Results* visionR
 }
 
 void TeamController::DriveToOwnGoalState::onEnter(Robot* robot, Parameters parameters) {
-	//TODO fill this out
+	droveTowardEnemyGoal = false;
+	droveTowardFriendlyGoal = false;
+	searchedEnemyGoal = false;
+	goalSearchDir = 1.0f;
 }
 
 void TeamController::DriveToOwnGoalState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	//TODO fill this out
+
+	Object* ownGoal = visionResults->getLargestGoal(ai->defendSide, Dir::REAR);
+	Object* enemyGoal = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
+	bool shouldSearchEnemyGoal = false;
+	bool shouldDriveTowardEnemyGoal = false;
+
+	//configuration parameters
+	float goalSearchOmega = 1.0f;
+	float enemyGoalDistanceXMultiplier = 1.0f;
+	float ownGoalDistanceYMultiplier = 1.0f;
+	float ownGoalTargetDistanceY = -0.5f;
+	float cantSeeEnemyGoalDistanceYThreshold = -1.0f;
+	float enemyGoalDistanceTarget = 3.5f;
+	float enemyGoalSpeedMultiplier = 1.0f;
+	float enemyGoalOmegaMultiplier = 1.0f;
+	float ownGoalDistanceErrorThreshold = 0.1f;
+	float enemyGoalDistanceErrorThreshold = 0.3f;
+
+	shouldSearchEnemyGoal = droveTowardFriendlyGoal && !droveTowardEnemyGoal && enemyGoal == NULL && !searchedEnemyGoal;
+	shouldDriveTowardEnemyGoal = droveTowardFriendlyGoal && !droveTowardEnemyGoal && enemyGoal != NULL && ownGoal == NULL;
+
+	if (robot->hasTasks()) {
+		robot->clearTasks();
+	}
+	if (shouldSearchEnemyGoal) {
+		//start searching for enemy goal
+		robot->setTargetDir(0.0f, 0.0f);
+		robot->setTargetOmega(goalSearchDir * goalSearchOmega);
+	}
+	else if (shouldDriveTowardEnemyGoal) {
+		searchedEnemyGoal = true;
+		//start driving toward enemy goal
+		robot->setTargetDir(Math::Rad(enemyGoal->angle), enemyGoal->distance * enemyGoalSpeedMultiplier, enemyGoal->angle * enemyGoalOmegaMultiplier);
+		if (enemyGoal->distance < enemyGoalDistanceTarget) {
+			droveTowardEnemyGoal = true;
+		}
+
+	}
+	else if (ownGoal == NULL) {
+		//start searching for own goal
+		robot->setTargetOmega(goalSearchOmega * goalSearchDir);
+	}
+	else {
+		float ownGoalDistanceYerror = 999.0f;
+		float enemyGoalDistanceXerror = 999.0f;
+		//start driving in front of own goal
+		float forwardSpeed = 0.0f;
+		float sideWaysSpeed = 0.0f;
+
+		ownGoalDistanceYerror = ownGoal->distanceY - ownGoalTargetDistanceY;
+
+		forwardSpeed = (ownGoal->distanceY - ownGoalTargetDistanceY) * ownGoalDistanceYMultiplier;
+		if (enemyGoal != NULL) {
+			sideWaysSpeed = enemyGoal->distanceX * enemyGoalDistanceXMultiplier;
+			enemyGoalDistanceXerror = enemyGoal->distanceX;
+		}
+		else if (ownGoal->distanceY > cantSeeEnemyGoalDistanceYThreshold) {
+			droveTowardFriendlyGoal = true;
+		}
+
+		if (abs(ownGoalDistanceYerror) < ownGoalDistanceErrorThreshold && abs(enemyGoalDistanceXerror) < enemyGoalDistanceErrorThreshold) {
+			//position set
+			ai->setState("defend-goal");
+			return;
+		}
+
+		robot->setTargetDir(forwardSpeed, sideWaysSpeed);
+		robot->lookAtBehind(ownGoal);
+	}
 }
 
 void TeamController::AimKickState::onEnter(Robot* robot, Parameters parameters) {
@@ -305,5 +403,13 @@ void TeamController::GetPassState::onEnter(Robot* robot, Parameters parameters) 
 }
 
 void TeamController::GetPassState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//TODO fill this out
+}
+
+void TeamController::ManeuverState::onEnter(Robot* robot, Parameters parameters) {
+	//TODO fill this out
+}
+
+void TeamController::ManeuverState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 	//TODO fill this out
 }

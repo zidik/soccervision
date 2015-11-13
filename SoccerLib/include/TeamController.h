@@ -6,7 +6,7 @@
 class TeamController : public TestController {
 
 public:
-	enum GameSituation { UNKNOWN = -1, KICKOFF = 0, INDIRECTFREEKICK = 1, DIRECTFREEKICK = 2, GOALKICK = 3, THROWIN = 4, CORNERKICK = 4, PENALTY = 6 };
+	enum GameSituation { UNKNOWN = -1, KICKOFF = 0, INDIRECTFREEKICK = 1, DIRECTFREEKICK = 2, GOALKICK = 3, THROWIN = 4, CORNERKICK = 4, PENALTY = 6, ENDHALF = 7 };
 	enum TeamInPossession { NOONE = -1, ENEMY = 0, FRIENDLY = 1 };
 
 
@@ -177,6 +177,12 @@ public:
 		DriveToOwnGoalState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+
+	private:
+		float goalSearchDir;
+		bool droveTowardEnemyGoal;
+		bool droveTowardFriendlyGoal;
+		bool searchedEnemyGoal;
 	};
 
 	//Aim for a kick
@@ -206,7 +212,15 @@ public:
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 	};
 
-	
+	//Receive passed ball
+	class ManeuverState : public State {
+
+	public:
+		ManeuverState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	};
+
 	TeamController(Robot* robot, AbstractCommunication* com);
 	~TeamController();
 
@@ -217,6 +231,7 @@ private:
 	GameSituation currentSituation;
 	TeamInPossession whoHasBall;
 	bool passNeeded;
+	bool isCaptain;
 };
 
 #endif // TEAMCONTROLLER_H
