@@ -62,3 +62,8 @@ Command Command::parse(std::string input) {
 
     return Command(name, params);
 }
+
+std::string Command::getTrailingJSON(std::string input) {
+	size_t nameEndTag = Util::strpos(input, ">");
+	return input.substr(nameEndTag + 1);
+}

@@ -87,7 +87,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>NOMINMAX;WIN32;_WIN32_WINNT=0x0601;_SCL_SECURE_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;CENUMERATESERIAL_USE_STL;NO_ENUMSERIAL_USING_CREATEFILE;NO_ENUMSERIAL_USING_QUERYDOSDEVICE;NO_ENUMSERIAL_USING_GETDEFAULTCOMMCONFIG;NO_ENUMSERIAL_USING_SETUPAPI1;NO_ENUMSERIAL_USING_ENUMPORTS;NO_ENUMSERIAL_USING_WMI;NO_ENUMSERIAL_USING_COMDB;NO_ENUMSERIAL_USING_REGISTRY;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(BOOSTROOT);$(XIMEAROOT)\API;$(WEBSOCKETPPROOT);lib\libyuv\include;lib\pthread\include;lib\websocketpp;lib\jpeg;lib\enumser;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOSTROOT);$(XIMEAROOT)\API;$(WEBSOCKETPPROOT);lib\libyuv\include;lib\pthread\include;lib\websocketpp;lib\jpeg;lib\enumser;lib\rapidjson\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -119,7 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(BOOSTROOT);$(XIMEAROOT)\API;$(WEBSOCKETPPROOT);lib\libyuv\include;lib\pthread\include;lib\websocketpp;lib\jpeg;lib\enumser;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(BOOSTROOT);$(XIMEAROOT)\API;$(WEBSOCKETPPROOT);lib\libyuv\include;lib\pthread\include;lib\websocketpp;lib\jpeg;lib\enumser;lib\rapidjson\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -153,6 +153,8 @@
     <ClInclude Include="include\Blobber.h" />
     <ClInclude Include="include\CameraTranslator.h" />
     <ClInclude Include="include\Canvas.h" />
+    <ClInclude Include="include\Client.h" />
+    <ClInclude Include="include\ClientConnectionMetadata.h" />
     <ClInclude Include="include\Coilgun.h" />
     <ClInclude Include="include\Command.h" />
     <ClInclude Include="include\ComPortCommunication.h" />
@@ -257,6 +259,8 @@
     <ClCompile Include="src\Blobber.cpp" />
     <ClCompile Include="src\CameraTranslator.cpp" />
     <ClCompile Include="src\Canvas.cpp" />
+    <ClCompile Include="src\Client.cpp" />
+    <ClCompile Include="src\ClientConnectionMetadata.cpp" />
     <ClCompile Include="src\Coilgun.cpp" />
     <ClCompile Include="src\Command.cpp" />
     <ClCompile Include="src\ComPortCommunication.cpp" />

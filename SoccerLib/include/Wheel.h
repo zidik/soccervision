@@ -8,7 +8,7 @@
 class Wheel : public Command::Listener {
 
 public:
-    Wheel(int id);
+    Wheel(int id, int maxSpeed, float wheelSpeedToMetric);
 
     virtual void setTargetOmega(float omega);
     virtual void setTargetSpeed(int speed);
@@ -20,13 +20,15 @@ public:
     virtual void step(float dt);
 	virtual bool handleCommand(const Command& cmd);
 
-    static float omegaToSpeed(float omega);
-    static float speedToOmega(float speed);
+    static float omegaToSpeed(float omega, int maxSpeed, float wheelSpeedToMetric);
+    static float speedToOmega(float speed, float wheelSpeedToMetric);
 
     //std::string getStateJSON() const;
 
 protected:
     int id;
+	const int maxSpeed;
+	const float wheelSpeedToMetric;
     float targetOmega;
 	float filteredTargetOmega;
     float realOmega;

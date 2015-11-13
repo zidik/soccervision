@@ -37,7 +37,7 @@ void XimeaCamera::open() {
 		//std::cout << "done!" << std::endl;
 
         xiGetParamInt(device, XI_PRM_DEVICE_SN, &sn);
-       // std::cout << "  > found camera with serial number: " << sn << ".. ";
+        std::cout << "  > found camera with serial number: " << sn << ".. ";
 
         if (serialNumber == sn) {
             found = true;
