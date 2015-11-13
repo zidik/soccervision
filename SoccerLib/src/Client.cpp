@@ -105,8 +105,8 @@ ClientConnectionMetadata::ptr Client::get_metadata() const {
 }
 */
 
-void set_uri(std::string uri) {
-	this.uri = uri;
+void Client::set_uri(std::string uri) {
+	this->uri = uri;
 }
 
 std::string Client::dequeueMessage() {

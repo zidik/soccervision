@@ -258,6 +258,12 @@
     <ClInclude Include="include\TeamController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ClientConnectionMetadata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\BallLocalizer.cpp">
@@ -460,6 +466,12 @@
     </ClCompile>
     <ClCompile Include="lib\libyuv\source\video_common.cc">
       <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ClientConnectionMetadata.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

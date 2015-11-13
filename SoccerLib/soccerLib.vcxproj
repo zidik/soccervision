@@ -153,6 +153,8 @@
     <ClInclude Include="include\Blobber.h" />
     <ClInclude Include="include\CameraTranslator.h" />
     <ClInclude Include="include\Canvas.h" />
+    <ClInclude Include="include\Client.h" />
+    <ClInclude Include="include\ClientConnectionMetadata.h" />
     <ClInclude Include="include\Coilgun.h" />
     <ClInclude Include="include\Command.h" />
     <ClInclude Include="include\ComPortCommunication.h" />
@@ -257,6 +259,8 @@
     <ClCompile Include="src\Blobber.cpp" />
     <ClCompile Include="src\CameraTranslator.cpp" />
     <ClCompile Include="src\Canvas.cpp" />
+    <ClCompile Include="src\Client.cpp" />
+    <ClCompile Include="src\ClientConnectionMetadata.cpp" />
     <ClCompile Include="src\Coilgun.cpp" />
     <ClCompile Include="src\Command.cpp" />
     <ClCompile Include="src\ComPortCommunication.cpp" />
