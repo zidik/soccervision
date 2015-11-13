@@ -188,6 +188,8 @@ public:
 			dribblerDistance{ pt.get<float>("dribblerDistance") },
 			wheelRadius{ pt.get<float>("wheel.radius") },
 			wheelAngles{_wheelAngles},
+			maxWheelSpeed{ pt.get<int>("wheel.maxSpeed") },
+			wheelSpeedToMetric{ pt.get<float>("wheel.speedToMetric") },
 			wheelDiagonalOffset{ pt.get<float>("wheel.diagonalOffset") }
 		{
 			_wheelAngles[0] = pt.get<float>("wheel.angle1");
@@ -201,6 +203,8 @@ public:
 		const float wheelRadius;
 		const float * const wheelAngles;
 		const float wheelDiagonalOffset;
+		const int maxWheelSpeed;
+		const float wheelSpeedToMetric;
 		
 	private:
 		float _wheelAngles[4];

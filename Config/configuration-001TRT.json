@@ -1,8 +1,8 @@
 {
     "camera": {
         "serial": {
-            "front": 857769553,
-            "rear": 857735761
+            "front": 374359121,
+            "rear": 374354001
         },
         "translation": {
             "front": {
@@ -24,14 +24,14 @@
         "radius": 0.12425,
         "dribblerDistance": 0.17,
         "wheel": {
-            "angle1": -135.0,
-            "angle2": -45.0,
-            "angle3": 45.0,
-            "angle4": 135.0,
+            "angle1": 45.0,
+            "angle2": 135.0,
+            "angle3": -135.0,
+            "angle4": -45.0,
             "diagonalOffset": 0.1167,
             "radius": 0.035,
-			"maxSpeed": 255,
-			"speedToMetric": 20.0
+			"maxSpeed": 6000,
+			"speedToMetric": 225.0
         }
-    },
+    }
 }
