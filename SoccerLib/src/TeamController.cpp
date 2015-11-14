@@ -228,7 +228,29 @@ void TeamController::InterceptBallState::onEnter(Robot* robot, Parameters parame
 }
 
 void TeamController::InterceptBallState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	//TODO fill this out
+	if (robot->dribbler->gotBall()) {
+		Parameters parameters;
+		parameters["next-state"] = "defend-goal";
+		if (ai->passNeeded) {
+			ai->setState("pass-ball", parameters);
+		}
+		else {
+			ai->setState("aim-kick", parameters);
+		}
+		return;
+	}
+
+	Object* ball = visionResults->getClosestBall();
+
+	//if can't see ball
+	if (ball == NULL) {
+		ai->setState("defend-goal");
+		return;
+	} //ball found, check if it isn't in a goal
+	else if (!visionResults->isBallInGoal(ball)) {
+
+	}
+
 }
 
 void TeamController::TakeKickoffState::onEnter(Robot* robot, Parameters parameters) {
