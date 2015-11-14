@@ -9,7 +9,6 @@ public:
 	enum GameSituation { UNKNOWN = -1, KICKOFF = 0, INDIRECTFREEKICK = 1, DIRECTFREEKICK = 2, GOALKICK = 3, THROWIN = 4, CORNERKICK = 4, PENALTY = 6, ENDHALF = 7 };
 	enum TeamInPossession { NOONE = -1, ENEMY = 0, FRIENDLY = 1 };
 
-
 	class State : public BaseAI::State {
 
 	public:
@@ -212,7 +211,7 @@ public:
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 	};
 
-	//Receive passed ball
+	//For maneuvering to optimal positions for situations, don't know if will have time to implement properly
 	class ManeuverState : public State {
 
 	public:

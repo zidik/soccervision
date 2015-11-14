@@ -351,6 +351,9 @@ protected:
 	DebouncedButton toggleSideBtn;
 	DebouncedButton resetBtn;
 
+	//this variable should hold info about whether referee has sent start or stop most recently
+	bool gameIsRunning;
+
 	Side targetSide;
 	Side defendSide;
 	float speedMultiplier;

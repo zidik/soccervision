@@ -68,6 +68,22 @@ void TeamController::WaitForRefereeState::onEnter(Robot* robot, Parameters param
 
 void TeamController::WaitForRefereeState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 	//this state will be entered after the referee sends stop and waits for the next command from the referee to choose next state
+
+	//check if referee has sent next situation
+	if (ai->currentSituation != GameSituation::UNKNOWN && ai->isCaptain) {
+		Parameters parameters;
+		switch (ai->currentSituation) {
+		case GameSituation::KICKOFF:
+			if (ai->whoHasBall == TeamInPossession::FRIENDLY) {
+				parameters["next-state"] = "take-kickoff";
+				parameters["team-in-possession"] = "1";
+			}
+			else {
+
+			}
+			break;
+		}
+	}
 }
 
 void TeamController::WaitForKickState::onEnter(Robot* robot, Parameters parameters) {
@@ -216,11 +232,20 @@ void TeamController::InterceptBallState::step(float dt, Vision::Results* visionR
 }
 
 void TeamController::TakeKickoffState::onEnter(Robot* robot, Parameters parameters) {
-	//TODO fill this out
+	ai->passNeeded = true;
 }
 
 void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 	//TODO fill this out
+
+	//check if referee has sent start (other version - enter this state only if start was sent already)
+	//if start has not been sent, do nothing (harder version - take and hold position inside own half)
+	//if start was sent:
+		//tell teammate to go into pass receiving state
+		//drive to ball slowly and gently and take it into dribbler
+		//then rotate around ball until can see teammate
+		//kick ball toward teammate gently
+		//do something?
 }
 
 void TeamController::TakeFreeKickDirectState::onEnter(Robot* robot, Parameters parameters) {
@@ -392,18 +417,25 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 
 void TeamController::PassBallState::onEnter(Robot* robot, Parameters parameters) {
 	//TODO fill this out
+	//send command to teammate to get pass
 }
 
 void TeamController::PassBallState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	//TODO fill this out
+	//if ball is not in dribbler, change to find ball
+	//look for teammate
+	//if can see teammate, kick ball toward him
 }
 
 void TeamController::GetPassState::onEnter(Robot* robot, Parameters parameters) {
-	//TODO fill this out
+	ai->passNeeded = true;
 }
 
 void TeamController::GetPassState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	//TODO fill this out
+	//check if ball is in dribbler, if is, then go to kick
+	//find teammate or ball
+	//if teammate and ball are close, look at ball
+	//else go and fetch ball and set ai->passneeded false
+
 }
 
 void TeamController::ManeuverState::onEnter(Robot* robot, Parameters parameters) {
