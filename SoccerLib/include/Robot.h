@@ -89,6 +89,8 @@ public:
 	BallLocalizer* ballLocalizer;
 	OdometerLocalizer* odometerLocalizer;
 	
+	bool refStop;
+
 private:
 	void setupWheels();
 	void setupDribbler();
@@ -120,7 +122,7 @@ private:
     float lastDt;
     float totalTime;
 	bool coilgunCharged;
-
+	
 	bool chipKickRequested;
 	bool requestedChipKickLowerDribbler;
 	float requestedChipKickDistance;

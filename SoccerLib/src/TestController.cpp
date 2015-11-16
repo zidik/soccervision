@@ -985,6 +985,11 @@ void TestController::ManualControlState::step(float dt, Vision::Results* visionR
 	ai->totalDuration = 0.0f;
 	ai->combinedStateDuration = 0.0f;
 
+	//if (!robot->refStop) {
+	//	ai->setState("find-ball");
+	//	return;
+	//}
+
 	// failsafe stops movement if no new commands received for some time
 	if (ai->lastCommandTime == -1.0 || time - ai->lastCommandTime < 0.5) {
 		robot->setTargetDir(ai->manualSpeedX, ai->manualSpeedY, ai->manualOmega);

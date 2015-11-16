@@ -33,6 +33,7 @@ Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* 
 	lastDriveBehindBallTime = -1;
 	frameTargetSpeedSet = false;
 	coilgunCharged = false;
+	refStop = true;
 
 	json = "null";
 
@@ -723,6 +724,13 @@ bool Robot::handleCommand(const Command& cmd) {
 
 	if (dribbler->handleCommand(cmd)) handled = true;
 	if (coilgun->handleCommand(cmd)) handled = true;
+
+	if (cmd.name == "ref")
+	{
+		if (cmd.parameters[0] == "aAXSTART----") refStop = false;
+		else if (cmd.parameters[0] == "aAXSTOP-----") refStop == true;
+		std::cout << "ref command: " << cmd.parameters[0] << ", refStop: " << refStop << std::endl;
+	}
 
 	return handled;
 }
