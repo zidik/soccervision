@@ -4,6 +4,7 @@
 #include "Vision.h"
 #include "Controller.h"
 #include "Server.h"
+#include "Client.h"
 #include "Command.h"
 #include <string>
 
@@ -39,6 +40,7 @@ public:
 	void setupGui();
 	void setupServer();
 	void setupCommunication();
+	void setupClient();
 
 	void addController(std::string name, Controller* controller);
     Controller* getController(std::string name);
@@ -59,6 +61,11 @@ public:
 	void handleScreenshotCommand(Command::Parameters parameters);
 	void handleListScreenshotsCommand(Server::Message* message);
 	void handleCameraTranslatorCommand(Command::Parameters parameters);
+	void handleClientToServerStateMessage(Server::Message* message);
+
+	void handleClientMessages();
+	void handleClientMessage(std::string message);
+	void handleServerToClientStateMessage(std::string message);
 
 	void handleCommunicationMessages();
 	void handleCommunicationMessage(std::string message);
@@ -67,6 +74,8 @@ public:
 
 	bool debugVision;
 	bool showGui;
+	std::string clientStateJSON;
+	std::string serverStateJSON;
 
 private:
 	void setupXimeaCamera(std::string name, XimeaCamera* camera);
@@ -93,6 +102,7 @@ private:
 	FpsCounter* fpsCounter;
 	Vision::Results* visionResults;
 	Server* server;
+	Client* client;
 	Robot* robot;
 	Controller* activeController;
 	AbstractCommunication* com;

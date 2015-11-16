@@ -20,6 +20,7 @@ public:
 
     static bool isValid(std::string input);
     static Command parse(std::string input);
+	static std::string getTrailingJSON(std::string input);
 
     std::string name;
     Parameters parameters;

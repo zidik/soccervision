@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-Dribbler::Dribbler(int id, AbstractCommunication* com, Coilgun* coilgun) : Wheel(id), com(com), coilgun(coilgun), ballDetected(false), everDetectedBall(false), isRaiseRequested(false), timeSinceRaised(0.0f), timeSinceLowered(0.0f), timeSinceLimitsApplied(0.0f), ballInDribblerTime(0.0), ballLostTime(-1.0f), stopRequestedTime(-1.0), lowerLimit(Config::robotDribblerNormalLowerLimit), upperLimit(Config::robotDribblerNormalUpperLimit), useChipKickLimitsMissedFrames(0) {
+Dribbler::Dribbler(int id, AbstractCommunication* com, Coilgun* coilgun) : Wheel(id, 0, 0.0f), com(com), coilgun(coilgun), ballDetected(false), everDetectedBall(false), isRaiseRequested(false), timeSinceRaised(0.0f), timeSinceLowered(0.0f), timeSinceLimitsApplied(0.0f), ballInDribblerTime(0.0), ballLostTime(-1.0f), stopRequestedTime(-1.0), lowerLimit(Config::robotDribblerNormalLowerLimit), upperLimit(Config::robotDribblerNormalUpperLimit), useChipKickLimitsMissedFrames(0) {
 	applyLimits();
 };
 

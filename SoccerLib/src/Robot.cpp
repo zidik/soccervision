@@ -132,10 +132,10 @@ void Robot::setupOdometerLocalizer() {
 }
 
 void Robot::setupWheels() {
-    wheelFL = new Wheel(Config::wheelFLId);
-    wheelFR = new Wheel(Config::wheelFRId);
-    wheelRL = new Wheel(Config::wheelRLId);
-    wheelRR = new Wheel(Config::wheelRRId);
+    wheelFL = new Wheel(Config::wheelFLId, conf->robot.maxWheelSpeed, conf->robot.wheelSpeedToMetric);
+    wheelFR = new Wheel(Config::wheelFRId, conf->robot.maxWheelSpeed, conf->robot.wheelSpeedToMetric);
+    wheelRL = new Wheel(Config::wheelRLId, conf->robot.maxWheelSpeed, conf->robot.wheelSpeedToMetric);
+    wheelRR = new Wheel(Config::wheelRRId, conf->robot.maxWheelSpeed, conf->robot.wheelSpeedToMetric);
 }
 
 void Robot::setupCoilgun() {
@@ -324,7 +324,7 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 }
 
 void Robot::updateWheelSpeeds() {
-	Odometer::WheelSpeeds wheelSpeeds = odometer->calculateWheelSpeeds(targetDir.x, targetDir.y, targetOmega);
+	Odometer::WheelSpeeds wheelSpeeds = odometer->calculateWheelSpeeds(targetDir.x, targetDir.y, targetOmega * (float)conf->robot.rotationDir);
 
 	//std::cout << "! Updating wheel speeds: " << wheelSpeeds.FL << ", " << wheelSpeeds.FR << ", " << wheelSpeeds.RL << ", " << wheelSpeeds.RR << std::endl;
 

@@ -186,8 +186,11 @@ public:
 		RobotConf(boost::property_tree::ptree pt) :
 			radius{ pt.get<float>("radius") },
 			dribblerDistance{ pt.get<float>("dribblerDistance") },
+			rotationDir{ pt.get<int>("rotateDir") },
 			wheelRadius{ pt.get<float>("wheel.radius") },
 			wheelAngles{_wheelAngles},
+			maxWheelSpeed{ pt.get<int>("wheel.maxSpeed") },
+			wheelSpeedToMetric{ pt.get<float>("wheel.speedToMetric") },
 			wheelDiagonalOffset{ pt.get<float>("wheel.diagonalOffset") }
 		{
 			_wheelAngles[0] = pt.get<float>("wheel.angle1");
@@ -198,9 +201,12 @@ public:
 
 		const float radius;
 		const float dribblerDistance;
+		const int rotationDir;
 		const float wheelRadius;
 		const float * const wheelAngles;
 		const float wheelDiagonalOffset;
+		const int maxWheelSpeed;
+		const float wheelSpeedToMetric;
 		
 	private:
 		float _wheelAngles[4];
