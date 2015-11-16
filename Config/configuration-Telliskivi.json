@@ -23,6 +23,7 @@
 	"robot": {
         "radius": 0.12425,
         "dribblerDistance": 0.17,
+		"rotateDir": 1,
         "wheel": {
             "angle1": -135.0,
             "angle2": -45.0,
