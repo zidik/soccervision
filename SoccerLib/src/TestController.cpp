@@ -291,6 +291,8 @@ bool TestController::handleCommand(const Command& cmd) {
 		setState(cmd.name.substr(4));
 	} else if (cmd.name == "parameter" && cmd.parameters.size() == 2) {
 		handleParameterCommand(cmd);
+	}else if (cmd.name == "ref" && parameters.size() == 1){
+		handleRefereeCommand(cmd);
 	} else {
 		return false;
 	}
@@ -408,6 +410,20 @@ void TestController::handleTurnByCommand(const Command& cmd) {
 
 	setState("turn-by");
 }
+
+void TestController::handleRefereeCommand(const Command& cmd)
+{
+	std::cout << "Ref command: " << cmd.parameters[0];
+	if (cmd.parameters[0] == "aAXSTART----")
+	{
+		setState("find-ball");
+	}
+	if (cmd.parameters[0] == "aAXSTOP-----")
+	{
+		setState("manual-control");
+	}
+}
+
 
 void TestController::updateVisionInfo(Vision::Results* visionResults) {
 	Object* blueGoal = visionResults->getLargestGoal(Side::BLUE);
