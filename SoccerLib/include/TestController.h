@@ -382,6 +382,8 @@ protected:
 	int nearLineFrames;
 	int nearGoalFrames;
 	int visibleBallCount;
+	char fieldID;
+	char robotID;
 
 	double lastCommandTime;
 	double lastBallTime;
