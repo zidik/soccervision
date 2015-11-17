@@ -76,7 +76,7 @@
 			"chipKickUpperLimit": null,
 			"moveDuration": null,
 			"stabilityDelay": null,
-			"minServoLimit": nulls,
+			"minServoLimit": null,
 			"maxServoLimit": null
 		}
     },

@@ -326,7 +326,7 @@ void TestController::handleAdjustDribblerLimitsCommand(const Command& cmd) {
 	int currentUpperLimit = robot->dribbler->getUpperLimit();
 	int scaler = 1;
 
-	robot->dribbler->setLimits(currentLowerLimit + lowerLimitDelta, currentUpperLimit + upperLimitDelta);
+	robot->dribbler->setLimits(lowerLimitDelta, upperLimitDelta);
 }
 
 void TestController::handleKickCommand(const Command& cmd) {
@@ -1013,7 +1013,7 @@ void TestController::ManualControlState::step(float dt, Vision::Results* visionR
 	// failsafe stops movement if no new commands received for some time
 	if (ai->lastCommandTime == -1.0 || time - ai->lastCommandTime < 0.5) {
 		robot->setTargetDir(ai->manualSpeedX, ai->manualSpeedY, ai->manualOmega);
-		robot->dribbler->setTargetSpeed(-ai->manualDribblerSpeed);
+		robot->dribbler->setTargetSpeed(ai->manualDribblerSpeed);
 
 		if (ai->manualKickStrength != 0.0f) {
 			robot->kick(ai->manualKickStrength);

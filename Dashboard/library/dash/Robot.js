@@ -61,13 +61,14 @@ Dash.Robot.prototype.chipKick = function(distance) {
 };
 
 Dash.Robot.prototype.toggleDribbler = function() {
+	console.log('toggleDribbler', this.dribblerActive);
 	if (this.socket.isOpen()) {
 		dash.dbg.log('! Toggling dribbler');
 		
 		this.dribblerActive = !this.dribblerActive;
 		
 		if (this.dribblerActive) {
-			this.socket.send('<set-dribbler:100>');
+			this.socket.send('<set-dribbler:2000>');
 		} else {
 			this.socket.send('<set-dribbler:0>');
 		}
