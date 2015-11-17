@@ -5,7 +5,7 @@
 #include <string>
 #include <sstream>
 
-Odometer::Odometer(const float * angles, float wheelOffset, float wheelRadius) : wheelOffset(wheelOffset), wheelRadius(wheelRadius) {
+Odometer::Odometer(const float * angles, float wheelOffset, float wheelRadius, float robotRotateDir) : wheelOffset(wheelOffset), wheelRadius(wheelRadius), robotRotateDir(robotRotateDir) {
 	wheelAngles[0] = Math::degToRad(angles[0]);
     wheelAngles[1] = Math::degToRad(angles[1]);
     wheelAngles[2] = Math::degToRad(angles[2]);
@@ -141,6 +141,6 @@ Odometer::Movement Odometer::calculateMovement(float omegaFL, float omegaFR, flo
 	return Movement(
 		avgVelocityX,
 		avgVelocityY,
-		avgOmega
+		avgOmega * robotRotateDir
 	);
 }

@@ -151,7 +151,8 @@ void Robot::setupOdometer() {
 	odometer = new Odometer(
 		conf->robot.wheelAngles,
 		conf->robot.wheelDiagonalOffset,
-		conf->robot.wheelRadius
+		conf->robot.wheelRadius, 
+		(float)conf->robot.rotationDir
 	);
 }
 
@@ -325,7 +326,7 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 }
 
 void Robot::updateWheelSpeeds() {
-	Odometer::WheelSpeeds wheelSpeeds = odometer->calculateWheelSpeeds(targetDir.x, targetDir.y, targetOmega * (float)conf->robot.rotationDir);
+	Odometer::WheelSpeeds wheelSpeeds = odometer->calculateWheelSpeeds(targetDir.x, targetDir.y, targetOmega);
 
 	//std::cout << "! Updating wheel speeds: " << wheelSpeeds.FL << ", " << wheelSpeeds.FR << ", " << wheelSpeeds.RL << ", " << wheelSpeeds.RR << std::endl;
 
