@@ -57,6 +57,7 @@
     "robot": {
         "radius": null,
         "dribblerDistance": null,
+		"rotateDir": null,
         "wheel": {
             "angle1": null,
             "angle2": null,
