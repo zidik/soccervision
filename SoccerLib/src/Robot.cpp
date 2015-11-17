@@ -144,7 +144,7 @@ void Robot::setupCoilgun() {
 }
 
 void Robot::setupDribbler() {
-	dribbler = new Dribbler(Config::dribblerId, com, coilgun);
+	dribbler = new Dribbler(Config::dribblerId, com, coilgun, conf);
 }
 
 void Robot::setupOdometer() {
@@ -767,4 +767,8 @@ void Robot::debugBallList(std::string name, std::stringstream& stream, BallLocal
 	}
 
     stream << "],";
+}
+
+float Robot::getDribblerStabilityDelay() { 
+	return conf->robot.dribblerStabilityDelay;
 }

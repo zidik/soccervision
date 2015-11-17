@@ -191,7 +191,16 @@ public:
 			wheelAngles{_wheelAngles},
 			maxWheelSpeed{ pt.get<int>("wheel.maxSpeed") },
 			wheelSpeedToMetric{ pt.get<float>("wheel.speedToMetric") },
-			wheelDiagonalOffset{ pt.get<float>("wheel.diagonalOffset") }
+			wheelDiagonalOffset{ pt.get<float>("wheel.diagonalOffset") },
+			dribblerSpeed{ pt.get<int>("dribbler.speed") },
+			dribblerNormalLowerLimit{ pt.get<int>("dribbler.normalLowerLimit") },
+			dribblerNormalUpperLimit{ pt.get<int>("dribbler.normalUpperLimit") },
+			dribblerChipKickLowerLimit{ pt.get<int>("dribbler.chipKickLowerLimit") },
+			dribblerChipKickUpperLimit{ pt.get<int>("dribbler.chipKickUpperLimit") },
+			dribblerMoveDuration{ pt.get<float>("dribbler.moveDuration") },
+			dribblerStabilityDelay{ pt.get<float>("dribbler.stabilityDelay") },
+			minServoLimit{ pt.get<int>("dribbler.maxServoLimit") },
+			maxServoLimit{ pt.get<int>("dribbler.minServoLimit") }
 		{
 			_wheelAngles[0] = pt.get<float>("wheel.angle1");
 			_wheelAngles[1] = pt.get<float>("wheel.angle2");
@@ -207,6 +216,15 @@ public:
 		const float wheelDiagonalOffset;
 		const int maxWheelSpeed;
 		const float wheelSpeedToMetric;
+		const int dribblerSpeed;
+		const int dribblerNormalLowerLimit;
+		const int dribblerNormalUpperLimit;
+		const int dribblerChipKickLowerLimit;
+		const int dribblerChipKickUpperLimit;
+		const float dribblerMoveDuration;
+		const float dribblerStabilityDelay;
+		const int minServoLimit;
+		const int maxServoLimit;
 		
 	private:
 		float _wheelAngles[4];

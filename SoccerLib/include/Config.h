@@ -137,7 +137,7 @@ namespace Config {
 	// fluid movement steps
 	const float robotfluidSpeedStep = 1.5f;
 	const float robotfluidOmegaStep = 6.28f;
-
+	/*
 	// how fast to spin the dribbler
 	const int robotDribblerSpeed = 150;
 	const int robotDribblerNormalLowerLimit = 34;
@@ -145,10 +145,10 @@ namespace Config {
 	const int robotDribblerChipKickLowerLimit = 100;
 	const int robotDribblerChipKickUpperLimit = 100;
 	const float robotDribblerMoveDuration = 0.4f;
-	const int robotDribblerLimitMin = 600;
-	const int robotDribblerLimitMax = 2500;
+	const int robotDribblerLimitMin = 800;
+	const int robotDribblerLimitMax = 2200;
 	const float robotDribblerStabilityDelay = 0.2f;
-
+	*/
 	// coilgun voltage lower then this is considered to be low
 	const float robotCoilgunLowVoltageThreshold = 240.0f;
 	

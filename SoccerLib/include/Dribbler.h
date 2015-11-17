@@ -3,6 +3,7 @@
 
 #include "Config.h"
 #include "Wheel.h"
+#include "Configuration.h"
 
 class AbstractCommunication;
 class Coilgun;
@@ -10,7 +11,7 @@ class Coilgun;
 class Dribbler : public Wheel {
 
 public:
-	Dribbler(int id, AbstractCommunication* com, Coilgun* coilgun);
+	Dribbler(int id, AbstractCommunication* com, Coilgun* coilgun, Configuration* conf);
 
 	void prime();
 	void start();
@@ -37,6 +38,7 @@ private:
 	
 	AbstractCommunication* com;
 	Coilgun* coilgun;
+	Configuration* conf;
 	bool ballDetected;
 	bool everDetectedBall;
 	bool isRaiseRequested;

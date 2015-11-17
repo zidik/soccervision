@@ -35,6 +35,7 @@ public:
     const Math::Position getPosition() const { return Math::Position(x, y, orientation);  }
     float getOrientation() const { return orientation; }
 	float getVelocity() { return velocity; }
+	float getDribblerStabilityDelay();
 	bool isAccelerating() { return velocity > lastVelocity; }
 	bool isBraking() { return velocity < lastVelocity; }
 	float getOmega() { return omega; }
