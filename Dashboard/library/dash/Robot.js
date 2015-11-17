@@ -1,6 +1,8 @@
 Dash.Robot = function(socket) {
 	this.socket = socket;
 	this.controller = null;
+	this.fieldID = null;
+	this.robotID = null;
 	this.dribblerActive = false;
 };
 
@@ -11,6 +13,26 @@ Dash.Robot.prototype.setController = function(name) {
 		this.socket.send('<set-controller:' + name + '>');
 		
 		this.controller = name;
+	}
+};
+
+Dash.Robot.prototype.setFieldID = function(name) {
+	if (this.socket.isOpen() && name != this.fieldID) {
+		dash.dbg.log('! Setting field ID: ' + name);
+		
+		this.socket.send('<set-field-id:' + name + '>');
+		
+		this.fieldID = name;
+	}
+};
+
+Dash.Robot.prototype.setRobotID = function(name) {
+	if (this.socket.isOpen() && name != this.robotID) {
+		dash.dbg.log('! Setting robot ID: ' + name);
+		
+		this.socket.send('<set-robot-id:' + name + '>');
+		
+		this.robotID = name;
 	}
 };
 

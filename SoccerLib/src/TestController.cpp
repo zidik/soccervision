@@ -283,6 +283,10 @@ bool TestController::handleCommand(const Command& cmd) {
 		handleToggleGoCommand();
 	} else if (cmd.name == "toggle-side") {
 		handleToggleSideCommand();
+	} else if (cmd.name == "set-field-id" && cmd.parameters.size() == 1) {
+		handleSetFieldIDCommand(cmd);
+	} else if (cmd.name == "set-robot-id" && cmd.parameters.size() == 1) {
+		handleSetRobotIDCommand(cmd);
 	} else if (cmd.name == "drive-to" && cmd.parameters.size() == 3) {
 		handleDriveToCommand(cmd);
 	} else if (cmd.name == "turn-by" && cmd.parameters.size() == 1) {
@@ -380,6 +384,16 @@ void TestController::handleToggleSideCommand() {
 	com->send("target:" + Util::toString(targetSide));
 
 	lastTurnAroundTime = -1.0;
+}
+
+void TestController::handleSetFieldIDCommand(const Command& cmd) {
+	fieldID = cmd.parameters[0][0];
+	std::cout << "! Robot now on field: " << fieldID << std::endl;
+}
+
+void TestController::handleSetRobotIDCommand(const Command& cmd) {
+	robotID = cmd.parameters[0][0];
+	std::cout << "! Robot now with ID: " << robotID << std::endl;
 }
 
 void TestController::handleParameterCommand(const Command& cmd) {
