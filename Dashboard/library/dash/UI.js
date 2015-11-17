@@ -818,20 +818,10 @@ Dash.UI.prototype.setController = function(name) {
 };
 
 Dash.UI.prototype.setFieldID = function(name) {
-
-	$('.ctrl').each(function() {
-		$(this).hide();
-	});
-	
 	this.robot.setFieldID(name);
 };
 
 Dash.UI.prototype.setRobotID = function(name) {
-
-	$('.ctrl').each(function() {
-		$(this).hide();
-	});
-	
 	this.robot.setRobotID(name);
 };
 

@@ -258,6 +258,7 @@ void TestController::step(float dt, Vision::Results* visionResults) {
 }
 
 bool TestController::handleCommand(const Command& cmd) {
+	//std::cout << "testcontroller: " << cmd.name << std::endl;
 	if (cmd.name == "target-vector" && cmd.parameters.size() == 3) {
 		handleTargetVectorCommand(cmd);
 	} else if (cmd.name == "set-dribbler" && cmd.parameters.size() == 1) {
@@ -295,6 +296,8 @@ bool TestController::handleCommand(const Command& cmd) {
 		setState(cmd.name.substr(4));
 	} else if (cmd.name == "parameter" && cmd.parameters.size() == 2) {
 		handleParameterCommand(cmd);
+	}else if (cmd.name == "ref"){
+		handleRefereeCommand(cmd);
 	} else {
 		return false;
 	}
@@ -422,6 +425,25 @@ void TestController::handleTurnByCommand(const Command& cmd) {
 
 	setState("turn-by");
 }
+
+void TestController::handleRefereeCommand(const Command& cmd)
+{
+	//std::cout << "testcontroller Ref command: " << cmd.parameters[0];
+	if (cmd.parameters[0][1] == fieldID) {
+		if (cmd.parameters[0][2] == robotID || cmd.parameters[0][2] == 'X') {
+			std::string command = cmd.parameters[0].substr(3);
+			//std::cout << command << std::endl;
+
+			if (command == "START----") {
+				setState("find-ball");
+			}
+			else if (command == "STOP-----") {
+				setState("manual-control");
+			}
+		}
+	}	
+}
+
 
 void TestController::updateVisionInfo(Vision::Results* visionResults) {
 	Object* blueGoal = visionResults->getLargestGoal(Side::BLUE);
@@ -982,6 +1004,11 @@ void TestController::ManualControlState::step(float dt, Vision::Results* visionR
 	// reset duration so it starts from zero in AI states
 	ai->totalDuration = 0.0f;
 	ai->combinedStateDuration = 0.0f;
+
+	//if (!robot->refStop) {
+	//	ai->setState("find-ball");
+	//	return;
+	//}
 
 	// failsafe stops movement if no new commands received for some time
 	if (ai->lastCommandTime == -1.0 || time - ai->lastCommandTime < 0.5) {
