@@ -461,6 +461,12 @@ Dash.UI.prototype.initControls = function() {
 		self.setFieldID(fieldID);
 	});
 	
+	$('#team-id-choice').change(function() {
+		var teamID = $(this).val();
+		
+		self.setTeamID(teamID);
+	});
+	
 	$('#robot-id-choice').change(function() {
 		var robotID = $(this).val();
 		
@@ -819,6 +825,10 @@ Dash.UI.prototype.setController = function(name) {
 
 Dash.UI.prototype.setFieldID = function(name) {
 	this.robot.setFieldID(name);
+};
+
+Dash.UI.prototype.setTeamID = function(name) {
+	this.robot.setTeamID(name);
 };
 
 Dash.UI.prototype.setRobotID = function(name) {
