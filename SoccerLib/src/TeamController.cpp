@@ -60,6 +60,34 @@ void TeamController::setupStates() {
 	states["maneuver"] = new ManeuverState(this);
 }
 
+void TeamController::handleRefereeCommand(const Command& cmd)
+{
+	if (cmd.parameters[0][1] == fieldID) {
+		if (cmd.parameters[0][2] == robotID || cmd.parameters[0][2] == 'X') {
+			if (cmd.parameters[0][3] == 'A' || cmd.parameters[0][3] == 'B') {
+				bool commandForOurTeam = cmd.parameters[0][3] == teamID;
+				std::string command = cmd.parameters[0].substr(4);
+
+				if (command == "KICKOFF-"){}
+				else if (command == "IFREEK--"){}
+				else if (command == "DFREEK--"){}
+				else if (command == "GOALK---"){}
+				else if (command == "THROWIN-"){}
+				else if (command == "CORNERK-"){}
+				else if (command == "PENALTY-"){}
+				else if (command == "GOAL----"){}
+			} else {
+				std::string command = cmd.parameters[0].substr(3);
+
+				if (command == "START----") { std::cout << "Teamcontroller start" << std::endl; }
+				else if (command == "STOP-----") {}
+				else if (command == "PLACEDBAL") {}
+				else if (command == "ENDHALF--") {}
+			}			
+		}
+	}
+}
+
 void TeamController::WaitForRefereeState::onEnter(Robot* robot, Parameters parameters) {
 	//Nullify previous referee state
 	ai->whoHasBall = TeamInPossession::NOONE;
