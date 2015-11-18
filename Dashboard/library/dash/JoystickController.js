@@ -122,7 +122,7 @@ Dash.JoystickController.prototype.onTick = function(gamepads) {
 	this.robot.setTargetDir(
 		gamepads[0].state.RIGHT_STICK_Y * -speed,
 		gamepads[0].state.RIGHT_STICK_X * speed,
-		gamepads[0].state.LEFT_STICK_X * -turnRate
+		gamepads[0].state.LEFT_STICK_X * turnRate
 	);
 };
 

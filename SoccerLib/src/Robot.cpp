@@ -460,7 +460,7 @@ void Robot::setTargetDir(float x, float y, float omega) {
 	//std::cout << "! Setting robot target direction: " << x << "x" << y << " @ " << omega << std::endl;
 
 	targetDir = Math::Vector(x, y);
-	targetOmega = omega;
+	targetOmega = omega * (float)conf->robot.rotationDir;
 
     lastCommandTime = Util::millitime();
 	frameTargetSpeedSet = true;
