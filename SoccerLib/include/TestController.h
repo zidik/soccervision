@@ -312,10 +312,11 @@ public:
 	void handleToggleSideCommand();
 	void handleSetFieldIDCommand(const Command& cmd);
 	void handleSetRobotIDCommand(const Command& cmd);
+	void handleSetTeamIDCommand(const Command& cmd);
 	void handleDriveToCommand(const Command& cmd);
 	void handleTurnByCommand(const Command& cmd);
 	void handleParameterCommand(const Command& cmd);
-	void handleRefereeCommand(const Command& cmd);
+	virtual void handleRefereeCommand(const Command& cmd);
 
 	float getTargetAngle(float goalX, float goalY, float ballX, float ballY, float D, TargetMode targetMode = TargetMode::INLINE);
 	float getChipKickDistance(Vision::BallInWayMetric ballInWayMetric, float goalDistance);
@@ -387,6 +388,7 @@ protected:
 	int visibleBallCount;
 	char fieldID;
 	char robotID;
+	char teamID;
 
 	double lastCommandTime;
 	double lastBallTime;

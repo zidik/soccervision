@@ -224,6 +224,7 @@ public:
 	~TeamController();
 
 	void reset() override;
+	void handleRefereeCommand(const Command& cmd);
 
 private:
 	void setupStates();
