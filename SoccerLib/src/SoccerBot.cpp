@@ -1060,6 +1060,8 @@ void SoccerBot::handleCommunicationMessage(std::string message) {
 	robot->handleCommunicationMessage(message);
 
 	if (activeController != NULL) {
+		//std::cout << "activeController" << message << std::endl;
+		//activeController->handleCommand(message);
 		activeController->handleCommunicationMessage(message);
 	}
 

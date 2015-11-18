@@ -2,6 +2,7 @@
 #define ODOMETER_H
 
 #include "Maths.h"
+#include "Configuration.h"
 
 class Odometer {
 
@@ -25,7 +26,7 @@ public:
 		float RR;
 	};
 
-    Odometer(const float * angles, float wheelOffset, float wheelRadius);
+    Odometer(const float * angles, float wheelOffset, float wheelRadius, float robotRotateDir);
 
 	WheelSpeeds calculateWheelSpeeds(float targetDirX, float targetDirY, float targetOmega);
 	Movement calculateMovement(float omegaFL, float omegaFR, float omegaRL, float omegaRR);
@@ -34,6 +35,7 @@ public:
     float wheelRadius;
     float wheelRadiusInv;
     float wheelAngles[4];
+	float robotRotateDir;
 
 private:
 	Math::Matrix4x3 omegaMatrix;

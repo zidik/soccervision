@@ -7,19 +7,21 @@
 
 #include <iostream>
 
-Dribbler::Dribbler(int id, AbstractCommunication* com, Coilgun* coilgun) : Wheel(id, 0, 0.0f), com(com), coilgun(coilgun), ballDetected(false), everDetectedBall(false), isRaiseRequested(false), timeSinceRaised(0.0f), timeSinceLowered(0.0f), timeSinceLimitsApplied(0.0f), ballInDribblerTime(0.0), ballLostTime(-1.0f), stopRequestedTime(-1.0), lowerLimit(Config::robotDribblerNormalLowerLimit), upperLimit(Config::robotDribblerNormalUpperLimit), useChipKickLimitsMissedFrames(0) {
+Dribbler::Dribbler(int id, AbstractCommunication* com, Coilgun* coilgun, Configuration* conf) : Wheel(id, 10000.0f, conf->robot.wheelSpeedToMetric), com(com), coilgun(coilgun), conf(conf), ballDetected(false), everDetectedBall(false), isRaiseRequested(false), timeSinceRaised(0.0f), timeSinceLowered(0.0f), timeSinceLimitsApplied(0.0f), ballInDribblerTime(0.0), ballLostTime(-1.0f), stopRequestedTime(-1.0), useChipKickLimitsMissedFrames(0) {
+	lowerLimit = conf->robot.dribblerNormalLowerLimit;
+	upperLimit = conf->robot.dribblerNormalUpperLimit;
 	applyLimits();
 };
 
 void Dribbler::prime() {
-	setTargetSpeed(-Config::robotDribblerSpeed);
+	setTargetSpeed(-conf->robot.dribblerSpeed);
 	//setTargetSpeed(-Config::robotDribblerSpeed / 2);
 
 	stopRequestedTime = -1.0;
 }
 
 void Dribbler::start() {
-	setTargetSpeed(-Config::robotDribblerSpeed);
+	setTargetSpeed(-conf->robot.dribblerSpeed);
 
 	stopRequestedTime = -1.0;
 }
@@ -61,7 +63,7 @@ void Dribbler::useNormalLimits() {
 
 	//std::cout << "! Now using normal dribbler limits" << std::endl;
 
-	setLimits(Config::robotDribblerNormalLowerLimit, Config::robotDribblerNormalUpperLimit);
+	setLimits(conf->robot.dribblerNormalLowerLimit, conf->robot.dribblerNormalUpperLimit);
 
 	isRaiseRequested = false;
 }
@@ -75,14 +77,14 @@ void Dribbler::useChipKickLimits() {
 
 	//std::cout << "! Now using chip-kick dribbler limits" << std::endl;
 
-	setLimits(Config::robotDribblerChipKickLowerLimit, Config::robotDribblerChipKickUpperLimit);
+	setLimits(conf->robot.dribblerChipKickLowerLimit, conf->robot.dribblerChipKickUpperLimit);
 
 	isRaiseRequested = true;
 }
 
 void Dribbler::applyLimits() {
-	float min = (float)Config::robotDribblerLimitMin;
-	float max = (float)Config::robotDribblerLimitMax;
+	float min = (float)conf->robot.minServoLimit;
+	float max = (float)conf->robot.maxServoLimit;
 	int servoLimitLower = (int)(Math::map((float)lowerLimit, 0.0f, 100.0f, min, max));
 	int servoLimitUpper = (int)(min + max - Math::map((float)upperLimit, 0.0f, 100.0f, min, max));
 
@@ -149,11 +151,11 @@ void Dribbler::step(float dt) {
 }
 
 bool Dribbler::isRaised() {
-	return timeSinceRaised >= Config::robotDribblerMoveDuration;
+	return timeSinceRaised >= conf->robot.dribblerMoveDuration;
 }
 
 bool Dribbler::isLowered() {
-	return timeSinceLowered >= Config::robotDribblerMoveDuration;
+	return timeSinceLowered >= conf->robot.dribblerMoveDuration;
 }
 
 bool Dribbler::gotBall(bool definitive) const {

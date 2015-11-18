@@ -33,6 +33,17 @@
             "radius": 0.035,
 			"maxSpeed": 255,
 			"speedToMetric": 20.0
-        }
+        },
+		"dribbler": {
+			"speed": 150,
+			"normalLowerLimit": 34,
+			"normalUpperLimit": 31,
+			"chipKickLowerLimit": 100,
+			"chipKickUpperLimit": 100,
+			"moveDuration": 0.4,
+			"stabilityDelay": 0.2,
+			"minServoLimit": 800,
+			"maxServoLimit": 2200
+		}
     },
 }

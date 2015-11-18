@@ -172,7 +172,7 @@
 * - should not see goal in invalid places
 */
 
-TestController::TestController(Robot* robot, AbstractCommunication* com) : BaseAI(robot, com), targetSide(Side::BLUE), defendSide(Side::YELLOW), manualSpeedX(0.0f), manualSpeedY(0.0f), manualOmega(0.0f), manualDribblerSpeed(0), manualKickStrength(0), blueGoalDistance(0.0f), yellowGoalDistance(0.0f), lastCommandTime(-1.0), lastBallTime(-1.0), lastNearLineTime(-1.0), lastNearGoalTime(-1.0), lastInCornerTime(-1.0), lastGoalObstructedTime(-1.0), lastTargetGoalAngle(0.0f), lastBall(NULL), lastTurnAroundTime(-1.0), lastClosestGoalDistance(-1.0f), lastTargetGoalDistance(-1.0f), framesRobotOutFront(0), framesRobotOutRear(0), isRobotOutFront(false), isRobotOutRear(false), isNearLine(false), isInCorner(false), isBallInWay(false), isAvoidingBallInWay(false), inCornerFrames(0), nearLineFrames(0), nearGoalFrames(0), visibleBallCount(0), visionResults(NULL), gameIsRunning(false) {
+TestController::TestController(Robot* robot, AbstractCommunication* com) : BaseAI(robot, com), targetSide(Side::BLUE), defendSide(Side::YELLOW), manualSpeedX(0.0f), manualSpeedY(0.0f), manualOmega(0.0f), manualDribblerSpeed(0), manualKickStrength(0), blueGoalDistance(0.0f), yellowGoalDistance(0.0f), lastCommandTime(-1.0), lastBallTime(-1.0), lastNearLineTime(-1.0), lastNearGoalTime(-1.0), lastInCornerTime(-1.0), lastGoalObstructedTime(-1.0), lastTargetGoalAngle(0.0f), lastBall(NULL), lastTurnAroundTime(-1.0), lastClosestGoalDistance(-1.0f), lastTargetGoalDistance(-1.0f), framesRobotOutFront(0), framesRobotOutRear(0), isRobotOutFront(false), isRobotOutRear(false), isNearLine(false), isInCorner(false), isBallInWay(false), isAvoidingBallInWay(false), inCornerFrames(0), nearLineFrames(0), nearGoalFrames(0), visibleBallCount(0), visionResults(NULL), fieldID('A'), robotID('A') {
 	setupStates();
 
 	speedMultiplier = 1.0f;
@@ -258,6 +258,7 @@ void TestController::step(float dt, Vision::Results* visionResults) {
 }
 
 bool TestController::handleCommand(const Command& cmd) {
+	//std::cout << "testcontroller: " << cmd.name << std::endl;
 	if (cmd.name == "target-vector" && cmd.parameters.size() == 3) {
 		handleTargetVectorCommand(cmd);
 	} else if (cmd.name == "set-dribbler" && cmd.parameters.size() == 1) {
@@ -283,6 +284,10 @@ bool TestController::handleCommand(const Command& cmd) {
 		handleToggleGoCommand();
 	} else if (cmd.name == "toggle-side") {
 		handleToggleSideCommand();
+	} else if (cmd.name == "set-field-id" && cmd.parameters.size() == 1) {
+		handleSetFieldIDCommand(cmd);
+	} else if (cmd.name == "set-robot-id" && cmd.parameters.size() == 1) {
+		handleSetRobotIDCommand(cmd);
 	} else if (cmd.name == "drive-to" && cmd.parameters.size() == 3) {
 		handleDriveToCommand(cmd);
 	} else if (cmd.name == "turn-by" && cmd.parameters.size() == 1) {
@@ -291,6 +296,8 @@ bool TestController::handleCommand(const Command& cmd) {
 		setState(cmd.name.substr(4));
 	} else if (cmd.name == "parameter" && cmd.parameters.size() == 2) {
 		handleParameterCommand(cmd);
+	}else if (cmd.name == "ref"){
+		handleRefereeCommand(cmd);
 	} else {
 		return false;
 	}
@@ -319,7 +326,7 @@ void TestController::handleAdjustDribblerLimitsCommand(const Command& cmd) {
 	int currentUpperLimit = robot->dribbler->getUpperLimit();
 	int scaler = 1;
 
-	robot->dribbler->setLimits(currentLowerLimit + lowerLimitDelta, currentUpperLimit + upperLimitDelta);
+	robot->dribbler->setLimits(lowerLimitDelta, upperLimitDelta);
 }
 
 void TestController::handleKickCommand(const Command& cmd) {
@@ -382,6 +389,16 @@ void TestController::handleToggleSideCommand() {
 	lastTurnAroundTime = -1.0;
 }
 
+void TestController::handleSetFieldIDCommand(const Command& cmd) {
+	fieldID = cmd.parameters[0][0];
+	std::cout << "! Robot now on field: " << fieldID << std::endl;
+}
+
+void TestController::handleSetRobotIDCommand(const Command& cmd) {
+	robotID = cmd.parameters[0][0];
+	std::cout << "! Robot now with ID: " << robotID << std::endl;
+}
+
 void TestController::handleParameterCommand(const Command& cmd) {
 	int index = Util::toInt(cmd.parameters[0]);
 	std::string value = cmd.parameters[1];
@@ -408,6 +425,25 @@ void TestController::handleTurnByCommand(const Command& cmd) {
 
 	setState("turn-by");
 }
+
+void TestController::handleRefereeCommand(const Command& cmd)
+{
+	//std::cout << "testcontroller Ref command: " << cmd.parameters[0];
+	if (cmd.parameters[0][1] == fieldID) {
+		if (cmd.parameters[0][2] == robotID || cmd.parameters[0][2] == 'X') {
+			std::string command = cmd.parameters[0].substr(3);
+			//std::cout << command << std::endl;
+
+			if (command == "START----") {
+				setState("find-ball");
+			}
+			else if (command == "STOP-----") {
+				setState("manual-control");
+			}
+		}
+	}	
+}
+
 
 void TestController::updateVisionInfo(Vision::Results* visionResults) {
 	Object* blueGoal = visionResults->getLargestGoal(Side::BLUE);
@@ -969,10 +1005,15 @@ void TestController::ManualControlState::step(float dt, Vision::Results* visionR
 	ai->totalDuration = 0.0f;
 	ai->combinedStateDuration = 0.0f;
 
+	//if (!robot->refStop) {
+	//	ai->setState("find-ball");
+	//	return;
+	//}
+
 	// failsafe stops movement if no new commands received for some time
 	if (ai->lastCommandTime == -1.0 || time - ai->lastCommandTime < 0.5) {
 		robot->setTargetDir(ai->manualSpeedX, ai->manualSpeedY, ai->manualOmega);
-		robot->dribbler->setTargetSpeed(-ai->manualDribblerSpeed);
+		robot->dribbler->setTargetSpeed(ai->manualDribblerSpeed);
 
 		if (ai->manualKickStrength != 0.0f) {
 			robot->kick(ai->manualKickStrength);
@@ -2686,7 +2727,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 		if (ai->wasNearGoalLately(2.0f)) {
 
 			// give the ball some time to stabilize
-			if (robot->dribbler->getBallInDribblerTime() > Config::robotDribblerStabilityDelay * 2.0f) {
+			if (robot->dribbler->getBallInDribblerTime() > robot->getDribblerStabilityDelay() * 2.0f) {
 				robot->setTargetOmega(searchGoalDir * Math::PI);
 			}
 		} else {
@@ -2730,7 +2771,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 				}*/
 
 			// give the ball some time to stabilize
-			if (robot->dribbler->getBallInDribblerTime() > Config::robotDribblerStabilityDelay) {
+			if (robot->dribbler->getBallInDribblerTime() > robot->getDribblerStabilityDelay()) {
 				robot->spinAroundDribbler(searchGoalDir == -1.0f, searchPeriod);
 			}
 		}

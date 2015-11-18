@@ -143,14 +143,15 @@ void Robot::setupCoilgun() {
 }
 
 void Robot::setupDribbler() {
-	dribbler = new Dribbler(Config::dribblerId, com, coilgun);
+	dribbler = new Dribbler(Config::dribblerId, com, coilgun, conf);
 }
 
 void Robot::setupOdometer() {
 	odometer = new Odometer(
 		conf->robot.wheelAngles,
 		conf->robot.wheelDiagonalOffset,
-		conf->robot.wheelRadius
+		conf->robot.wheelRadius, 
+		(float)conf->robot.rotationDir
 	);
 }
 
@@ -324,7 +325,7 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 }
 
 void Robot::updateWheelSpeeds() {
-	Odometer::WheelSpeeds wheelSpeeds = odometer->calculateWheelSpeeds(targetDir.x, targetDir.y, targetOmega * (float)conf->robot.rotationDir);
+	Odometer::WheelSpeeds wheelSpeeds = odometer->calculateWheelSpeeds(targetDir.x, targetDir.y, targetOmega);
 
 	//std::cout << "! Updating wheel speeds: " << wheelSpeeds.FL << ", " << wheelSpeeds.FR << ", " << wheelSpeeds.RL << ", " << wheelSpeeds.RR << std::endl;
 
@@ -458,7 +459,7 @@ void Robot::setTargetDir(float x, float y, float omega) {
 	//std::cout << "! Setting robot target direction: " << x << "x" << y << " @ " << omega << std::endl;
 
 	targetDir = Math::Vector(x, y);
-	targetOmega = omega;
+	targetOmega = omega * (float)conf->robot.rotationDir;
 
     lastCommandTime = Util::millitime();
 	frameTargetSpeedSet = true;
@@ -724,6 +725,16 @@ bool Robot::handleCommand(const Command& cmd) {
 	if (dribbler->handleCommand(cmd)) handled = true;
 	if (coilgun->handleCommand(cmd)) handled = true;
 
+	//std::cout << "cmd name: " << cmd.name << std::endl;
+
+	/*
+	if (cmd.name == "ref")
+	{
+		if (cmd.parameters[0] == "aAXSTART----") refStop = false;
+		else if (cmd.parameters[0] == "aAXSTOP-----") refStop = true;
+		//std::cout << "ref command: " << cmd.parameters[0] << ", refStop: " << refStop << std::endl;
+	}
+	*/
 	return handled;
 }
 
@@ -756,4 +767,8 @@ void Robot::debugBallList(std::string name, std::stringstream& stream, BallLocal
 	}
 
     stream << "],";
+}
+
+float Robot::getDribblerStabilityDelay() { 
+	return conf->robot.dribblerStabilityDelay;
 }

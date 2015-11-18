@@ -310,9 +310,12 @@ public:
 	void handleResetCommand();
 	void handleToggleGoCommand();
 	void handleToggleSideCommand();
+	void handleSetFieldIDCommand(const Command& cmd);
+	void handleSetRobotIDCommand(const Command& cmd);
 	void handleDriveToCommand(const Command& cmd);
 	void handleTurnByCommand(const Command& cmd);
 	void handleParameterCommand(const Command& cmd);
+	void handleRefereeCommand(const Command& cmd);
 
 	float getTargetAngle(float goalX, float goalY, float ballX, float ballY, float D, TargetMode targetMode = TargetMode::INLINE);
 	float getChipKickDistance(Vision::BallInWayMetric ballInWayMetric, float goalDistance);
@@ -351,9 +354,6 @@ protected:
 	DebouncedButton toggleSideBtn;
 	DebouncedButton resetBtn;
 
-	//this variable should hold info about whether referee has sent start or stop most recently
-	bool gameIsRunning;
-
 	Side targetSide;
 	Side defendSide;
 	float speedMultiplier;
@@ -385,6 +385,8 @@ protected:
 	int nearLineFrames;
 	int nearGoalFrames;
 	int visibleBallCount;
+	char fieldID;
+	char robotID;
 
 	double lastCommandTime;
 	double lastBallTime;

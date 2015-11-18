@@ -455,6 +455,18 @@ Dash.UI.prototype.initControls = function() {
 		self.setController(controller);
 	});
 	
+	$('#field-id-choice').change(function() {
+		var fieldID = $(this).val();
+		
+		self.setFieldID(fieldID);
+	});
+	
+	$('#robot-id-choice').change(function() {
+		var robotID = $(this).val();
+		
+		self.setRobotID(robotID);
+	});
+	
 	$('#host-btn').click(function() {
 		var newHost = window.prompt('Enter robot hostname or IP', dash.config.socket.host);
 		
@@ -803,6 +815,14 @@ Dash.UI.prototype.setController = function(name) {
 	});
 	
 	this.robot.setController(name);
+};
+
+Dash.UI.prototype.setFieldID = function(name) {
+	this.robot.setFieldID(name);
+};
+
+Dash.UI.prototype.setRobotID = function(name) {
+	this.robot.setRobotID(name);
 };
 
 Dash.UI.prototype.onKeyDown = function(e) {

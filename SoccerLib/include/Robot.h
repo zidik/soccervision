@@ -35,6 +35,7 @@ public:
     const Math::Position getPosition() const { return Math::Position(x, y, orientation);  }
     float getOrientation() const { return orientation; }
 	float getVelocity() { return velocity; }
+	float getDribblerStabilityDelay();
 	bool isAccelerating() { return velocity > lastVelocity; }
 	bool isBraking() { return velocity < lastVelocity; }
 	float getOmega() { return omega; }
@@ -46,7 +47,7 @@ public:
 
     void setTargetDir(float x, float y, float omega = 0.0f);
     void setTargetDir(const Math::Angle& dir, float speed = 1.0f, float omega = 0.0f);
-	void setTargetOmega(float omega) { targetOmega = omega; }
+	void setTargetOmega(float omega) { targetOmega = omega * conf->robot.rotationDir; }
 	void spinAroundDribbler(bool reverse = false, float period = Config::robotSpinAroundDribblerPeriod, float radius = Config::robotSpinAroundDribblerRadius, float forwardSpeed = Config::robotSpinAroundDribblerForwardSpeed);
     void setPosition(float x, float y, float orientation);
 	void stop();
@@ -88,7 +89,7 @@ public:
 	ParticleFilterLocalizer* robotLocalizer;
 	BallLocalizer* ballLocalizer;
 	OdometerLocalizer* odometerLocalizer;
-	
+
 private:
 	void setupWheels();
 	void setupDribbler();
@@ -120,7 +121,7 @@ private:
     float lastDt;
     float totalTime;
 	bool coilgunCharged;
-
+	
 	bool chipKickRequested;
 	bool requestedChipKickLowerDribbler;
 	float requestedChipKickDistance;

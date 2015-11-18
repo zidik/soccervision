@@ -67,7 +67,18 @@
             "radius": null,
 			"maxSpeed": null,
 			"speedToMetric": null
-        }
+        },
+		"dribbler": {
+			"speed": null,
+			"normalLowerLimit": null,
+			"normalUpperLimit": null,
+			"chipKickLowerLimit": null,
+			"chipKickUpperLimit": null,
+			"moveDuration": null,
+			"stabilityDelay": null,
+			"minServoLimit": null,
+			"maxServoLimit": null
+		}
     },
 
     "particleFilter": {
