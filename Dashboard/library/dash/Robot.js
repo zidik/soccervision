@@ -2,6 +2,7 @@ Dash.Robot = function(socket) {
 	this.socket = socket;
 	this.controller = null;
 	this.fieldID = null;
+	this.teamID = null;
 	this.robotID = null;
 	this.dribblerActive = false;
 };
@@ -23,6 +24,16 @@ Dash.Robot.prototype.setFieldID = function(name) {
 		this.socket.send('<set-field-id:' + name + '>');
 		
 		this.fieldID = name;
+	}
+};
+
+Dash.Robot.prototype.setTeamID = function(name) {
+	if (this.socket.isOpen() && name != this.teamID) {
+		dash.dbg.log('! Setting team ID: ' + name);
+		
+		this.socket.send('<set-team-id:' + name + '>');
+		
+		this.teamID = name;
 	}
 };
 
