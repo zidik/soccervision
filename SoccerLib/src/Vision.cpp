@@ -2813,6 +2813,53 @@ Object* Vision::Results::getLargestGoal(Side side, Dir dir) {
 	}
 }
 
+Object* Vision::Results::getLargestRobot(RobotColor color, Dir dir) {
+	int area;
+	int largestArea = 0;
+	Object* robot;
+	Object* largestRobot = NULL;
+
+	if (front != NULL && dir != Dir::REAR) {
+		for (ObjectListItc it = front->robots->begin(); it != front->robots->end(); it++) {
+			robot = *it;
+
+			if (color != RobotColor::WHATEVER && robot->type != (int)color) {
+				continue;
+			}
+
+			area = robot->width * robot->height;
+
+			if (largestRobot == NULL || area > largestArea) {
+				largestRobot = robot;
+				largestArea = area;
+			}
+		}
+	}
+
+	if (rear != NULL && dir != Dir::FRONT) {
+		for (ObjectListItc it = rear->robots->begin(); it != rear->robots->end(); it++) {
+			robot = *it;
+
+			if (color != RobotColor::WHATEVER && robot->type != (int)color) {
+				continue;
+			}
+
+			area = robot->width * robot->height;
+
+			if (largestRobot == NULL || area > largestArea) {
+				largestRobot = robot;
+				largestArea = area;
+			}
+		}
+	}
+
+	if (largestRobot != NULL) {
+		return largestRobot;
+	} else {
+		return NULL;
+	}
+}
+
 Object* Vision::Results::getFurthestGoal(Dir dir) {
 	return NULL;
 

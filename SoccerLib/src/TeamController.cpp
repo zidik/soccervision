@@ -5,7 +5,7 @@
 #include "Coilgun.h"
 #include "Command.h"
 
-TeamController::TeamController(Robot* robot, AbstractCommunication* com) : TestController(robot, com) {
+TeamController::TeamController(Robot* robot, AbstractCommunication* com, Client* client) : TestController(robot, com, client) {
 	setupStates();
 
 	speedMultiplier = 1.0f;
@@ -283,19 +283,61 @@ void TeamController::InterceptBallState::step(float dt, Vision::Results* visionR
 
 void TeamController::TakeKickoffState::onEnter(Robot* robot, Parameters parameters) {
 	ai->passNeeded = true;
+	ai->client->send("run-get-pass");
 }
 
 void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	//TODO fill this out
+	Object* ball = visionResults->getClosestBall(Dir::FRONT);
+	Object* teamMate = visionResults->getLargestRobot(ai->teamColor, Dir::FRONT);
 
-	//check if referee has sent start (other version - enter this state only if start was sent already)
-	//if start has not been sent, do nothing (harder version - take and hold position inside own half)
-	//if start was sent:
-		//tell teammate to go into pass receiving state
-		//drive to ball slowly and gently and take it into dribbler
-		//then rotate around ball until can see teammate
-		//kick ball toward teammate gently
-		//do something?
+	if (ball == NULL && !robot->dribbler->gotBall()) {
+		Parameters parameters;
+		parameters["next-state"] = "take-kickoff";
+		ai->setState("find-ball", parameters);
+	} else {
+		float forwardSpeed = 0.0f;
+		float sidewaysSpeed = 0.0f;
+
+		//configuration parameters
+		float forwardSpeedMult = 0.5f;
+		float sidewaysSpeedMult = 0.5f;
+		float robotSearchDir = 0.5f;
+		float minForwardSpeed = 0.1f;
+		float minSidewaysSpeed = 0.1f;
+		float ballRotateDistance = 0.02f;
+		float ballDistanceError = 0.05f;
+
+		if (teamMate != NULL) {
+			//configuration parameters
+			float robotAngleError = Math::PI / 30.0f;
+
+			if (abs(teamMate->angle) < robotAngleError) {
+				forwardSpeed = minForwardSpeed + ball->distance * forwardSpeedMult;
+				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
+			}
+			else {
+				//turn toward teammate
+				sidewaysSpeed = teamMate->angle * sidewaysSpeedMult;
+				forwardSpeed = ball->distance - ballRotateDistance;
+			}
+		}
+		else {
+			//configuration parameters
+
+
+			if (abs(ball->distance - ballRotateDistance) < ballDistanceError) {
+				//search for teammate
+			}
+			else {
+				//move ball to correct distance
+			}
+
+		}
+		
+		robot->setTargetDir(forwardSpeed, sidewaysSpeed);
+		robot->lookAt(ball);
+
+	}
 }
 
 void TeamController::TakeFreeKickDirectState::onEnter(Robot* robot, Parameters parameters) {
@@ -484,7 +526,7 @@ void TeamController::GetPassState::step(float dt, Vision::Results* visionResults
 	//check if ball is in dribbler, if is, then go to kick
 	//find teammate or ball
 	//if teammate and ball are close, look at ball
-	//else go and fetch ball and set ai->passneeded false
+	//else go and fetch ball and set ai->passneeded false or something
 
 }
 

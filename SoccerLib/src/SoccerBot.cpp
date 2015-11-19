@@ -600,10 +600,10 @@ void SoccerBot::setupRobot() {
 void SoccerBot::setupControllers() {
 	std::cout << "! Setting up controllers.. ";
 
-	addController("manual", new ManualController(robot, com));
-	addController("test", new TestController(robot, com));
-	addController("offensive-ai", new OffensiveAI(robot, com));
-	addController("teamplay", new TeamController(robot, com));
+	addController("manual", new ManualController(robot, com, client));
+	addController("test", new TestController(robot, com, client));
+	addController("offensive-ai", new OffensiveAI(robot, com, client));
+	addController("teamplay", new TeamController(robot, com, client));
 
 	std::cout << "done!" << std::endl;
 }

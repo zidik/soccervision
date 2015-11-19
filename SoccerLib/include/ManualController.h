@@ -9,7 +9,7 @@
 class ManualController : public Controller {
 
 public:
-	ManualController(Robot* robot, AbstractCommunication* com);
+	ManualController(Robot* robot, AbstractCommunication* com, Client* client);
 
 	void onEnter() { reset(); }
 	void onExit() { reset(); }

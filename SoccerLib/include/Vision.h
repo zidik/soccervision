@@ -101,6 +101,7 @@ public:
 			Object* getNextClosestBall(Dir dir = Dir::ANY);
 			Object* getLargestGoal(Side side, Dir dir = Dir::ANY);
 			Object* getFurthestGoal(Dir dir = Dir::ANY);
+			Object* getLargestRobot(RobotColor color, Dir dir = Dir::ANY);
 			bool isBallInGoal(Object* ball);
 			bool isBallInGoal(Object* ball, Object* blueGoal, Object* yellowGoal);
 			BallInWayMetric getBallInWayMetric(ObjectList balls, int goalY, Object* ignoreBall = NULL);
