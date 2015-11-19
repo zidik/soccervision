@@ -89,8 +89,6 @@ public:
 	ParticleFilterLocalizer* robotLocalizer;
 	BallLocalizer* ballLocalizer;
 	OdometerLocalizer* odometerLocalizer;
-	
-	bool refStop;
 
 private:
 	void setupWheels();

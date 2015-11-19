@@ -187,8 +187,9 @@ public:
 			radius{ pt.get<float>("radius") },
 			dribblerDistance{ pt.get<float>("dribblerDistance") },
 			rotationDir{ pt.get<int>("rotateDir") },
+			teammateIP(pt.get<std::string>("teammateIP")),
 			wheelRadius{ pt.get<float>("wheel.radius") },
-			wheelAngles{_wheelAngles},
+			wheelAngles{ _wheelAngles },
 			maxWheelSpeed{ pt.get<int>("wheel.maxSpeed") },
 			wheelSpeedToMetric{ pt.get<float>("wheel.speedToMetric") },
 			wheelDiagonalOffset{ pt.get<float>("wheel.diagonalOffset") },
@@ -200,12 +201,18 @@ public:
 			dribblerMoveDuration{ pt.get<float>("dribbler.moveDuration") },
 			dribblerStabilityDelay{ pt.get<float>("dribbler.stabilityDelay") },
 			minServoLimit{ pt.get<int>("dribbler.maxServoLimit") },
-			maxServoLimit{ pt.get<int>("dribbler.minServoLimit") }
+			maxServoLimit{ pt.get<int>("dribbler.minServoLimit") },
+			chipKickParameters{ _chipKickParameters }
 		{
 			_wheelAngles[0] = pt.get<float>("wheel.angle1");
 			_wheelAngles[1] = pt.get<float>("wheel.angle2");
 			_wheelAngles[2] = pt.get<float>("wheel.angle3");
 			_wheelAngles[3] = pt.get<float>("wheel.angle4");
+			_chipKickParameters[0] = pt.get<float>("chipkick.a");
+			_chipKickParameters[1] = pt.get<float>("chipkick.b");
+			_chipKickParameters[2] = pt.get<float>("chipkick.c");
+			_chipKickParameters[3] = pt.get<float>("chipkick.d");
+			_chipKickParameters[4] = pt.get<float>("chipkick.e");
 		}
 
 		const float radius;
@@ -225,9 +232,12 @@ public:
 		const float dribblerStabilityDelay;
 		const int minServoLimit;
 		const int maxServoLimit;
+		const float * const chipKickParameters;
+		const std::string teammateIP;
 		
 	private:
 		float _wheelAngles[4];
+		float _chipKickParameters[5];
 	}robot;
 
 	struct ParticleFilterConf

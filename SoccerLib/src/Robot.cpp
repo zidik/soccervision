@@ -33,7 +33,6 @@ Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* 
 	lastDriveBehindBallTime = -1;
 	frameTargetSpeedSet = false;
 	coilgunCharged = false;
-	refStop = true;
 
 	json = "null";
 
@@ -140,7 +139,7 @@ void Robot::setupWheels() {
 }
 
 void Robot::setupCoilgun() {
-	coilgun = new Coilgun(com);
+	coilgun = new Coilgun(com, conf->robot.chipKickParameters);
 }
 
 void Robot::setupDribbler() {

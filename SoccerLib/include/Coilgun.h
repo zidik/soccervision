@@ -9,7 +9,7 @@ class Command;
 class Coilgun {
 
 public:
-	Coilgun(AbstractCommunication* com);
+	Coilgun(AbstractCommunication* com, const float * chipKickParameters);
 	~Coilgun();
 
 	struct KickParameters {
@@ -56,7 +56,7 @@ private:
 	bool isKickingOnceGotBall;
 	int kickOnceGotBallMissedFrames;
 	KickParameters kickOnceGotBallParameters;
-
+	const float * chipKickParameters;
 };
 
 #endif //COILGUN_H

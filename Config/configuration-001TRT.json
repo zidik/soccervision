@@ -24,6 +24,7 @@
         "radius": 0.12425,
         "dribblerDistance": 0.17,
 		"rotateDir": -1,
+		"teammateIP": "192.168.0.102",
         "wheel": {
             "angle1": 45.0,
             "angle2": 135.0,
@@ -44,6 +45,13 @@
 			"stabilityDelay": 0.2,
 			"minServoLimit": 800,
 			"maxServoLimit": 2200
+		},
+		"chipkick": {
+			"a": 1.994E-7,
+			"b": -1.953E-4,
+			"c": 0.066,
+			"d": -2.38,
+			"e": 1254.333
 		}
     }
 }

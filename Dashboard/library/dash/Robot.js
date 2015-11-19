@@ -2,6 +2,9 @@ Dash.Robot = function(socket) {
 	this.socket = socket;
 	this.controller = null;
 	this.fieldID = null;
+	this.teamID = null;
+	this.teamColor = null;
+	this.enemyColor = null;
 	this.robotID = null;
 	this.dribblerActive = false;
 };
@@ -23,6 +26,36 @@ Dash.Robot.prototype.setFieldID = function(name) {
 		this.socket.send('<set-field-id:' + name + '>');
 		
 		this.fieldID = name;
+	}
+};
+
+Dash.Robot.prototype.setTeamID = function(name) {
+	if (this.socket.isOpen() && name != this.teamID) {
+		dash.dbg.log('! Setting team ID: ' + name);
+		
+		this.socket.send('<set-team-id:' + name + '>');
+		
+		this.teamID = name;
+	}
+};
+
+Dash.Robot.prototype.setTeamColor = function(name) {
+	if (this.socket.isOpen() && name != this.teamColor) {
+		dash.dbg.log('! Setting team color: ' + name);
+		
+		this.socket.send('<set-team-color:' + name + '>');
+		
+		this.teamColor = name;
+	}
+};
+
+Dash.Robot.prototype.setEnemyColor = function(name) {
+	if (this.socket.isOpen() && name != this.enemyColor) {
+		dash.dbg.log('! Setting enemy color: ' + name);
+		
+		this.socket.send('<set-enemy-color:' + name + '>');
+		
+		this.enemyColor = name;
 	}
 };
 
