@@ -172,7 +172,7 @@
 * - should not see goal in invalid places
 */
 
-TestController::TestController(Robot* robot, AbstractCommunication* com) : BaseAI(robot, com), targetSide(Side::BLUE), defendSide(Side::YELLOW), manualSpeedX(0.0f), manualSpeedY(0.0f), manualOmega(0.0f), manualDribblerSpeed(0), manualKickStrength(0), blueGoalDistance(0.0f), yellowGoalDistance(0.0f), lastCommandTime(-1.0), lastBallTime(-1.0), lastNearLineTime(-1.0), lastNearGoalTime(-1.0), lastInCornerTime(-1.0), lastGoalObstructedTime(-1.0), lastTargetGoalAngle(0.0f), lastBall(NULL), lastTurnAroundTime(-1.0), lastClosestGoalDistance(-1.0f), lastTargetGoalDistance(-1.0f), framesRobotOutFront(0), framesRobotOutRear(0), isRobotOutFront(false), isRobotOutRear(false), isNearLine(false), isInCorner(false), isBallInWay(false), isAvoidingBallInWay(false), inCornerFrames(0), nearLineFrames(0), nearGoalFrames(0), visibleBallCount(0), visionResults(NULL), fieldID('A'), robotID('A'), teamID('A') {
+TestController::TestController(Robot* robot, AbstractCommunication* com) : BaseAI(robot, com), targetSide(Side::BLUE), defendSide(Side::YELLOW), manualSpeedX(0.0f), manualSpeedY(0.0f), manualOmega(0.0f), manualDribblerSpeed(0), manualKickStrength(0), blueGoalDistance(0.0f), yellowGoalDistance(0.0f), lastCommandTime(-1.0), lastBallTime(-1.0), lastNearLineTime(-1.0), lastNearGoalTime(-1.0), lastInCornerTime(-1.0), lastGoalObstructedTime(-1.0), lastTargetGoalAngle(0.0f), lastBall(NULL), lastTurnAroundTime(-1.0), lastClosestGoalDistance(-1.0f), lastTargetGoalDistance(-1.0f), framesRobotOutFront(0), framesRobotOutRear(0), isRobotOutFront(false), isRobotOutRear(false), isNearLine(false), isInCorner(false), isBallInWay(false), isAvoidingBallInWay(false), inCornerFrames(0), nearLineFrames(0), nearGoalFrames(0), visibleBallCount(0), visionResults(NULL), fieldID('A'), robotID('A'), teamID('A'), teamColor(RobotColor::WHATEVER), enemyColor(RobotColor::WHATEVER) {
 	setupStates();
 
 	speedMultiplier = 1.0f;
@@ -290,6 +290,10 @@ bool TestController::handleCommand(const Command& cmd) {
 		handleSetRobotIDCommand(cmd);
 	} else if (cmd.name == "set-team-id" && cmd.parameters.size() == 1) {
 		handleSetTeamIDCommand(cmd);
+	} else if (cmd.name == "set-team-color" && cmd.parameters.size() == 1) {
+		handleSetTeamColorCommand(cmd);
+	} else if (cmd.name == "set-enemy-color" && cmd.parameters.size() == 1) {
+		handleSetEnemyColorCommand(cmd);
 	} else if (cmd.name == "drive-to" && cmd.parameters.size() == 3) {
 		handleDriveToCommand(cmd);
 	} else if (cmd.name == "turn-by" && cmd.parameters.size() == 1) {
@@ -405,6 +409,46 @@ void TestController::handleSetTeamIDCommand(const Command& cmd)
 {
 	teamID = cmd.parameters[0][0];
 	std::cout << "! Robot now on team: " << teamID << std::endl;
+}
+
+void TestController::handleSetTeamColorCommand(const Command& cmd)
+{
+	int color = Util::toInt(cmd.parameters[0]);
+	teamColor = static_cast<RobotColor>(color);
+
+	std::string printout = "unknown";
+	switch (teamColor) {
+	case RobotColor::YELLOWHIGH:
+		printout = "YELLOWHIGH";
+		break;
+	case RobotColor::BLUEHIGH:
+		printout = "BLUEHIGH";
+		break;
+	case RobotColor::WHATEVER:
+		printout = "WHATEVER";
+		break;
+	}
+	std::cout << "! Team color is now: " << printout << std::endl;
+}
+
+void TestController::handleSetEnemyColorCommand(const Command& cmd)
+{
+	int color = Util::toInt(cmd.parameters[0]);
+	enemyColor = static_cast<RobotColor>(color);
+
+	std::string printout = "unknown";
+	switch (teamColor) {
+	case RobotColor::YELLOWHIGH:
+		printout = "YELLOWHIGH";
+		break;
+	case RobotColor::BLUEHIGH:
+		printout = "BLUEHIGH";
+		break;
+	case RobotColor::WHATEVER:
+		printout = "WHATEVER";
+		break;
+	}
+	std::cout << "! Enemy color is now: " << printout << std::endl;
 }
 
 void TestController::handleParameterCommand(const Command& cmd) {

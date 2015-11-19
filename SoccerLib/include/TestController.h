@@ -313,6 +313,8 @@ public:
 	void handleSetFieldIDCommand(const Command& cmd);
 	void handleSetRobotIDCommand(const Command& cmd);
 	void handleSetTeamIDCommand(const Command& cmd);
+	void handleSetTeamColorCommand(const Command& cmd);
+	void handleSetEnemyColorCommand(const Command& cmd);
 	void handleDriveToCommand(const Command& cmd);
 	void handleTurnByCommand(const Command& cmd);
 	void handleParameterCommand(const Command& cmd);
@@ -389,6 +391,8 @@ protected:
 	char fieldID;
 	char robotID;
 	char teamID;
+	RobotColor teamColor;
+	RobotColor enemyColor;
 
 	double lastCommandTime;
 	double lastBallTime;

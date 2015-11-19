@@ -467,6 +467,18 @@ Dash.UI.prototype.initControls = function() {
 		self.setTeamID(teamID);
 	});
 	
+	$('#team-color-choice').change(function() {
+		var teamColor = $(this).val();
+		
+		self.setTeamColor(teamColor);
+	});
+	
+	$('#enemy-color-choice').change(function() {
+		var enemyColor = $(this).val();
+		
+		self.setEnemyColor(enemyColor);
+	});
+	
 	$('#robot-id-choice').change(function() {
 		var robotID = $(this).val();
 		
@@ -829,6 +841,14 @@ Dash.UI.prototype.setFieldID = function(name) {
 
 Dash.UI.prototype.setTeamID = function(name) {
 	this.robot.setTeamID(name);
+};
+
+Dash.UI.prototype.setTeamColor = function(name) {
+	this.robot.setTeamColor(name);
+};
+
+Dash.UI.prototype.setEnemyColor = function(name) {
+	this.robot.setEnemyColor(name);
 };
 
 Dash.UI.prototype.setRobotID = function(name) {
