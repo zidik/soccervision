@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-Coilgun::Coilgun(AbstractCommunication* com) : com(com), lastKickTime(0.0), lastChargeRequestTime(0.0), lastBdkickRequestTime(0.0), timeSinceLastVoltageReading(0.0f), voltage(0.0f), isKickingOnceGotBall(false), kickOnceGotBallMissedFrames(0) {
+Coilgun::Coilgun(AbstractCommunication* com, const float * chipKickParameters) : com(com), chipKickParameters(chipKickParameters), lastKickTime(0.0), lastChargeRequestTime(0.0), lastBdkickRequestTime(0.0), timeSinceLastVoltageReading(0.0f), voltage(0.0f), isKickingOnceGotBall(false), kickOnceGotBallMissedFrames(0) {
 
 };
 
@@ -68,15 +68,24 @@ int Coilgun::getChipKickDurationByDistance(float distanceMeters) {
 		+ e);*/
 
 	// 300V: y = 3.405E-5x^3 - 0.028x ^ 2 + 16.707x + 1193.148
-	float a = 3.405E-5f;
+	/*float a = 3.405E-5f;
 	float b = 0.028f;
 	float c = 16.707f;
-	float d = 1193.148f;
+	float d = 1193.148f;*/
 
-	return (int)(a * Math::pow(distanceCm, 3)
-		- b * Math::pow(distanceCm, 2)
-		+ c * distanceCm
-		+ d);
+	//Read from conf json, 4th order polynomial
+	float a = chipKickParameters[0];
+	float b = chipKickParameters[1];
+	float c = chipKickParameters[2];
+	float d = chipKickParameters[3];
+	float e = chipKickParameters[4];
+
+	return (int)(
+		a * Math::pow(distanceCm, 4) + 
+		b * Math::pow(distanceCm, 3) +
+		c * Math::pow(distanceCm, 2) +
+		d * distanceCm +
+		e);
 }
 
 float Coilgun::getTimeSinceLastKicked() {

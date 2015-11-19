@@ -78,6 +78,13 @@
 			"stabilityDelay": null,
 			"minServoLimit": null,
 			"maxServoLimit": null
+		},
+		"chipkick": {
+			"a": null,
+			"b": null,
+			"c": null,
+			"d": null,
+			"e": null,
 		}
     },
 

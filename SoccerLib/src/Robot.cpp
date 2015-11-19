@@ -139,7 +139,7 @@ void Robot::setupWheels() {
 }
 
 void Robot::setupCoilgun() {
-	coilgun = new Coilgun(com);
+	coilgun = new Coilgun(com, conf->robot.chipKickParameters);
 }
 
 void Robot::setupDribbler() {
