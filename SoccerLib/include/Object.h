@@ -64,6 +64,11 @@ public:
 	bool behind;
 	bool processed;
 
+	//Used only by goals (hacky)
+	int goal_x;
+	int goal_y;
+	//
+
 	enum property {
 		ANGLE = 9,
 	};

@@ -163,7 +163,7 @@ double ParticleFilterLocalizer::evaluateParticleProbabilityPart(const Particle& 
 		else {
 		Pixel expectation = translator->getCameraPosition(diff);
 		float error = measurement.bottomPixel.distanceTo(expectation);
-			double probability = Math::getGaussian(0.0, 50.0, (double)error);
+			double probability = Math::getGaussian(0.0, 40.0, (double)error);
 			maximumProbability = Math::max(maximumProbability, probability);
     }
 
@@ -172,12 +172,18 @@ double ParticleFilterLocalizer::evaluateParticleProbabilityPart(const Particle& 
 }
 
 void ParticleFilterLocalizer::resample() {
-	removeZeroProbabilityParticles(); // Is that a good idea?
+	//removeZeroProbabilityParticles(); // Is that a good idea?
 
 	ParticleList newParticles;
 	newParticles.reserve(particleCount);
-	if (particles.size() > 0) {
-		int randomParticleCount = particleCount / 100;
+
+	int probability_sum = 0;
+	for (Particle* particle : particles) {
+		probability_sum += particle->probability;
+	}
+	bool all_particles_zero = probability_sum == 0;
+	if (!all_particles_zero) {
+		int randomParticleCount = 0;//particleCount / 100;
 		int resampledParticleCount = particleCount - randomParticleCount;
 		generateRandomParticles(newParticles, randomParticleCount);
 		sampleParticles(newParticles, resampledParticleCount);
@@ -185,7 +191,11 @@ void ParticleFilterLocalizer::resample() {
 	else {
 		//All particles had probability 0.0
 		std::cout << "All particles had probability 0.0" << std::endl;
-		generateRandomParticles(newParticles, particleCount);
+		int randomCount = 0;//particleCount / 100;
+		for (int i = 0; i < particleCount - randomCount; i++) {
+			newParticles.push_back(new Particle(*particles[i]));
+		}
+		generateRandomParticles(newParticles, randomCount);
 	}
 	
 	for (Particle* particle : particles){
@@ -221,7 +231,7 @@ void ParticleFilterLocalizer::sampleParticles(ParticleList& newParticles, int re
 	int index = Math::randomInt(0, particles.size() - 1);
 	for (int i = 0; i < resampledParticleCount; i++) {
         beta += Math::randomFloat() * 2.0 * maxProbability;
-
+		//Limit loops by random!
 		while (beta > particles[index]->probability) {
 			beta -= particles[index]->probability;
 			index = (index + 1) % particles.size();

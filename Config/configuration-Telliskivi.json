@@ -45,5 +45,5 @@
 			"minServoLimit": 800,
 			"maxServoLimit": 2200
 		}
-    },
+    }
 }

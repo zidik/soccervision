@@ -343,12 +343,12 @@ void Robot::updateMeasurements() {
 	Object* blueGoal = visionResults->getLargestGoal(Side::BLUE);
 
 	if (yellowGoal != NULL) {
-		ParticleFilterLocalizer::Measurement measurement(LandmarkType::YellowGoalCenter, Pixel(yellowGoal->x, yellowGoal->y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
+		ParticleFilterLocalizer::Measurement measurement(LandmarkType::YellowGoalCenter, Pixel(yellowGoal->goal_x, yellowGoal->goal_y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
 		measurements.push_back(measurement);
 	}
 
 	if (blueGoal != NULL) {
-		ParticleFilterLocalizer::Measurement measurement(LandmarkType::BlueGoalCenter, Pixel(blueGoal->x, blueGoal->y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
+		ParticleFilterLocalizer::Measurement measurement(LandmarkType::BlueGoalCenter, Pixel(blueGoal->goal_x, blueGoal->goal_y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
 		measurements.push_back(measurement);
 	}
 

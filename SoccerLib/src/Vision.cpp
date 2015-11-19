@@ -827,6 +827,9 @@ bool Vision::isValidGoal(Object* goal, Side side) {
 
 	EdgeDistanceMetric edgeDistanceMetric = getEdgeDistanceMetric(goal->x - halfWidth, goal->y - halfHeight, goal->width, goal->height, color1, color2);
 
+	goal->goal_x = edgeDistanceMetric.centerDistance.screenX;
+	goal->goal_y = edgeDistanceMetric.centerDistance.screenY;
+
 	// also comparing pixel values because distance calculation messes up for very high pixels..
 	// expect both sides to fail as one of them can get incorecctly labelled
 	if (
