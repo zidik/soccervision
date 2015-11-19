@@ -24,6 +24,7 @@
         "radius": 0.12425,
         "dribblerDistance": 0.17,
 		"rotateDir": -1,
+		"teammateIP": "192.168.0.102",
         "wheel": {
             "angle1": 45.0,
             "angle2": 135.0,

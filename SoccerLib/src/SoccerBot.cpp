@@ -639,7 +639,9 @@ void SoccerBot::setupServer() {
 
 void SoccerBot::setupClient() {
 	client = new Client();
-	client->set_uri("ws://localhost:8000"); // TODO get correct uri from conf
+	std::stringstream ss;
+	ss << "ws://" << config->robot.teammateIP << ":8000";
+	client->set_uri(ss.str());
 }
 
 void SoccerBot::setupCommunication() {
