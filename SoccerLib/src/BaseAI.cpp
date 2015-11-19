@@ -1,7 +1,7 @@
 #include "BaseAI.h"
 #include "Robot.h"
 
-BaseAI::BaseAI(Robot* robot, AbstractCommunication* com) : Controller(robot, com), currentState(NULL), currentStateName(""), lastStateName(""), totalDuration(0.0f), currentStateDuration(0.0f), combinedStateDuration(0.0f) {
+BaseAI::BaseAI(Robot* robot, AbstractCommunication* com, Client* client) : Controller(robot, com, client), currentState(NULL), currentStateName(""), lastStateName(""), totalDuration(0.0f), currentStateDuration(0.0f), combinedStateDuration(0.0f) {
 
 }
 

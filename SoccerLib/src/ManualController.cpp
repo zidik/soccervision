@@ -6,7 +6,7 @@
 #include "Coilgun.h"
 #include "Util.h"
 
-ManualController::ManualController(Robot* robot, AbstractCommunication* com) : Controller(robot, com), lastCommandTime(0.0) {
+ManualController::ManualController(Robot* robot, AbstractCommunication* com, Client* client) : Controller(robot, com, client), lastCommandTime(0.0) {
 
 };
 
