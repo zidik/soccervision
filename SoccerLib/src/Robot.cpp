@@ -33,7 +33,6 @@ Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* 
 	lastDriveBehindBallTime = -1;
 	frameTargetSpeedSet = false;
 	coilgunCharged = false;
-	refStop = true;
 
 	json = "null";
 

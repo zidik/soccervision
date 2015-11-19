@@ -6,9 +6,8 @@
 class TeamController : public TestController {
 
 public:
-	enum GameSituation { UNKNOWN = -1, KICKOFF = 0, INDIRECTFREEKICK = 1, DIRECTFREEKICK = 2, GOALKICK = 3, THROWIN = 4, CORNERKICK = 4, PENALTY = 6 };
+	enum GameSituation { UNKNOWN = -1, KICKOFF = 0, INDIRECTFREEKICK = 1, DIRECTFREEKICK = 2, GOALKICK = 3, THROWIN = 4, CORNERKICK = 4, PENALTY = 6, ENDHALF = 7 };
 	enum TeamInPossession { NOONE = -1, ENEMY = 0, FRIENDLY = 1 };
-
 
 	class State : public BaseAI::State {
 
@@ -177,6 +176,12 @@ public:
 		DriveToOwnGoalState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+
+	private:
+		float goalSearchDir;
+		bool droveTowardEnemyGoal;
+		bool droveTowardFriendlyGoal;
+		bool searchedEnemyGoal;
 	};
 
 	//Aim for a kick
@@ -188,15 +193,45 @@ public:
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 	};
 
+	//Pass the ball
+	class PassBallState : public State {
+
+	public:
+		PassBallState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	};
+
+	//Receive passed ball
+	class GetPassState : public State {
+
+	public:
+		GetPassState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	};
+
+	//For maneuvering to optimal positions for situations, don't know if will have time to implement properly
+	class ManeuverState : public State {
+
+	public:
+		ManeuverState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	};
+
 	TeamController(Robot* robot, AbstractCommunication* com);
 	~TeamController();
 
 	void reset() override;
+	void handleRefereeCommand(const Command& cmd);
 
 private:
 	void setupStates();
 	GameSituation currentSituation;
 	TeamInPossession whoHasBall;
+	bool passNeeded;
+	bool isCaptain;
 };
 
 #endif // TEAMCONTROLLER_H
