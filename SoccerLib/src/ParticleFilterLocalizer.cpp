@@ -177,11 +177,11 @@ void ParticleFilterLocalizer::resample() {
 	ParticleList newParticles;
 	newParticles.reserve(particleCount);
 
-	int probability_sum = 0;
+	double probability_sum = 0;
 	for (Particle* particle : particles) {
 		probability_sum += particle->probability;
 	}
-	bool all_particles_zero = probability_sum == 0;
+	bool all_particles_zero = probability_sum == 0.0;
 	if (!all_particles_zero) {
 		int randomParticleCount = 0;//particleCount / 100;
 		int resampledParticleCount = particleCount - randomParticleCount;

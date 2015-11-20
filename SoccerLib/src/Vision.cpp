@@ -86,7 +86,7 @@ void Vision::processCorners(std::vector<Pixel>& fieldCorners)
 		Pixel cornerPixel = getCornerPixel(Math::PI/4, Math::PI/4*3, 2.f, 20);
 		fieldCorners.push_back(cornerPixel);
 	}
-	catch (const CouldNotFindCorner &e) {}
+	catch (const CouldNotFindCorner &) {}
 }
 
 ObjectList Vision::processGoalsUpdateRobots(Dir dir) {
@@ -2241,7 +2241,7 @@ Pixel Vision::getCornerPixel(float startAngle, float endAngle, float r, int numb
 	if (transitionVec.size() < 3) throw CouldNotFindCorner();
 
 	int state = 0;
-	for (int i = 0; i < transitionVec.size() - 1; i++)
+	for (int i = 0; i+1 < transitionVec.size(); i++)
 	{
 		int oldState = state;
 		if (transitionVec.at(i).getLength() <= transitionVec.at(i+1).getLength())
