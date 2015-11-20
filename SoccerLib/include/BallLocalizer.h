@@ -10,8 +10,8 @@ public:
 	class Ball {
 
     public:
-        Ball(float x, float y);
-        void updateVisible(float x, float y, float dt);
+        Ball(Math::Vector & location);
+        void updateVisible(Math::Vector & location, float dt);
         void updateInvisible(float dt);
         void markForRemoval(double afterSeconds);
         bool shouldBeRemoved();
@@ -40,7 +40,7 @@ public:
 
 	BallList extractBalls(const ObjectList& sourceBalls, float robotX, float robotY, float robotOrientation);
     void update(const BallList& visibleBalls, const Math::Polygon& cameraFOV, float dt);
-    Ball* getBallAround(float x, float y);
+    Ball* getBallAround(Math::Vector & location);
     void purge(const BallList& visibleBalls, const Math::Polygon& cameraFOV);
     //bool isValid(Ball* ball, const BallList& visibleBalls, const Math::Polygon& cameraFOV);
 

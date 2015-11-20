@@ -16,7 +16,7 @@ BallLocalizer::~BallLocalizer() {
 
 int BallLocalizer::Ball::instances = 0;
 
-BallLocalizer::Ball::Ball(float px, float py) : location(px, py), velocity(0.0f, 0.0f) {
+BallLocalizer::Ball::Ball(Math::Vector & location) : location(location), velocity(0.0f, 0.0f) {
     id = instances++;
     createdTime = Util::millitime();
     updatedTime = createdTime;
@@ -25,12 +25,12 @@ BallLocalizer::Ball::Ball(float px, float py) : location(px, py), velocity(0.0f,
 	inFOV = true;
 }
 
-void BallLocalizer::Ball::updateVisible(float newX, float newY, float dt) {
+void BallLocalizer::Ball::updateVisible(Math::Vector & new_location, float dt) {
     double currentTime = Util::millitime();
     double timeSinceLastUpdate = currentTime - updatedTime;
 
     if (timeSinceLastUpdate <= Config::velocityUpdateMaxTime) {
-		Math::Vector newVelocity = (Math::Vector(newX, newY) - location) / dt;
+		Math::Vector newVelocity = (new_location - location) / dt;
 
 		if (newVelocity.getLength() <= Config::objectMaxVelocity) {
 			velocity = newVelocity;
@@ -41,8 +41,7 @@ void BallLocalizer::Ball::updateVisible(float newX, float newY, float dt) {
         applyDrag(dt);
     }
 
-    location.x = newX;
-    location.y = newY;
+    location = new_location;
     updatedTime = currentTime;
     
     visible = true;
@@ -57,10 +56,6 @@ void BallLocalizer::Ball::updateInvisible(float dt) {
 }
 
 void BallLocalizer::Ball::markForRemoval(double afterSeconds) {
-    /*if (removeTime == -1) {
-        return;
-    }*/
-
     removeTime = Util::millitime() + afterSeconds;
 }
 
@@ -80,17 +75,14 @@ void BallLocalizer::Ball::applyDrag(float dt) {
 
 BallLocalizer::BallList BallLocalizer::extractBalls(const ObjectList& sourceBalls, float robotX, float robotY, float robotOrientation) {
 	BallList balls;
-	Object* screenBall;
-	Ball* worldBall;
 
-	for (ObjectListItc it = sourceBalls.begin(); it != sourceBalls.end(); it++) {
-		screenBall = *it;
-
+	for (Object* screenBall: sourceBalls){
 		float globalAngle = Math::floatModulus(robotOrientation + screenBall->angle, Math::TWO_PI);
         float ballX = robotX + Math::cos(globalAngle) * screenBall->distance;
         float ballY = robotY + Math::sin(globalAngle) * screenBall->distance;
-
-		worldBall = new Ball(ballX, ballY);
+		
+		Math::Vector location(ballX, ballY);
+		Ball* worldBall = new Ball(location);
 
 		balls.push_back(worldBall);
 	}
@@ -109,14 +101,14 @@ void BallLocalizer::update(const BallList& visibleBalls, const Math::Polygon& ca
         visibleBalls[i]->x = robotPosition.x + Math::cos(globalAngle) * visibleBalls[i]->distance;
         visibleBalls[i]->y = robotPosition.y + Math::sin(globalAngle) * visibleBalls[i]->distance;*/
 
-        closestBall = getBallAround(visibleBalls[i]->location.x, visibleBalls[i]->location.y);
+        closestBall = getBallAround(visibleBalls[i]->location);
 
         if (closestBall != NULL) {
-            closestBall->updateVisible(visibleBalls[i]->location.x, visibleBalls[i]->location.y, dt);
+            closestBall->updateVisible(visibleBalls[i]->location, dt);
 
             handledBalls.push_back(closestBall->id);
         } else {
-            Ball* newBall = new Ball(visibleBalls[i]->location.x, visibleBalls[i]->location.y);
+            Ball* newBall = new Ball(visibleBalls[i]->location);
 
             balls.push_back(newBall);
 
@@ -135,8 +127,7 @@ void BallLocalizer::update(const BallList& visibleBalls, const Math::Polygon& ca
     purge(visibleBalls, cameraFOV);
 }
 
-BallLocalizer::Ball* BallLocalizer::getBallAround(float x, float y) {
-	Math::Vector target(x, y);
+BallLocalizer::Ball* BallLocalizer::getBallAround(Math::Vector & target) {
     float distance;
     float minDistance = -1;
     Ball* ball;
