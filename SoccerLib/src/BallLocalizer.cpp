@@ -23,7 +23,6 @@ BallLocalizer::Ball::Ball(float px, float py) : location(px, py), velocity(0.0f,
 	removeTime = -1.0;
 	visible = true;
 	inFOV = true;
-	resurrectable = true;
 }
 
 void BallLocalizer::Ball::updateVisible(float newX, float newY, float dt) {
@@ -48,9 +47,7 @@ void BallLocalizer::Ball::updateVisible(float newX, float newY, float dt) {
     
     visible = true;
 
-	if (removeTime != -1 && resurrectable) {
-		removeTime = -1;
-	}
+	removeTime = -1;
 }
 
 void BallLocalizer::Ball::updateInvisible(float dt) {

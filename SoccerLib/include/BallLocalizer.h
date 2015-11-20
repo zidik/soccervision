@@ -24,7 +24,6 @@ public:
 		Math::Vector velocity;
         bool visible;
 		bool inFOV;
-		bool resurrectable;
 
     private:
         static int instances;
