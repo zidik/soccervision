@@ -290,7 +290,16 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 	Object* ball = visionResults->getClosestBall(Dir::FRONT);
 	Object* teamMate = visionResults->getLargestRobot(ai->teamColor, Dir::FRONT);
 
-	if (ball == NULL && !robot->dribbler->gotBall()) {
+	if (robot->dribbler->gotBall()) {
+		Parameters parameters;
+		parameters["next-state"] = "manual-control";
+		parameters["last-state"] = "take-kickoff";
+		parameters["kick-type"] = "pass";
+		parameters["target-type"] = "team-robot";
+		ai->setState("aim-kick", parameters);
+	}
+
+	if (ball == NULL) {
 		Parameters parameters;
 		parameters["next-state"] = "take-kickoff";
 		ai->setState("find-ball", parameters);
@@ -301,37 +310,37 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 		//configuration parameters
 		float forwardSpeedMult = 0.5f;
 		float sidewaysSpeedMult = 0.5f;
-		float robotSearchDir = 0.5f;
+		float robotSearchDir = 1.0f;
 		float minForwardSpeed = 0.1f;
 		float minSidewaysSpeed = 0.1f;
-		float ballRotateDistance = 0.02f;
+		float ballRotateDistance = 0.2f;
 		float ballDistanceError = 0.05f;
+		float teamMateSearchSpeed = 0.7f;
+		float robotAngleError = Math::PI / 30.0f;
 
 		if (teamMate != NULL) {
-			//configuration parameters
-			float robotAngleError = Math::PI / 30.0f;
-
 			if (abs(teamMate->angle) < robotAngleError) {
+				//move toward ball
 				forwardSpeed = minForwardSpeed + ball->distance * forwardSpeedMult;
 				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
 			}
 			else {
 				//turn toward teammate
 				sidewaysSpeed = teamMate->angle * sidewaysSpeedMult;
-				forwardSpeed = ball->distance - ballRotateDistance;
+				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
 			}
 		}
 		else {
-			//configuration parameters
-
-
 			if (abs(ball->distance - ballRotateDistance) < ballDistanceError) {
 				//search for teammate
+				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
+				sidewaysSpeed = teamMateSearchSpeed * robotSearchDir;
 			}
 			else {
 				//move ball to correct distance
+				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
+				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
 			}
-
 		}
 		
 		robot->setTargetDir(forwardSpeed, sidewaysSpeed);
