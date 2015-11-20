@@ -16,13 +16,11 @@ BallLocalizer::~BallLocalizer() {
 
 int BallLocalizer::Ball::instances = 0;
 
-BallLocalizer::Ball::Ball(float px, float py) : location(px, py) {
+BallLocalizer::Ball::Ball(float px, float py) : location(px, py), velocity(0.0f, 0.0f) {
     id = instances++;
     createdTime = Util::millitime();
     updatedTime = createdTime;
 	removeTime = -1.0;
-	velocityX = 0.0f;
-	velocityY = 0.0f;
 	visible = true;
 	inFOV = true;
 	resurrectable = true;
@@ -33,12 +31,10 @@ void BallLocalizer::Ball::updateVisible(float newX, float newY, float dt) {
     double timeSinceLastUpdate = currentTime - updatedTime;
 
     if (timeSinceLastUpdate <= Config::velocityUpdateMaxTime) {
-		float newVelocityX = (newX - location.x) / dt;
-		float newVelocityY = (newY - location.y) / dt;
+		Math::Vector newVelocity = (Math::Vector(newX, newY) - location) / dt;
 
-		if (Math::abs(newVelocityX) <= Config::objectMaxVelocity && Math::abs(newVelocityY) <= Config::objectMaxVelocity) {
-			velocityX = newVelocityX;
-			velocityY = newVelocityY;
+		if (newVelocity.getLength() <= Config::objectMaxVelocity) {
+			velocity = newVelocity;
 		} else {
 			applyDrag(dt);
 		}
@@ -58,11 +54,8 @@ void BallLocalizer::Ball::updateVisible(float newX, float newY, float dt) {
 }
 
 void BallLocalizer::Ball::updateInvisible(float dt) {
-    location.x += velocityX * dt;
-    location.y += velocityY * dt;
-
+	location += velocity * dt;
     applyDrag(dt);
-
     visible = false;
 }
 
@@ -79,21 +72,13 @@ bool BallLocalizer::Ball::shouldBeRemoved() {
 }
 
 void BallLocalizer::Ball::applyDrag(float dt) {
-    float xSign = velocityX > 0 ? 1.0f : -1.0f;
-    float ySign = velocityY > 0 ? 1.0f : -1.0f;
-    float stepDrag = Config::rollingDrag * dt;
-
-    if (Math::abs(velocityX) > stepDrag) {
-        velocityX -= stepDrag * xSign;
-    } else {
-        velocityX = 0.0f;
-    }
-
-    if (Math::abs(velocityY) > stepDrag) {
-        velocityY -= stepDrag * ySign;
-    } else {
-        velocityY = 0.0f;
-    }
+	Math::Vector drag_acceleration = -(velocity.getNormalized()) * Config::rollingDrag;
+	if (drag_acceleration > velocity) {
+		velocity = Math::Vector(0, 0);
+	}
+	else{
+		velocity += drag_acceleration;
+	}
 }
 
 BallLocalizer::BallList BallLocalizer::extractBalls(const ObjectList& sourceBalls, float robotX, float robotY, float robotOrientation) {
@@ -196,10 +181,9 @@ void BallLocalizer::purge(const BallList& visibleBalls, const Math::Polygon& cam
 			keep = false;
 		}
 
-		Math::Vector velocity(ball->velocityX, ball->velocityY);
 
-		if (velocity.getLength() > Config::objectMaxVelocity) {
-			//std::cout << "@ VELOCITY" << std::endl;
+		if (ball->velocity.getLength() > Config::objectMaxVelocity) {
+			std::cout << "@ VELOCITY" << std::endl;
 
 			keep = false;
 		}

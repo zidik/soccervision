@@ -321,6 +321,18 @@ inline Vector operator*(Vector left, float magnitude) {
 inline Vector operator/(Vector left, float divisor) {
 	return left /= divisor;
 }
+inline bool operator>(const Vector &v1, const Vector &v2){
+	return v1.getLength() > v2.getLength();
+}
+inline bool operator<(const Vector &v1, const Vector &v2) {
+	return v1.getLength() < v2.getLength();
+}
+inline bool operator>=(const Vector &v1, const Vector &v2) {
+	return v1.getLength() >= v2.getLength();
+}
+inline bool operator<=(const Vector &v1, const Vector &v2) {
+	return v1.getLength() <= v2.getLength();
+}
 
 inline std::ostream& operator<<(std::ostream& os, const Vector& vec) {
 	return os << "{\"x\":" << vec.x << ", \"y\":" << vec.y << "}";

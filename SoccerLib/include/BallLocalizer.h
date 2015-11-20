@@ -21,8 +21,7 @@ public:
         double updatedTime;
         double removeTime;
 		Math::Vector location;
-        float velocityX;
-        float velocityY;
+		Math::Vector velocity;
         bool visible;
 		bool inFOV;
 		bool resurrectable;

@@ -756,8 +756,8 @@ void Robot::debugBallList(std::string name, std::stringstream& stream, BallLocal
 		stream << "{";
 		stream << "\"x\": " << ball->location.x << ",";
 		stream << "\"y\": " << ball->location.y << ",";
-		stream << "\"velocityX\": " << ball->velocityX << ",";
-		stream << "\"velocityY\": " << ball->velocityY << ",";
+		stream << "\"velocityX\": " << ball->velocity.x << ",";
+		stream << "\"velocityY\": " << ball->velocity.y << ",";
 		stream << "\"createdTime\": " << ball->createdTime << ",";
 		stream << "\"updatedTime\": " << ball->updatedTime << ",";
 		stream << "\"shouldBeRemoved\": " << (ball->shouldBeRemoved() ? "true" : "false") << ",";
