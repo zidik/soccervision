@@ -192,12 +192,13 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	float maximumFetchDistance = 0.15f;
 	float minimumMovingDeltaY = -0.05f;
 	float goalKeepDistance = 0.5f;
-	float forwardSpeedMultiplier = 10.0f;
-	float sidewaysSpeedMultiplier = 10.0f;
+	float forwardSpeedMultiplier = 1.0f;
+	float sidewaysSpeedMultiplier = 1.0f;
 
 	//if can't see ball
 	if (ball == NULL) {
 		//scan for ball
+		robot->stop();
 		ai->setState("find-ball-goalkeeper");
 		return;
 		
@@ -222,6 +223,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		
 		//check if ball is close enough to fetch
 		if (ball->distance < maximumFetchDistance) {
+			robot->stop();
 			if (ball->behind) {
 				ai->setState("fetch-ball-rear");
 			}
@@ -237,13 +239,14 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		}
 
 		if (shouldIntercept) {
+			robot->stop();
 			ai->setState("intercept-ball");
 			return;
 		}
 		else {
 			//calculate parameters to keep robot in front of goal, this version untested and likely doesn't work
 			forwardSpeed = (goalKeepDistance - defendedGoal->distance) * forwardSpeedMultiplier;
-			sideWaysSpeed = defendedGoal->distanceX * sidewaysSpeedMultiplier;
+			sideWaysSpeed = defendedGoal->distanceX * -sidewaysSpeedMultiplier;
 		}
 		robot->setTargetDir(forwardSpeed, sideWaysSpeed);
 		robot->lookAt(ball);
@@ -283,7 +286,7 @@ void TeamController::InterceptBallState::step(float dt, Vision::Results* visionR
 
 void TeamController::TakeKickoffState::onEnter(Robot* robot, Parameters parameters) {
 	ai->passNeeded = true;
-	ai->client->send("run-get-pass");
+	//ai->client->send("run-get-pass");
 }
 
 void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -297,6 +300,9 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 		parameters["kick-type"] = "pass";
 		parameters["target-type"] = "team-robot";
 		ai->setState("aim-kick", parameters);
+		//robot->dribbler->stop();
+		//robot->stop();
+		return;
 	}
 
 	if (ball == NULL) {
@@ -308,14 +314,13 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 		float sidewaysSpeed = 0.0f;
 
 		//configuration parameters
-		float forwardSpeedMult = 0.5f;
-		float sidewaysSpeedMult = 0.5f;
-		float robotSearchDir = 1.0f;
+		float forwardSpeedMult = 1.5f;
+		float sidewaysSpeedMult = 0.3f;
+		float robotSearchDir = -1.0f;
 		float minForwardSpeed = 0.1f;
-		float minSidewaysSpeed = 0.1f;
 		float ballRotateDistance = 0.2f;
 		float ballDistanceError = 0.05f;
-		float teamMateSearchSpeed = 0.7f;
+		float teamMateSearchSpeed = 0.4f;
 		float robotAngleError = Math::PI / 30.0f;
 
 		if (teamMate != NULL) {
@@ -323,10 +328,11 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 				//move toward ball
 				forwardSpeed = minForwardSpeed + ball->distance * forwardSpeedMult;
 				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
+				robot->dribbler->start();
 			}
 			else {
 				//turn toward teammate
-				sidewaysSpeed = teamMate->angle * sidewaysSpeedMult;
+				sidewaysSpeed = teamMate->angle * -sidewaysSpeedMult;
 				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
 			}
 		}
@@ -444,16 +450,16 @@ void TeamController::DriveToOwnGoalState::step(float dt, Vision::Results* vision
 	bool shouldDriveTowardEnemyGoal = false;
 
 	//configuration parameters
-	float goalSearchOmega = 1.0f;
-	float enemyGoalDistanceXMultiplier = 1.0f;
-	float ownGoalDistanceYMultiplier = 1.0f;
-	float ownGoalTargetDistanceY = -0.5f;
-	float cantSeeEnemyGoalDistanceYThreshold = -1.0f;
-	float enemyGoalDistanceTarget = 3.5f;
+	float goalSearchOmega = 4.0f;
+	float enemyGoalAngleMultiplier = 0.2f;
+	float ownGoalDistanceYMultiplier = 0.5f;
+	float ownGoalTargetDistanceY = 0.15f;
+	float cantSeeEnemyGoalDistanceYThreshold = 0.5f;
+	float enemyGoalDistanceTarget = 3.0f;
 	float enemyGoalSpeedMultiplier = 1.0f;
 	float enemyGoalOmegaMultiplier = 1.0f;
-	float ownGoalDistanceErrorThreshold = 0.1f;
-	float enemyGoalDistanceErrorThreshold = 0.3f;
+	float ownGoalDistanceErrorThreshold = 0.15f;
+	float enemyGoalAngleErrorThreshold = Math::PI / 60.0f;
 
 	shouldSearchEnemyGoal = droveTowardFriendlyGoal && !droveTowardEnemyGoal && enemyGoal == NULL && !searchedEnemyGoal;
 	shouldDriveTowardEnemyGoal = droveTowardFriendlyGoal && !droveTowardEnemyGoal && enemyGoal != NULL && ownGoal == NULL;
@@ -481,24 +487,27 @@ void TeamController::DriveToOwnGoalState::step(float dt, Vision::Results* vision
 	}
 	else {
 		float ownGoalDistanceYerror = 999.0f;
-		float enemyGoalDistanceXerror = 999.0f;
+		float enemyGoalAngleerror = 999.0f;
 		//start driving in front of own goal
 		float forwardSpeed = 0.0f;
 		float sideWaysSpeed = 0.0f;
 
+		//std::cout << ownGoal->distanceY;
+
 		ownGoalDistanceYerror = ownGoal->distanceY - ownGoalTargetDistanceY;
 
-		forwardSpeed = (ownGoal->distanceY - ownGoalTargetDistanceY) * ownGoalDistanceYMultiplier;
+		forwardSpeed = (ownGoal->distanceY - ownGoalTargetDistanceY) * -ownGoalDistanceYMultiplier;
 		if (enemyGoal != NULL) {
-			sideWaysSpeed = enemyGoal->distanceX * enemyGoalDistanceXMultiplier;
-			enemyGoalDistanceXerror = enemyGoal->distanceX;
+			sideWaysSpeed = enemyGoal->angle * enemyGoalAngleMultiplier;
+			enemyGoalAngleerror = enemyGoal->angle;
 		}
-		else if (ownGoal->distanceY > cantSeeEnemyGoalDistanceYThreshold) {
+		else if (ownGoal->distanceY < cantSeeEnemyGoalDistanceYThreshold) {
 			droveTowardFriendlyGoal = true;
 		}
 
-		if (abs(ownGoalDistanceYerror) < ownGoalDistanceErrorThreshold && abs(enemyGoalDistanceXerror) < enemyGoalDistanceErrorThreshold) {
+		if (abs(ownGoalDistanceYerror) < ownGoalDistanceErrorThreshold && abs(enemyGoalAngleerror) < enemyGoalAngleErrorThreshold) {
 			//position set
+			//ai->setState("manual-control");
 			ai->setState("defend-goal");
 			return;
 		}
@@ -509,11 +518,61 @@ void TeamController::DriveToOwnGoalState::step(float dt, Vision::Results* vision
 }
 
 void TeamController::AimKickState::onEnter(Robot* robot, Parameters parameters) {
-	//TODO fill this out
+	nextState = "manual-control";
+	lastState = "manual-control";
+	kickType = "pass";
+	targetType = "team-robot";
+	if (parameters.find("next-state") != parameters.end()) {
+		nextState = parameters["next-state"];
+	}
+	if (parameters.find("last-state") != parameters.end()) {
+		lastState = parameters["last-state"];
+	}
+	if (parameters.find("kick-type") != parameters.end()) {
+		kickType = parameters["kick-type"];
+	}
+	if (parameters.find("target-type") != parameters.end()) {
+		targetType = parameters["target-type"];
+	}
 }
 
 void TeamController::AimKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	//TODO fill this out
+	Object* target;
+	if (targetType.compare("team-robot") == 0) target = visionResults->getLargestRobot(ai->teamColor, Dir::FRONT);
+	else if (targetType.compare("enemy-goal") == 0) target = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
+	else target = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
+
+	if (!robot->dribbler->gotBall()) {
+		robot->dribbler->stop();
+		robot->stop();
+		ai->setState(lastState);
+		return;
+	}
+
+	//configuration parameters
+	float targetAngleError = Math::PI / 60.0f;
+	float targetAngleMultiplier = 0.35f;
+	int passStrength = 800;
+	int directKickStrength = 4000;
+
+	if (target == NULL) {
+		robot->spinAroundDribbler();
+	}
+	else {
+		if (abs(target->angle) < targetAngleError) {
+			robot->stop();
+			robot->dribbler->stop();
+			if (kickType.compare("pass") == 0) robot->coilgun->kick(passStrength);
+			else if (kickType.compare("direct") == 0) robot->coilgun->kick(directKickStrength);
+			else if (kickType.compare("chip") == 0) robot->coilgun->chipKick(target->distance);
+			ai->setState(nextState);
+			return;	
+		}
+		else {
+			robot->setTargetOmega(target->angle * -targetAngleMultiplier);
+		}
+	}
+	
 }
 
 void TeamController::PassBallState::onEnter(Robot* robot, Parameters parameters) {

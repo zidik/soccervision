@@ -638,10 +638,13 @@ void SoccerBot::setupServer() {
 }
 
 void SoccerBot::setupClient() {
+	std::cout << "! Setting up client.. ";
 	client = new Client();
 	std::stringstream ss;
 	ss << "ws://" << config->robot.teammateIP << ":8000";
-	client->set_uri(ss.str());
+	std::string uri_str = ss.str();
+	client->set_uri(uri_str);
+	std::cout << " done! URI is: " << uri_str << std::endl;
 }
 
 void SoccerBot::setupCommunication() {
