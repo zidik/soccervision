@@ -14,7 +14,7 @@ public:
         void updateVisible(Math::Vector & location, float dt);
         void updateInvisible(float dt);
         void markForRemoval(double afterSeconds);
-        bool shouldBeRemoved();
+        bool shouldBeRemoved() const;
 
         int id;
         double createdTime;
@@ -38,7 +38,7 @@ public:
     BallLocalizer();
     ~BallLocalizer();
 
-	BallList extractBalls(const ObjectList& sourceBalls, float robotX, float robotY, float robotOrientation);
+	BallList extractBalls(const ObjectList& sourceBalls, float robotX, float robotY, float robotOrientation) const;
     void update(const BallList& visibleBalls, const Math::Polygon& cameraFOV, float dt);
     Ball* getBallAround(Math::Vector & location);
     void purge(const BallList& visibleBalls, const Math::Polygon& cameraFOV);

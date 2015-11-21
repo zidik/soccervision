@@ -181,7 +181,7 @@ void ParticleFilterLocalizer::resample() {
 	for (Particle* particle : particles) {
 		probability_sum += particle->probability;
 	}
-	bool all_particles_zero = probability_sum == 0.0;
+	bool all_particles_zero = probability_sum < 0.1;
 	if (!all_particles_zero) {
 		int randomParticleCount = 0;//particleCount / 100;
 		int resampledParticleCount = particleCount - randomParticleCount;
@@ -189,8 +189,7 @@ void ParticleFilterLocalizer::resample() {
 		sampleParticles(newParticles, resampledParticleCount);
 	}
 	else {
-		//All particles had probability 0.0
-		std::cout << "All particles had probability 0.0" << std::endl;
+		std::cout << "Particles had probability sum less than 0.1" << std::endl;
 		int randomCount = 0;//particleCount / 100;
 		for (int i = 0; i < particleCount - randomCount; i++) {
 			newParticles.push_back(new Particle(*particles[i]));
