@@ -195,6 +195,7 @@ public:
 		std::string nextState;
 		std::string targetType;
 		std::string kickType;
+		int validCount;
 	};
 
 	//Pass the ball

@@ -2860,6 +2860,54 @@ Object* Vision::Results::getLargestRobot(RobotColor color, Dir dir) {
 	}
 }
 
+Object* Vision::Results::getRobotNearObject(RobotColor color, Object* object, Dir dir, float distanceThreshold) {
+	Object* robot;
+	Object* closestRobot = NULL;
+	float distance;
+	float closestDistance = 999.0f;
+
+	if (front != NULL && dir != Dir::REAR) {
+		for (ObjectListItc it = front->robots->begin(); it != front->robots->end(); it++) {
+			robot = *it;
+
+			if (color != RobotColor::WHATEVER && robot->type != (int)color) {
+				continue;
+			}
+
+			distance = Math::sqrt(Math::pow(object->distance, 2.0f) + Math::pow(robot->distance, 2.0f) - 2 * object->distance * robot->distance * Math::cos(object->angle - robot->angle));
+
+			if (closestRobot == NULL || distance < closestDistance) {
+				closestRobot = robot;
+				closestDistance = distance;
+			}
+		}
+	}
+
+	if (rear != NULL && dir != Dir::FRONT) {
+		for (ObjectListItc it = front->robots->begin(); it != front->robots->end(); it++) {
+			robot = *it;
+
+			if (color != RobotColor::WHATEVER && robot->type != (int)color) {
+				continue;
+			}
+
+			distance = Math::sqrt(Math::pow(object->distance, 2.0f) + Math::pow(robot->distance, 2.0f) - 2 * object->distance * robot->distance * Math::cos(object->angle - robot->angle));
+
+			if (closestRobot == NULL || distance < closestDistance) {
+				closestRobot = robot;
+				closestDistance = distance;
+			}
+		}
+	}
+
+	if (closestRobot != NULL) {
+		return closestRobot;
+	}
+	else {
+		return NULL;
+	}
+}
+
 Object* Vision::Results::getFurthestGoal(Dir dir) {
 	return NULL;
 
@@ -3015,4 +3063,28 @@ bool Vision::Results::isRobotOut(Dir dir) {
 
 int Vision::Results::getVisibleBallCount() {
 	return front->balls->size() + rear->balls->size();
+}
+
+float Vision::Results::getObjectPartAngle(Object* object, Part part) {
+	int targetX;
+	int targetY = object->y;
+	float partAngle = 0.0f;
+
+	if (part == Part::LEFTSIDE) {
+		targetX = object->x - (object->width * 0.33);
+	}
+	else if (part == Part::RIGHTSIDE) {
+		targetX = object->x + (object->width * 0.33);
+	}
+	else {
+		return object->angle;
+	}
+	if (object->behind) {
+		partAngle = rear->vision->getAngle(targetX, targetY);
+	}
+	else {
+		partAngle = front->vision->getAngle(targetX, targetY);
+	}
+	
+	return partAngle;
 }

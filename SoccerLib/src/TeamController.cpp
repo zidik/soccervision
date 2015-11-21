@@ -273,13 +273,32 @@ void TeamController::InterceptBallState::step(float dt, Vision::Results* visionR
 
 	Object* ball = visionResults->getClosestBall();
 
+	//configuration parameters
+	float ballFetchMinDistance = 0.3f;
+	float sidewaysSpeedMultiplier = 3.0f;
+
 	//if can't see ball
 	if (ball == NULL) {
 		ai->setState("defend-goal");
 		return;
 	} //ball found, check if it isn't in a goal
 	else if (!visionResults->isBallInGoal(ball)) {
+		//if ball is close, fetch it.
+		if (ball->distance < ballFetchMinDistance) {
+			Parameters parameters;
+			parameters["next-state"] = "defend-goal";
+			if (!ball->behind) ai->setState("fetch-ball-front", parameters);
+			else  ai->setState("fetch-ball-behind", parameters);
+			return;
+		}
+		else {
+			float forwardSpeed = 0.0f;
+			float sidewaysSpeed = 0.0f;
 
+			sidewaysSpeed = ball->distanceX * sidewaysSpeedMultiplier;
+
+			robot->setTargetDir(forwardSpeed, sidewaysSpeed);
+		}
 	}
 
 }
@@ -408,7 +427,16 @@ void TeamController::FindBallState::onEnter(Robot* robot, Parameters parameters)
 }
 
 void TeamController::FindBallState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	//TODO fill this out
+	Object* ball = visionResults->getClosestBall();
+
+	if (robot->dribbler->gotBall()) {
+		Parameters parameters;
+		parameters["next-state"] = "find-ball";
+		parameters["target-type"] = "enemy-goal";
+		parameters["kick-type"] = "chip";
+		parameters["last-state"] = "find-front";
+		ai->setState("aim-kick", parameters);
+	}
 }
 
 void TeamController::FindBallGoalkeeperState::onEnter(Robot* robot, Parameters parameters) {
@@ -424,7 +452,35 @@ void TeamController::FetchBallFrontState::onEnter(Robot* robot, Parameters param
 }
 
 void TeamController::FetchBallFrontState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	//TODO fill this out
+	Object* ball = visionResults->getClosestBall(Dir::FRONT);
+
+	if (robot->dribbler->gotBall()) {
+		Parameters parameters;
+		parameters["next-state"] = "find-ball";
+		parameters["target-type"] = "enemy-goal";
+		parameters["kick-type"] = "chip";
+		parameters["last-state"] = "fetch-ball-front";
+		ai->setState("aim-kick", parameters);
+	}
+
+	if (ball == NULL) {
+		Parameters parameters;
+		parameters["next-state"] = "fetch-ball";
+		ai->setState("find-ball", parameters);
+	}
+	else {
+		//configuration parameters
+		float forwardSpeedMultiplier = 1.0f;
+		float sidewaysSpeedMultiplier = 1.0f;
+
+		float forwardSpeed = 0.0f, sidewaysSpeed = 0.0f;
+
+		forwardSpeed = ball->distanceY * forwardSpeedMultiplier;
+		sidewaysSpeed = ball->distanceY * sidewaysSpeedMultiplier;
+
+		robot->setTargetDir(forwardSpeed, sidewaysSpeed);
+		robot->lookAt(ball);
+	}
 }
 
 void TeamController::FetchBallRearState::onEnter(Robot* robot, Parameters parameters) {
@@ -433,6 +489,13 @@ void TeamController::FetchBallRearState::onEnter(Robot* robot, Parameters parame
 
 void TeamController::FetchBallRearState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 	//TODO fill this out
+	//temporary substitute
+	robot->setTargetOmega(1.0f);
+	Object* ball = visionResults->getClosestBall(Dir::FRONT);
+	if (ball != NULL) {
+		ai->setState("fetch-ball-front");
+		return;
+	}
 }
 
 void TeamController::DriveToOwnGoalState::onEnter(Robot* robot, Parameters parameters) {
@@ -534,6 +597,7 @@ void TeamController::AimKickState::onEnter(Robot* robot, Parameters parameters) 
 	if (parameters.find("target-type") != parameters.end()) {
 		targetType = parameters["target-type"];
 	}
+	validCount = 0;
 }
 
 void TeamController::AimKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -552,25 +616,47 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	//configuration parameters
 	float targetAngleError = Math::PI / 60.0f;
 	float targetAngleMultiplier = 0.35f;
-	int passStrength = 800;
+	int passStrength = 700;
 	int directKickStrength = 4000;
+	float chipKickAdjust = -0.1f;
+	int validCountThreshold = 2;
+	float aimAdjustRobotDistance = 1.2f;
 
 	if (target == NULL) {
 		robot->spinAroundDribbler();
+		validCount = 0;
 	}
 	else {
-		if (abs(target->angle) < targetAngleError) {
+		float targetAngle;
+		Object* closestRobot = visionResults->getRobotNearObject(ai->enemyColor, target, Dir::FRONT, aimAdjustRobotDistance);
+		if (closestRobot == NULL) {
+			targetAngle = target->angle;
+		}
+		else {
+			if (closestRobot->angle > target->angle) {
+				targetAngle = visionResults->getObjectPartAngle(target, Part::LEFTSIDE);
+			}
+			else {
+				targetAngle = visionResults->getObjectPartAngle(target, Part::RIGHTSIDE);
+			}
+		}
+
+		if (abs(targetAngle) < targetAngleError) {
+			validCount++;
+		}
+		else {
+			validCount = 0;
+		}
+		if (validCount > validCountThreshold) {
 			robot->stop();
 			robot->dribbler->stop();
 			if (kickType.compare("pass") == 0) robot->coilgun->kick(passStrength);
 			else if (kickType.compare("direct") == 0) robot->coilgun->kick(directKickStrength);
-			else if (kickType.compare("chip") == 0) robot->coilgun->chipKick(target->distance);
+			else if (kickType.compare("chip") == 0) robot->coilgun->chipKick(target->distance + chipKickAdjust);
 			ai->setState(nextState);
-			return;	
+			return;
 		}
-		else {
-			robot->setTargetOmega(target->angle * -targetAngleMultiplier);
-		}
+		robot->setTargetOmega(targetAngle * -targetAngleMultiplier);
 	}
 	
 }
