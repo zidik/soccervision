@@ -295,8 +295,8 @@ public:
 	float dotProduct(const Vector& b) const;
 	float getAngleBetween(const Vector& b) const;
 	Vector getRotated(float angle) const;
-	Vector getNormalized() const;
-	Vector getScaled(float magnitude) const;
+    Vector getScaledTo(float length) const;
+    Vector getNormalized() const { return getScaledTo(1.0f); };
 
 	Vector operator-() const { return Vector(-x, -y); };
 	Vector& operator-=(const Vector& other);

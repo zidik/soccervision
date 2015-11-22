@@ -169,7 +169,6 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 
     handleTasks(dt);
     updateWheelSpeeds();
-    updateBallLocalizer(visionResults, dt);
 
     wheelFL->step(dt);
     wheelFR->step(dt);

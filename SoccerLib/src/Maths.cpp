@@ -157,20 +157,10 @@ Vector Vector::getRotated(float angle) const {
     );
 }
 
-Vector Vector::getNormalized() const {
+Vector Vector::getScaledTo(float target_length) const {
     float length = getLength();
-
-    return Vector(
-        x / length,
-        y / length
-    );
-}
-
-Vector Vector::getScaled(float magnitude) const {
-    return Vector(
-        x * magnitude,
-        y * magnitude
-    );
+    if (length == 0.0f) { return Math::Vector(0.0f, 0.0f); } //Can't scale 0-vector
+    return (*this) * (target_length/length);
 }
 
 Vector& Vector::operator+=(const Vector& other) {

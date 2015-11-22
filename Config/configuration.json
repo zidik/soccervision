@@ -92,6 +92,6 @@
     "particleFilter": {
         "particleCount": 1000,
         "forwardNoise": 0.2,
-        "turnNoise" : 1.2
+        "turnNoise" : 0.3
     }
 }

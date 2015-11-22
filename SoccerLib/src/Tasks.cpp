@@ -81,7 +81,7 @@ bool DriveToTask::onStep(Robot& robot, float dt) {
         useSpeed = speed * currentDistance * 5.0f;
     }
 
-    Math::Vector globalDir = (target - pos.location).getNormalized().getScaled(useSpeed);
+    Math::Vector globalDir = (target - pos.location).getScaledTo(useSpeed);
     Math::Vector localDir = globalDir.getRotated(-currentOrientation);
 
     //std::cout << "[" << Util::round(Math::radToDeg(currentOrientation)) << "] " << Util::round(globalDir.x, 1) << "x" << Util::round(globalDir.y) << " > " << Util::round(localDir.x, 1) << "x" << Util::round(localDir.y) << std::endl;
@@ -153,7 +153,7 @@ bool DrivePathTask::onStep(Robot& robot, float dt) {
         useSpeed = speed * currentDistance * 5.0f;
     }
 
-    Math::Vector globalDir = (targetPos.location - currentPos.location).getNormalized().getScaled(useSpeed);
+    Math::Vector globalDir = (targetPos.location - currentPos.location).getScaledTo(useSpeed);
     Math::Vector localDir = globalDir.getRotated(-currentPos.orientation);
 
     if (omega < -3.0f) {
@@ -225,7 +225,7 @@ bool DriveFacingTask::onStep(Robot& robot, float dt) {
         useSpeed = speed * currentDistance * 5.0f;
     }
 
-    Math::Vector globalDir = (target - pos.location).getNormalized().getScaled(useSpeed);
+    Math::Vector globalDir = (target - pos.location).getScaledTo(useSpeed);
     Math::Vector localDir = globalDir.getRotated(-currentOrientation);
 
     //std::cout << "[" << Util::round(Math::radToDeg(currentOrientation)) << "] " << Util::round(globalDir.x, 1) << "x" << Util::round(globalDir.y) << " > " << Util::round(localDir.x, 1) << "x" << Util::round(localDir.y) << std::endl;

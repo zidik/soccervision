@@ -81,7 +81,7 @@ void ParticleFilterLocalizer::move(float velocityX, float velocityY, float veloc
 			//also, noise should be higher when speed/acceleration is high
 			particleVelocityX		+= Math::randomGaussian(forwardNoise);
 			particleVelocityY		+= Math::randomGaussian(forwardNoise);
-			particleVelocityOmega	+= Math::randomGaussian(turnNoise);
+			particleVelocityOmega	+= Math::randomGaussian(turnNoise * (lost ? 5 : 1)); //This should help particles to rotate (and find the position) when lost
 		}
 
 		float particleVelocityXLocal = particleVelocityX * Math::cos(particles[i]->orientation) - particleVelocityY * Math::sin(particles[i]->orientation);
@@ -163,7 +163,7 @@ double ParticleFilterLocalizer::evaluateParticleProbabilityPart(const Particle& 
 		else {
 		Pixel expectation = translator->getCameraPosition(diff);
 		float error = measurement.bottomPixel.distanceTo(expectation);
-			double probability = Math::getGaussian(0.0, 40.0, (double)error);
+			double probability = Math::getGaussian(0.0, 30.0, (double)error);
 			maximumProbability = Math::max(maximumProbability, probability);
     }
 
@@ -181,20 +181,21 @@ void ParticleFilterLocalizer::resample() {
 	for (Particle* particle : particles) {
 		probability_sum += particle->probability;
 	}
-	bool all_particles_zero = probability_sum < 0.1;
-	if (!all_particles_zero) {
-		int randomParticleCount = 0;//particleCount / 100;
-		int resampledParticleCount = particleCount - randomParticleCount;
-		generateRandomParticles(newParticles, randomParticleCount);
-		sampleParticles(newParticles, resampledParticleCount);
+    lost = probability_sum < 0.1; 
+	if (lost) {
+	    std::cout << "Particles had probability sum less than 0.1 - robot is lost" << std::endl;
+	    lost = true;
+	    int randomCount = 0;//particleCount / 100;
+	    for (int i = 0; i < particleCount - randomCount; i++) {
+	        newParticles.push_back(new Particle(*particles[i]));
+	    }
+	    generateRandomParticles(newParticles, randomCount);
 	}
 	else {
-		std::cout << "Particles had probability sum less than 0.1" << std::endl;
-		int randomCount = 0;//particleCount / 100;
-		for (int i = 0; i < particleCount - randomCount; i++) {
-			newParticles.push_back(new Particle(*particles[i]));
-		}
-		generateRandomParticles(newParticles, randomCount);
+	    int randomParticleCount = 0;//particleCount / 100;
+	    int resampledParticleCount = particleCount - randomParticleCount;
+	    generateRandomParticles(newParticles, randomParticleCount);
+	    sampleParticles(newParticles, resampledParticleCount);
 	}
 	
 	for (Particle* particle : particles){

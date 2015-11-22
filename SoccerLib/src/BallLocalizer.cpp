@@ -30,9 +30,11 @@ void BallLocalizer::Ball::updateVisible(Math::Vector & new_location, float dt) {
 
     if (timeSinceLastUpdate <= Config::velocityUpdateMaxTime) {
 		Math::Vector newVelocity = (new_location - location) / dt;
+        float alpha=0.6f;
+        Math::Vector smoothedVelocity = newVelocity*alpha + velocity*(1.0f - alpha);
 
-		if (newVelocity.getLength() <= Config::objectMaxVelocity) {
-			velocity = newVelocity;
+		if (smoothedVelocity.getLength() <= Config::objectMaxVelocity) {
+			velocity = smoothedVelocity;
 		} else {
 			applyDrag(dt);
 		}
@@ -62,8 +64,9 @@ bool BallLocalizer::Ball::shouldBeRemoved() const {
     return removeTime != -1 && removeTime < Util::millitime();
 }
 
+
 void BallLocalizer::Ball::applyDrag(float dt) {
-	Math::Vector drag_acceleration = -(velocity.getNormalized()) * Config::rollingDrag;
+	Math::Vector drag_acceleration = -velocity.getScaledTo(Config::rollingDrag);
 	if (drag_acceleration > velocity) {
 		velocity = Math::Vector(0, 0);
 	}
