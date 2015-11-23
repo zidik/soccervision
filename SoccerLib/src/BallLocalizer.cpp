@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <vector>
-#include <algorithm>
+
 BallLocalizer::BallLocalizer() {
 
 }
@@ -15,7 +15,7 @@ BallLocalizer::~BallLocalizer() {
 
 int BallLocalizer::Ball::instances = 0;
 
-BallLocalizer::Ball::Ball(Math::Vector & location) : location(location), velocity(0.0f, 0.0f) {
+BallLocalizer::Ball::Ball(const Math::Vector & location) : location(location), velocity(0.0f, 0.0f) {
     id = instances++;
     createdTime = Util::millitime();
     updatedTime = createdTime;
@@ -24,7 +24,7 @@ BallLocalizer::Ball::Ball(Math::Vector & location) : location(location), velocit
 	inFOV = true;
 }
 
-void BallLocalizer::Ball::updateVisible(Math::Vector & new_location, float dt) {
+void BallLocalizer::Ball::updateVisible(const Math::Vector & new_location, float dt) {
     double currentTime = Util::millitime();
     double timeSinceLastUpdate = currentTime - updatedTime;
 
@@ -64,7 +64,6 @@ bool BallLocalizer::Ball::shouldBeRemoved() const {
     return removeTime != -1 && removeTime < Util::millitime();
 }
 
-
 void BallLocalizer::Ball::applyDrag(float dt) {
 	Math::Vector drag_acceleration = -velocity.getScaledTo(Config::rollingDrag);
 	if (drag_acceleration > velocity) {
@@ -75,15 +74,11 @@ void BallLocalizer::Ball::applyDrag(float dt) {
 	}
 }
 
-BallLocalizer::BallList BallLocalizer::extractBalls(const ObjectList& sourceBalls, float robotX, float robotY, float robotOrientation) const {
+BallLocalizer::BallList BallLocalizer::extractBalls(const ObjectList& sourceBalls){
 	BallList balls;
 
 	for (Object* ball: sourceBalls){
-		float globalAngle = Math::floatModulus(robotOrientation + ball->angle, Math::TWO_PI);
-        float ballX = robotX + Math::cos(globalAngle) * ball->distance;
-        float ballY = robotY + Math::sin(globalAngle) * ball->distance;
-		
-		Math::Vector location(ballX, ballY);
+        Math::Vector location = Math::Vector::fromPolar(ball->angle, ball->distance);
 		Ball* worldBall = new Ball(location);
 
 		balls.push_back(worldBall);
@@ -95,13 +90,8 @@ BallLocalizer::BallList BallLocalizer::extractBalls(const ObjectList& sourceBall
 void BallLocalizer::update(const BallList& visibleBalls, const Math::Polygon& cameraFOV, float dt) {
     Ball* closestBall;
     std::vector<int> handledBalls;
-    //float globalAngle;
 
     for (auto visibleBall: visibleBalls) {
-        /*globalAngle = Math::floatModulus(robotPosition.orientation + visibleBall->angle, Math::TWO_PI);
-
-        visibleBalls[i]->x = robotPosition.x + Math::cos(globalAngle) * visibleBall->distance;
-        visibleBalls[i]->y = robotPosition.y + Math::sin(globalAngle) * visibleBall->distance;*/
 
         closestBall = getBallAround(visibleBall->location);
 
@@ -173,15 +163,12 @@ void BallLocalizer::purge(const BallList& visibleBalls, const Math::Polygon& cam
 			keep = false;
 		}
 
-		if (cameraFOV.containsPoint(ball->location.x, ball->location.y)) {
-			ball->inFOV = true;
-
+        ball->inFOV = cameraFOV.containsPoint(ball->location.x, ball->location.y);
+		if (ball->inFOV) {
 			bool ballNear = false;
 
             for (Ball* visibleBall : visibleBalls){
-				float distance = ball->location.distanceTo(visibleBall->location);
-
-				if (distance <= Config::objectFovCloseEnough) {
+				if (ball->distanceTo(*visibleBall) <= Config::objectFovCloseEnough) {
 					ballNear = true;
 
 					break;
@@ -193,8 +180,6 @@ void BallLocalizer::purge(const BallList& visibleBalls, const Math::Polygon& cam
 
 				keep = false;
 			}
-		} else {
-			ball->inFOV = false;	
 		}
 
 		if (keep) {

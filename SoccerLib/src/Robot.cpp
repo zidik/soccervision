@@ -379,30 +379,18 @@ void Robot::updateBallLocalizer(Vision::Results* visionResults, float dt) {
 	BallLocalizer::BallList rearBalls;
 	
 	if (visionResults->front != NULL) {
-		frontBalls = ballLocalizer->extractBalls(
-			*visionResults->front->balls,
-			x,
-			y,
-			orientation
-		);
+		frontBalls = ballLocalizer->extractBalls(*visionResults->front->balls);
 	}
 
 	if (visionResults->rear != NULL) {
-		rearBalls = ballLocalizer->extractBalls(
-			*visionResults->rear->balls,
-			x,
-			y,
-			orientation
-		);
+		rearBalls = ballLocalizer->extractBalls(*visionResults->rear->balls);
 	}
 	
 	visibleBalls.reserve(frontBalls.size() + rearBalls.size());
 	visibleBalls.insert(visibleBalls.end(), frontBalls.begin(), frontBalls.end());
 	visibleBalls.insert(visibleBalls.end(), rearBalls.begin(), rearBalls.end());
 
-	currentCameraFOV = cameraFOV.getRotated(orientation).getTranslated(x, y);
-
-	ballLocalizer->update(visibleBalls, currentCameraFOV, dt);
+	ballLocalizer->update(visibleBalls, cameraFOV, dt);
 
 	//std::cout << "@ UP front: " << frontBalls.size() << ", rear: " << rearBalls.size() << ", merged: " << visibleBalls.size() << std::endl;
 }
@@ -465,7 +453,7 @@ void Robot::setTargetDir(float x, float y, float omega) {
 }
 
 void Robot::setTargetDir(const Math::Angle& dir, float speed, float omega) {
-    Math::Vector dirVector = Math::Vector::createForwardVec(dir.rad(), speed);
+    Math::Vector dirVector = Math::Vector::fromPolar(dir.rad(), speed);
 
     setTargetDir(dirVector.x, dirVector.y, omega);
 }
@@ -753,8 +741,9 @@ void Robot::debugBallList(std::string name, std::stringstream& stream, BallLocal
         }
 
 		stream << "{";
-		stream << "\"x\": " << ball->location.x << ",";
-		stream << "\"y\": " << ball->location.y << ",";
+        Math::Vector ballWorldLocation = ball->location + Math::Vector(x, y);
+		stream << "\"x\": " << ballWorldLocation.x << ",";
+		stream << "\"y\": " << ballWorldLocation.y << ",";
 		stream << "\"velocityX\": " << ball->velocity.x << ",";
 		stream << "\"velocityY\": " << ball->velocity.y << ",";
 		stream << "\"createdTime\": " << ball->createdTime << ",";

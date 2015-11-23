@@ -10,11 +10,13 @@ public:
 	class Ball {
 
     public:
-        Ball(Math::Vector & location);
-        void updateVisible(Math::Vector & location, float dt);
+        Ball(const Math::Vector & location);
+        void updateVisible(const Math::Vector & location, float dt);
         void updateInvisible(float dt);
         void markForRemoval(double afterSeconds);
         bool shouldBeRemoved() const;
+        float distanceTo(const Ball & other) const { return location.distanceTo(other.location); }
+        float distanceTo(const Ball * const other) const { return distanceTo(*other); }
 
         int id;
         double createdTime;
@@ -38,13 +40,17 @@ public:
     BallLocalizer();
     ~BallLocalizer();
 
-	BallList extractBalls(const ObjectList& sourceBalls, float robotX, float robotY, float robotOrientation) const;
+    static BallList extractBalls(const ObjectList& sourceBalls);
     void update(const BallList& visibleBalls, const Math::Polygon& cameraFOV, float dt);
+
+    BallList balls; //TODO: Should be private
+
+private:
     Ball* getBallAround(Math::Vector & location);
     void purge(const BallList& visibleBalls, const Math::Polygon& cameraFOV);
     //bool isValid(Ball* ball, const BallList& visibleBalls, const Math::Polygon& cameraFOV);
 
-	BallList balls; 
+	 
 
 };
 

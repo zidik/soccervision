@@ -434,7 +434,7 @@ bool DriveBehindBallTask::onStep(Robot& robot, float dt) {
 	float sideSpeed = Math::map(travelledDistance, ballSideDistance, totalDistance, 0.0f, useSpeed);
 	float forwardSpeed = useSpeed - sideSpeed;
 
-	Math::Vector dirVector = Math::Vector::createForwardVec(targetAngle, forwardSpeed/* * brakeMultiplier*/);
+	Math::Vector dirVector = Math::Vector::fromPolar(targetAngle, forwardSpeed/* * brakeMultiplier*/);
 
 	dirVector.y += side * sideSpeed;
 

@@ -303,7 +303,7 @@ public:
 	Vector& operator+=(const Vector& other);
 	Vector& operator*=(float magnitude);
 	Vector& operator/=(float divisor);
-	static Vector createForwardVec(float dir, float magnitude = 1.0f);
+	static Vector fromPolar(float dir, float magnitude = 1.0f);
 
 	float x = 0.0f;
 	float y = 0.0f;
@@ -460,7 +460,7 @@ private:
 };
 
 static float getAngleBetween(Math::Vector pointA, Math::Vector pointB, float orientationB) {
-	Vector forwardVec = Vector::createForwardVec(orientationB);
+	Vector forwardVec = Vector::fromPolar(orientationB);
 	Vector dirVec = pointA - pointB;
 
 	float angle = atan2(dirVec.y, dirVec.x) - atan2(forwardVec.y, forwardVec.x);

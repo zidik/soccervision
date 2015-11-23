@@ -127,7 +127,7 @@ Matrix4x1::Matrix4x1(
 
 
 // 2D Vector
-Vector Vector::createForwardVec(float dir, float magnitude) {
+Vector Vector::fromPolar(float dir, float magnitude) {
     return Vector(
         Math::cos(dir) * magnitude,
         Math::sin(dir) * magnitude
