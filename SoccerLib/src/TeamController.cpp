@@ -817,7 +817,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	float chipKickAdjust = -0.1f;
 	int validCountThreshold = 3;
 	float aimAdjustRobotDistance = 1.2f;
-	float robotInMiddleThreshold = Math::PI / 45.0f;
+	float robotInMiddleThreshold = Math::PI / 180.0f;
 
 	if (target == NULL) {
 		robot->spinAroundDribbler();
@@ -835,6 +835,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		else {
 			if (abs(closestRobot->angle) < robotInMiddleThreshold) {
 				areaLocked = true;
+				//TODO choose locked area based on robots position on the field
 				lockedArea = Part::RIGHTSIDE;
 				targetAngle = visionResults->getObjectPartAngle(target, lockedArea);
 			}
@@ -855,15 +856,34 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		if (validCount > validCountThreshold) {
 			robot->stop();
 			robot->dribbler->stop();
-			if (kickType.compare("pass") == 0) robot->coilgun->kick(passStrength);
-			else if (kickType.compare("direct") == 0) robot->coilgun->kick(directKickStrength);
-			else if (kickType.compare("chip") == 0) robot->coilgun->chipKick(target->distance + chipKickAdjust);
+			if (kickType.compare("pass") == 0) {
+				robot->coilgun->kick(passStrength);
+				ai->setState(nextState);
+				robot->dribbler->useNormalLimits();
+				return;
+			}
+			else if (kickType.compare("direct") == 0) {
+				robot->coilgun->kick(directKickStrength);
+				ai->setState(nextState);
+				robot->dribbler->useNormalLimits();
+				return;
+			}
+			else if (kickType.compare("chip") == 0)  {
+				robot->dribbler->useChipKickLimits();
+				if (robot->dribbler->isRaised()) {
+					robot->coilgun->chipKick(target->distance + chipKickAdjust);
+					ai->setState(nextState);
+					robot->dribbler->useNormalLimits();
+					return;
+				}
+			}
 			else {
 				robot->coilgun->kick(passStrength);
+				ai->setState(nextState);
+				robot->dribbler->useNormalLimits();
+				return;
 			}
-			ai->setState(nextState);
-			robot->dribbler->useNormalLimits();
-			return;
+
 		}
 		robot->setTargetDir(0.0f, 0.0f);
 		robot->lookAt(Math::Rad(targetAngle));
