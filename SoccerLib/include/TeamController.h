@@ -237,6 +237,8 @@ private:
 	TeamInPossession whoHasBall;
 	bool passNeeded;
 	bool isCaptain;
+	int friendlyGoalCounter;
+	int enemyGoalCounter;
 };
 
 #endif // TEAMCONTROLLER_H

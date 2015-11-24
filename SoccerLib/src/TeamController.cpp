@@ -13,6 +13,8 @@ TeamController::TeamController(Robot* robot, AbstractCommunication* com, Client*
 	currentSituation = GameSituation::UNKNOWN;
 	passNeeded = true;
 	isCaptain = false;
+	friendlyGoalCounter = 0;
+	enemyGoalCounter = 0;
 };
 
 TeamController::~TeamController() {
@@ -614,7 +616,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	}
 
 	//configuration parameters
-	float targetAngleError = Math::PI / 60.0f;
+	float targetAngleError = Math::PI / 90.0f;
 	float targetAngleMultiplier = 0.35f;
 	int passStrength = 700;
 	int directKickStrength = 4000;
@@ -677,11 +679,29 @@ void TeamController::GetPassState::onEnter(Robot* robot, Parameters parameters) 
 }
 
 void TeamController::GetPassState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	//check if ball is in dribbler, if is, then go to kick
-	//find teammate or ball
-	//if teammate and ball are close, look at ball
-	//else go and fetch ball and set ai->passneeded false or something
+	Object* ball = visionResults->getClosestBall(Dir::FRONT);
+	Object* teamMate = visionResults->getLargestRobot(ai->teamColor, Dir::FRONT);
+	if (robot->dribbler->gotBall()) {
+		Parameters parameters;
+		parameters["next-state"] = "find-ball";
+		parameters["target-type"] = "enemy-goal";
+		parameters["kick-type"] = "chip";
+		parameters["last-state"] = "get-pass";
+		ai->setState("aim-kick", parameters);
+	}
 
+	if (ball != NULL) {
+		robot->lookAt(ball);
+	}
+	else if (teamMate != NULL) {
+		robot->lookAt(teamMate);
+	}
+	else {
+		//configuration parameters
+		float searchOmega = 1.0f;
+
+		robot->setTargetDir(0.0f, 0.0f, searchOmega);
+	}
 }
 
 void TeamController::ManeuverState::onEnter(Robot* robot, Parameters parameters) {
