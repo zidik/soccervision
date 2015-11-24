@@ -781,7 +781,11 @@ void TeamController::AimKickState::onEnter(Robot* robot, Parameters parameters) 
 	if (parameters.find("target-type") != parameters.end()) {
 		targetType = parameters["target-type"];
 	}
+
+	//reset runtime parameters
 	validCount = 0;
+	areaLocked = false;
+	lockedArea = Part::MIDDLE;
 }
 
 void TeamController::AimKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -805,6 +809,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	float chipKickAdjust = -0.1f;
 	int validCountThreshold = 2;
 	float aimAdjustRobotDistance = 1.2f;
+	float robotInMiddleThreshold = Math::PI / 45.0f;
 
 	if (target == NULL) {
 		robot->spinAroundDribbler();
@@ -813,11 +818,19 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	else {
 		float targetAngle;
 		Object* closestRobot = visionResults->getRobotNearObject(ai->enemyColor, target, Dir::FRONT, aimAdjustRobotDistance);
-		if (closestRobot == NULL) {
+		if (areaLocked) {
+			targetAngle = visionResults->getObjectPartAngle(target, lockedArea);
+		}
+		else if (closestRobot == NULL) {
 			targetAngle = target->angle;
 		}
 		else {
-			if (closestRobot->angle > target->angle) {
+			if (abs(closestRobot->angle) < robotInMiddleThreshold) {
+				areaLocked = true;
+				lockedArea = Part::RIGHTSIDE;
+				targetAngle = visionResults->getObjectPartAngle(target, lockedArea);
+			}
+			else if (closestRobot->angle > target->angle) {
 				targetAngle = visionResults->getObjectPartAngle(target, Part::LEFTSIDE);
 			}
 			else {
@@ -844,9 +857,11 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 				robot->coilgun->kick(passStrength);
 			}
 			ai->setState(nextState);
+			robot->dribbler->useNormalLimits();
 			return;
 		}
-		robot->setTargetDir(0.0f, 0.0f, targetAngle * targetAngleMultiplier);
+		robot->setTargetDir(0.0f, 0.0f);
+		robot->lookAt(Math::Rad(targetAngle));
 	}
 	
 }

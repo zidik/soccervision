@@ -196,6 +196,9 @@ public:
 		std::string targetType;
 		std::string kickType;
 		int validCount;
+		bool areaLocked;
+		Part lockedArea;
+
 	};
 
 	//Pass the ball
