@@ -99,27 +99,35 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 						switch (currentSituation){
 						case GameSituation::KICKOFF:
 							setState("take-kickoff");
+							std::cout << "- taking kickoff" << std::endl;
 							return;
 						case GameSituation::INDIRECTFREEKICK:
 							setState("take-freekick-indirect");
+							std::cout << "- taking indirect free kick" << std::endl;
 							return;
 						case GameSituation::DIRECTFREEKICK:
 							setState("take-freekick-direct");
+							std::cout << "- taking direct free kick" << std::endl;
 							return;
 						case GameSituation::GOALKICK:
 							setState("take-goalkick");
+							std::cout << "- taking goal kick" << std::endl;
 							return;
 						case GameSituation::THROWIN:
 							setState("take-throwin");
+							std::cout << "- taking throw-in" << std::endl;
 							return;
 						case GameSituation::CORNERKICK:
 							setState("take-cornerkick");
+							std::cout << "- taking corner kick" << std::endl;
 							return;
 						case GameSituation::PENALTY:
 							setState("take-penalty");
+							std::cout << "- taking penalty" << std::endl;
 							return;
 						case GameSituation::PLACEDBALL:
 							setState("find-ball");
+							std::cout << "- its a placed ball" << std::endl;
 							return;
 						}
 					}
@@ -807,7 +815,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	int passStrength = 700;
 	int directKickStrength = 4000;
 	float chipKickAdjust = -0.1f;
-	int validCountThreshold = 2;
+	int validCountThreshold = 3;
 	float aimAdjustRobotDistance = 1.2f;
 	float robotInMiddleThreshold = Math::PI / 45.0f;
 
@@ -849,10 +857,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 			robot->dribbler->stop();
 			if (kickType.compare("pass") == 0) robot->coilgun->kick(passStrength);
 			else if (kickType.compare("direct") == 0) robot->coilgun->kick(directKickStrength);
-			else if (kickType.compare("chip") == 0)  {
-				robot->dribbler->useChipKickLimits();
-				if (robot->dribbler->isRaised()) robot->coilgun->chipKick(target->distance + chipKickAdjust);
-			}
+			else if (kickType.compare("chip") == 0) robot->coilgun->chipKick(target->distance + chipKickAdjust);
 			else {
 				robot->coilgun->kick(passStrength);
 			}
