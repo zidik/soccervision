@@ -40,9 +40,9 @@ void TeamController::reset() {
 
 void TeamController::setupStates() {
 	states["wait-for-referee"] = new WaitForRefereeState(this);
-	states["manual-control"] = new ManualControlState(this);
-	states["drive-to"] = new DriveToState(this);
-	states["turn-by"] = new TurnByState(this);
+	states["manual-control"] = new TestController::ManualControlState(this);
+	states["drive-to"] = new TestController::DriveToState(this);
+	states["turn-by"] = new TestController::TurnByState(this);
 	states["wait-for-kick"] = new WaitForKickState(this);
 	states["defend-goal"] = new DefendGoalState(this);
 	states["intercept-ball"] = new InterceptBallState(this);
@@ -840,7 +840,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 			ai->setState(nextState);
 			return;
 		}
-		robot->setTargetOmega(targetAngle * -targetAngleMultiplier);
+		robot->setTargetDir(0.0f, 0.0f, targetAngle * -targetAngleMultiplier);
 	}
 	
 }
