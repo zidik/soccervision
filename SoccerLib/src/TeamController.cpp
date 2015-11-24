@@ -371,6 +371,7 @@ void TeamController::InterceptBallState::step(float dt, Vision::Results* visionR
 
 void TeamController::TakeKickoffState::onEnter(Robot* robot, Parameters parameters) {
 	ai->passNeeded = true;
+	robot->dribbler->useNormalLimits();
 	//ai->client->send("run-get-pass");
 }
 
@@ -441,7 +442,7 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 }
 
 void TeamController::TakeFreeKickDirectState::onEnter(Robot* robot, Parameters parameters) {
-	//TODO fill this out
+	robot->dribbler->useNormalLimits();
 }
 
 void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
