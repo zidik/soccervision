@@ -814,7 +814,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	float targetAngleMultiplier = 0.35f;
 	int passStrength = 700;
 	int directKickStrength = 4000;
-	float chipKickAdjust = -0.1f;
+	float chipKickAdjust = 0.1f;
 	int validCountThreshold = 3;
 	float aimAdjustRobotDistance = 1.2f;
 	float robotInMiddleThreshold = Math::PI / 180.0f;
