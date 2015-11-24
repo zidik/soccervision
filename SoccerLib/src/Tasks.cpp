@@ -400,7 +400,7 @@ std::string DriveForTask::toString() {
 
 // drive behind ball
 void DriveBehindBallTask::onStart(Robot& robot, float dt) {
-	startSpeed = robot.getVelocity();
+	startSpeed = robot.getSpeed();
 	duration = 0.0f;
 	arcRadius = offsetDistance / Math::cos(targetAngle - Math::PI);
 	arcDistance = arcRadius * Math::TWO_PI / 4.0f; // quarter of a circle

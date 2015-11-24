@@ -16,15 +16,13 @@
 
 typedef ParticleFilterLocalizer::Landmark::Type LandmarkType;
 
-Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : conf(conf), com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f) {
+Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : location(0.0f, 0.0f) , conf(conf), com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f) {
     targetOmega = 0;
     targetDir = Math::Vector(0, 0);
    
-    x = 0.0f;
-    y = 0.0f;
     orientation = 0.0f;
-	velocity = 0.0f;
-	lastVelocity = 0.0f;
+	speed = 0.0f;
+	lastSpeed = 0.0f;
 	omega = 0.0f;
 	travelledDistance = 0.0f;
 	travelledRotation = 0.0f;
@@ -202,12 +200,12 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	);
 
 	Math::Vector velocityVec(movement.velocityX, movement.velocityY);
-	lastVelocity = velocity;
-	velocity = velocityVec.getLength();
+	lastSpeed = speed;
+	speed = velocityVec.getLength();
 
 	omega = movement.omega;
 
-	travelledDistance += velocity * dt;
+	travelledDistance += speed * dt;
 	travelledRotation += movement.omega * dt;
 
 	updateMeasurements();
@@ -223,11 +221,12 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	//As rest of the code uses unconventional coordinate system, result must be changed:
 	localizerPosition.location.y = conf->field.height - localizerPosition.location.y;
 	//HACK END
+
+    //TODO: Remove this, it's legacy
 	Math::Position odometerPosition = odometerLocalizer->getPosition();
 
 	// use localizer position
-	x = localizerPosition.location.x;
-	y = localizerPosition.location.y;
+    location = localizerPosition.location;
 	orientation = localizerPosition.orientation;
 
 	// use odometer position
@@ -548,8 +547,7 @@ void Robot::handleQueuedChipKickRequest() {
 }
 
 void Robot::setPosition(float x, float y, float orientation) {
-    this->x = x;
-    this->y = y;
+    location = Math::Vector(x, y);
 	this->orientation = Math::floatModulus(orientation, Math::TWO_PI);
 
 	robotLocalizer->setPosition(x, y, orientation);
@@ -741,7 +739,7 @@ void Robot::debugBallList(std::string name, std::stringstream& stream, BallLocal
         }
 
 		stream << "{";
-        Math::Vector ballWorldLocation = ball->location + Math::Vector(x, y);
+        Math::Vector ballWorldLocation = ball->location.getRotated(orientation) + location;
 		stream << "\"x\": " << ballWorldLocation.x << ",";
 		stream << "\"y\": " << ballWorldLocation.y << ",";
 		stream << "\"velocityX\": " << ball->velocity.x << ",";

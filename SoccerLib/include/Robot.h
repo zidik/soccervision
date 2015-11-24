@@ -32,12 +32,12 @@ public:
 
 	void step(float dt, Vision::Results* visionResults);
 
-    const Math::Position getPosition() const { return Math::Position(x, y, orientation);  }
+    Math::Position getPosition() const { return Math::Position(location, orientation);  }
     float getOrientation() const { return orientation; }
-	float getVelocity() { return velocity; }
+	float getSpeed() const { return speed; }
 	float getDribblerStabilityDelay();
-	bool isAccelerating() { return velocity > lastVelocity; }
-	bool isBraking() { return velocity < lastVelocity; }
+	bool isAccelerating() { return speed > lastSpeed; }
+	bool isBraking() { return speed < lastSpeed; }
 	float getOmega() { return omega; }
 	float getTravelledDistance() { return travelledDistance; }
 	float getTravelledRotation() { return travelledRotation; }
@@ -107,11 +107,10 @@ private:
 	void debugBallList(std::string name, std::stringstream& stream, BallLocalizer::BallList balls);
 	void handleQueuedChipKickRequest();
 
-    float x;
-    float y;
+    Math::Vector location;
     float orientation;
-	float velocity;
-	float lastVelocity;
+	float speed;
+	float lastSpeed;
 	float omega;
 	float travelledDistance;
 	float travelledRotation;

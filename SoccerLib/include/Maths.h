@@ -362,6 +362,7 @@ static float getSlope(std::vector<Vector> points)
 
 struct Position {
 	Position() = default;
+    Position(const Math::Vector &location, float orientation) : location(location), orientation(orientation) {}
 	Position(float x, float y, float orientation) : location(x, y), orientation(orientation) {}
 
 	Vector location;
