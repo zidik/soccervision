@@ -536,7 +536,7 @@ void TeamController::TakeCornerKickState::step(float dt, Vision::Results* vision
 }
 
 void TeamController::TakePenaltyState::onEnter(Robot* robot, Parameters parameters) {
-	//TODO fill this out
+	robot->dribbler->useNormalLimits();
 }
 
 void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -798,7 +798,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	}
 
 	//configuration parameters
-	float targetAngleError = Math::PI / 90.0f;
+	float targetAngleError = Math::PI / 60.0f;
 	float targetAngleMultiplier = 0.35f;
 	int passStrength = 700;
 	int directKickStrength = 4000;
@@ -836,7 +836,13 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 			robot->dribbler->stop();
 			if (kickType.compare("pass") == 0) robot->coilgun->kick(passStrength);
 			else if (kickType.compare("direct") == 0) robot->coilgun->kick(directKickStrength);
-			else if (kickType.compare("chip") == 0) robot->coilgun->chipKick(target->distance + chipKickAdjust);
+			else if (kickType.compare("chip") == 0)  {
+				robot->dribbler->useChipKickLimits();
+				if (robot->dribbler->isRaised()) robot->coilgun->chipKick(target->distance + chipKickAdjust);
+			}
+			else {
+				robot->coilgun->kick(passStrength);
+			}
 			ai->setState(nextState);
 			return;
 		}

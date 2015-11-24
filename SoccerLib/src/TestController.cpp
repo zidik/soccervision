@@ -437,7 +437,7 @@ void TestController::handleSetEnemyColorCommand(const Command& cmd)
 	enemyColor = static_cast<RobotColor>(color);
 
 	std::string printout = "unknown";
-	switch (teamColor) {
+	switch (enemyColor) {
 	case RobotColor::YELLOWHIGH:
 		printout = "YELLOWHIGH";
 		break;
