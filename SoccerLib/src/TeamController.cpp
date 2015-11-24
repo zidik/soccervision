@@ -840,7 +840,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 			ai->setState(nextState);
 			return;
 		}
-		robot->setTargetDir(0.0f, 0.0f, targetAngle * -targetAngleMultiplier);
+		robot->setTargetDir(0.0f, 0.0f, targetAngle * targetAngleMultiplier);
 	}
 	
 }
