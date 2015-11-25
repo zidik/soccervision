@@ -93,10 +93,11 @@ void SoccerBot::setup() {
 	setupCameras();
 	setupProcessors();
 	setupRobot();
+	setupClient();
 	setupControllers();
 	setupSignalHandler();
 	setupServer();
-	setupClient();
+	
 
 	if (showGui) {
 		setupGui();
@@ -644,6 +645,7 @@ void SoccerBot::setupClient() {
 	ss << "ws://" << config->robot.teammateIP << ":8000";
 	std::string uri_str = ss.str();
 	client->set_uri(uri_str);
+	client->connect();
 	std::cout << " done! URI is: " << uri_str << std::endl;
 }
 
