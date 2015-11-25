@@ -615,7 +615,7 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 			if (abs(targetAngle) < goalAngleError) {
 				//move toward ball
 				forwardSpeed = minForwardSpeed + ball->distance * forwardSpeedMult;
-				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
+				sidewaysSpeed = ball->distanceX * -sidewaysSpeedMult;
 				robot->lookAt(Math::Rad(targetAngle));
 				robot->dribbler->start();
 			}
@@ -635,7 +635,7 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 			else {
 				//move ball to correct distance
 				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
-				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
+				sidewaysSpeed = ball->distanceX * -sidewaysSpeedMult;
 			}
 			robot->lookAt(ball);
 		}
