@@ -17,6 +17,7 @@ public:
         bool shouldBeRemoved() const;
         float distanceTo(const Ball & other) const { return location.distanceTo(other.location); }
         float distanceTo(const Ball * const other) const { return distanceTo(*other); }
+        void transformLocation(Math::Vector & dtLocation, float dtOrientation) { location = (location-dtLocation).getRotated(dtOrientation); }
 
         int id;
         double createdTime;
@@ -39,8 +40,9 @@ public:
 
     BallLocalizer();
     ~BallLocalizer();
-
+    
     static BallList extractBalls(const ObjectList& sourceBalls);
+    void transformLocations(Math::Vector & dtLocation, float dtOrientation);
     void update(const BallList& visibleBalls, const Math::Polygon& cameraFOV, float dt);
 
     BallList balls; //TODO: Should be private

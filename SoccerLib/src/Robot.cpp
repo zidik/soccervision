@@ -199,19 +199,22 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 		wheelRR->getRealOmega()
 	);
 
-	Math::Vector velocityVec(movement.velocityX, movement.velocityY);
+    
+	Math::Vector velocityOdometer(movement.velocityX, movement.velocityY);
 	lastSpeed = speed;
-	speed = velocityVec.getLength();
-
+	speed = velocityOdometer.getLength();
 	omega = movement.omega;
 
 	travelledDistance += speed * dt;
-	travelledRotation += movement.omega * dt;
+	travelledRotation += omega * dt;
 
-	updateMeasurements();
+    Math::Vector locationChangeOdometer = velocityOdometer*dt;
+    ballLocalizer->transformLocations(locationChangeOdometer, movement.omega*dt);
 	updateBallLocalizer(visionResults, dt);
-	handleQueuedChipKickRequest();
+	
 
+    //TODO: Shouldn't it be move& update, not update& move?
+    updateMeasurements();
 	robotLocalizer->update(measurements);
 	robotLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt);
 	odometerLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt);
@@ -240,6 +243,8 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 
 	//using odometer
 	//updateAllObjectsAbsoluteMovement(visionResults, odometerLocalizer->x, odometerLocalizer->y, odometerLocalizer->orientation, dt);
+
+    handleQueuedChipKickRequest();
 
 	std::stringstream stream;
 
@@ -357,7 +362,7 @@ void Robot::updateMeasurements() {
 	for (Pixel pixel : visionResults->rear->fieldCorners)
 	{
 		ParticleFilterLocalizer::Measurement measurement(LandmarkType::FieldCorner, pixel, Dir::REAR);
-			measurements.push_back(measurement);
+		measurements.push_back(measurement);
 	}
 
 }

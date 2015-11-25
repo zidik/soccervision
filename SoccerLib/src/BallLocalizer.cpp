@@ -87,6 +87,13 @@ BallLocalizer::BallList BallLocalizer::extractBalls(const ObjectList& sourceBall
 	return balls;
 }
 
+void BallLocalizer::transformLocations(Math::Vector& dtLocation, float dtOrientation) {
+    for (auto ball : balls) {
+        ball->transformLocation(dtLocation, dtOrientation);
+    }
+}
+
+
 void BallLocalizer::update(const BallList& visibleBalls, const Math::Polygon& cameraFOV, float dt) {
     Ball* closestBall;
     std::vector<int> handledBalls;
