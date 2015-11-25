@@ -578,8 +578,8 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 		float lookAtAngle = 0.0f;
 
 		//configuration parameters
-		float forwardSpeedMult = 1.5f;
-		float sidewaysSpeedMult = 3.5f;
+		float forwardSpeedMult = 1.1f;
+		float sidewaysSpeedMult = 1.1f;
 		float robotSearchDir = -1.0f;
 		float minForwardSpeed = 0.1f;
 		float ballRotateDistance = 0.2f;
