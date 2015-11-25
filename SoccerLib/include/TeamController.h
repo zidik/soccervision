@@ -105,7 +105,9 @@ public:
 		TakePenaltyState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
-
+	private:
+		bool areaLocked;
+		Part lockedArea;
 	};
 
 	//This state is for the goalkeeper

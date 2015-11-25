@@ -161,7 +161,7 @@ void TeamController::WaitForRefereeState::onEnter(Robot* robot, Parameters param
 }
 
 void TeamController::WaitForRefereeState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	//this state will be entered after the referee sends stop and waits for the next command from the referee to choose next state
+	//NEVER MIND THIS STATE
 
 	//check if referee has sent next situation
 	if (ai->currentSituation != GameSituation::UNKNOWN && ai->isCaptain) {
@@ -342,6 +342,7 @@ void TeamController::InterceptBallState::step(float dt, Vision::Results* visionR
 	//configuration parameters
 	float ballFetchMinDistance = 0.3f;
 	float sidewaysSpeedMultiplier = 3.0f;
+	float ballMovingSpeedMultiplier = 8.0f;
 
 	//if can't see ball
 	if (ball == NULL) {
@@ -361,7 +362,7 @@ void TeamController::InterceptBallState::step(float dt, Vision::Results* visionR
 			float forwardSpeed = 0.0f;
 			float sidewaysSpeed = 0.0f;
 
-			sidewaysSpeed = ball->distanceX * sidewaysSpeedMultiplier;
+			sidewaysSpeed = ball->distanceX * sidewaysSpeedMultiplier + ball->relativeMovement.dX * ballMovingSpeedMultiplier;
 
 			robot->setTargetDir(forwardSpeed, sidewaysSpeed);
 		}
@@ -546,6 +547,8 @@ void TeamController::TakeCornerKickState::step(float dt, Vision::Results* vision
 
 void TeamController::TakePenaltyState::onEnter(Robot* robot, Parameters parameters) {
 	robot->dribbler->useNormalLimits();
+	areaLocked = false;
+	lockedArea = Part::MIDDLE;
 }
 
 void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -575,25 +578,52 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 
 		//configuration parameters
 		float forwardSpeedMult = 1.5f;
-		float sidewaysSpeedMult = 0.3f;
+		float sidewaysSpeedMult = 1.5f;
 		float robotSearchDir = -1.0f;
 		float minForwardSpeed = 0.1f;
 		float ballRotateDistance = 0.2f;
 		float ballDistanceError = 0.05f;
 		float teamMateSearchSpeed = 0.4f;
 		float goalAngleError = Math::PI / 30.0f;
+		float goalInMiddleThreshold = Math::PI / 90.0f;
 
 		if (goal != NULL) {
-			if (abs(goal->angle) < goalAngleError) {
+
+			float targetAngle;
+			Object* closestRobot = visionResults->getRobotNearObject(ai->enemyColor, goal, Dir::FRONT);
+			if (areaLocked) {
+				targetAngle = visionResults->getObjectPartAngle(goal, lockedArea);
+			}
+			else if (closestRobot == NULL) {
+				targetAngle = goal->angle;
+			}
+			else {
+				if (abs(closestRobot->angle) < goalInMiddleThreshold) {
+					areaLocked = true;
+					//TODO choose locked area based on robots position on the field
+					lockedArea = Part::RIGHTSIDE;
+					targetAngle = visionResults->getObjectPartAngle(goal, lockedArea);
+				}
+				else if (closestRobot->angle > goal->angle) {
+					targetAngle = visionResults->getObjectPartAngle(goal, Part::LEFTSIDE);
+				}
+				else {
+					targetAngle = visionResults->getObjectPartAngle(goal, Part::RIGHTSIDE);
+				}
+			}
+
+			if (abs(targetAngle) < goalAngleError) {
 				//move toward ball
 				forwardSpeed = minForwardSpeed + ball->distance * forwardSpeedMult;
 				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
+				robot->lookAt(Math::Rad(targetAngle));
 				robot->dribbler->start();
 			}
 			else {
 				//turn toward goal
-				sidewaysSpeed = goal->angle * -sidewaysSpeedMult;
+				sidewaysSpeed = targetAngle * -sidewaysSpeedMult;
 				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
+				robot->lookAt(ball);
 			}
 		}
 		else {
@@ -607,10 +637,11 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
 				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
 			}
+			robot->lookAt(ball);
 		}
 
 		robot->setTargetDir(forwardSpeed, sidewaysSpeed);
-		robot->lookAt(ball);
+		
 
 	}
 }
@@ -635,6 +666,9 @@ void TeamController::FindBallState::step(float dt, Vision::Results* visionResult
 		ai->setState("aim-kick", parameters);
 	}
 
+	//configuration parameters
+	float ballSearchSpeed = 3.0f;
+
 	if (ball != NULL) {
 		if (ball->behind) {
 			Parameters parameters;
@@ -648,7 +682,7 @@ void TeamController::FindBallState::step(float dt, Vision::Results* visionResult
 		}
 	}
 	else {
-		robot->setTargetDir(0, 0, 1.5);
+		robot->setTargetDir(0.0f, 0.0f, ballSearchSpeed);
 	}
 }
 
@@ -678,14 +712,14 @@ void TeamController::FetchBallFrontState::step(float dt, Vision::Results* vision
 
 	if (ball == NULL) {
 		Parameters parameters;
-		parameters["next-state"] = "fetch-ball";
+		parameters["next-state"] = "fetch-ball-front";
 		ai->setState("find-ball", parameters);
 	}
 	else {
 		
 		//configuration parameters
 		float forwardSpeedMultiplier = 1.0f;
-		float sidewaysSpeedMultiplier = 1.0f;
+		float sidewaysSpeedMultiplier = 3.0f;
 
 		float forwardSpeed = 0.0f, sidewaysSpeed = 0.0f;
 
@@ -834,7 +868,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	else target = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
 
 	if (!robot->dribbler->gotBall()) {
-		robot->dribbler->stop();
+		//robot->dribbler->stop();
 		robot->stop();
 		ai->setState(lastState);
 		return;
@@ -846,7 +880,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	int passStrength = 700;
 	int directKickStrength = 4000;
 	float chipKickAdjust = 0.1f;
-	int validCountThreshold = 3;
+	int validCountThreshold = 2;
 	float aimAdjustRobotDistance = 1.2f;
 	float robotInMiddleThreshold = Math::PI / 180.0f;
 
@@ -886,31 +920,29 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		}
 		if (validCount > validCountThreshold) {
 			robot->stop();
-			robot->dribbler->stop();
+			//robot->dribbler->stop();
 			if (kickType.compare("pass") == 0) {
 				ai->client->send("run-fetch-ball-front");
-				robot->coilgun->kick(passStrength);
+				robot->kick(passStrength);
 				ai->setState(nextState);
 				robot->dribbler->useNormalLimits();
 				return;
 			}
 			else if (kickType.compare("direct") == 0) {
-				robot->coilgun->kick(directKickStrength);
+				robot->kick(directKickStrength);
 				ai->setState(nextState);
 				robot->dribbler->useNormalLimits();
 				return;
 			}
 			else if (kickType.compare("chip") == 0)  {
-				robot->dribbler->useChipKickLimits();
-				if (robot->dribbler->isRaised()) {
-					robot->coilgun->chipKick(target->distance + chipKickAdjust);
+				if (robot->chipKick(target->distance + chipKickAdjust)) {
 					ai->setState(nextState);
 					robot->dribbler->useNormalLimits();
 					return;
 				}
 			}
 			else {
-				robot->coilgun->kick(passStrength);
+				robot->kick(passStrength);
 				ai->setState(nextState);
 				robot->dribbler->useNormalLimits();
 				return;
