@@ -400,13 +400,13 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 		float sidewaysSpeed = 0.0f;
 
 		//configuration parameters
-		float forwardSpeedMult = 1.5f;
-		float sidewaysSpeedMult = 0.3f;
+		float forwardSpeedMult = 2.0f;
+		float sidewaysSpeedMult = 0.7f;
 		float robotSearchDir = -1.0f;
 		float minForwardSpeed = 0.1f;
 		float ballRotateDistance = 0.2f;
-		float ballDistanceError = 0.05f;
-		float teamMateSearchSpeed = 0.4f;
+		float ballDistanceError = 0.08f;
+		float teamMateSearchSpeed = 0.6f;
 		float robotAngleError = Math::PI / 30.0f;
 
 		if (teamMate != NULL) {
