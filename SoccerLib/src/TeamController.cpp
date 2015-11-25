@@ -575,6 +575,7 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 	else {
 		float forwardSpeed = 0.0f;
 		float sidewaysSpeed = 0.0f;
+		float lookAtAngle = 0.0f;
 
 		//configuration parameters
 		float forwardSpeedMult = 1.5f;
@@ -616,14 +617,14 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 				//move toward ball
 				forwardSpeed = minForwardSpeed + ball->distance * forwardSpeedMult;
 				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
-				robot->lookAt(Math::Rad(targetAngle));
+				lookAtAngle = targetAngle;
 				robot->dribbler->start();
 			}
 			else {
 				//turn toward goal
 				sidewaysSpeed = targetAngle * -sidewaysSpeedMult;
 				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
-				robot->lookAt(ball);
+				lookAtAngle = ball->angle;
 			}
 		}
 		else {
@@ -637,11 +638,11 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
 				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
 			}
-			robot->lookAt(ball);
+			lookAtAngle = ball->angle;
 		}
 
 		robot->setTargetDir(forwardSpeed, sidewaysSpeed);
-		
+		robot->lookAt(Math::Rad(lookAtAngle));
 
 	}
 }
