@@ -144,6 +144,7 @@ private:
 	Math::Polygon currentCameraFOV;
 
 	PID lookAtPid;
+	char pidUpdateCounter;
 
 	std::string json;
 };

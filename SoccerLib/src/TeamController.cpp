@@ -418,6 +418,8 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 
 void TeamController::TakeFreeKickDirectState::onEnter(Robot* robot, Parameters parameters) {
 	robot->dribbler->useNormalLimits();
+	areaLocked = false;
+	lockedArea = Part::MIDDLE;
 }
 
 void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -444,28 +446,59 @@ void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* vi
 	else {
 		float forwardSpeed = 0.0f;
 		float sidewaysSpeed = 0.0f;
+		float lookAtAngle = 0.0f;
 
 		//configuration parameters
-		float forwardSpeedMult = 1.5f;
-		float sidewaysSpeedMult = 0.3f;
+		float forwardSpeedMult = 1.1f;
+		float sidewaysSpeedMult = 1.1f;
 		float robotSearchDir = -1.0f;
 		float minForwardSpeed = 0.1f;
 		float ballRotateDistance = 0.2f;
 		float ballDistanceError = 0.05f;
 		float teamMateSearchSpeed = 0.4f;
 		float goalAngleError = Math::PI / 30.0f;
+		float goalInMiddleThreshold = Math::PI / 90.0f;
 
 		if (goal != NULL) {
-			if (abs(goal->angle) < goalAngleError) {
-				//move toward ball
-				forwardSpeed = minForwardSpeed + ball->distance * forwardSpeedMult;
-				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
-				robot->dribbler->start();
+
+			float targetAngle;
+			Object* closestRobot = visionResults->getRobotNearObject(ai->enemyColor, goal, Dir::FRONT);
+			if (areaLocked) {
+				targetAngle = visionResults->getObjectPartAngle(goal, lockedArea);
+			}
+			else if (closestRobot == NULL) {
+				targetAngle = goal->angle;
 			}
 			else {
-				//turn toward teammate
-				sidewaysSpeed = goal->angle * -sidewaysSpeedMult;
+				if (abs(closestRobot->angle) < goalInMiddleThreshold) {
+					areaLocked = true;
+					//TODO choose locked area based on robots position on the field
+					lockedArea = Part::RIGHTSIDE;
+					targetAngle = visionResults->getObjectPartAngle(goal, lockedArea);
+				}
+				else if (closestRobot->angle > goal->angle) {
+					targetAngle = visionResults->getObjectPartAngle(goal, Part::LEFTSIDE);
+				}
+				else {
+					targetAngle = visionResults->getObjectPartAngle(goal, Part::RIGHTSIDE);
+				}
+			}
+
+			if (abs(targetAngle) < goalAngleError) {
+				Parameters parameters;
+				parameters["next-state"] = "manual-control";
+				parameters["last-state"] = "take-freekick-direct";
+				parameters["kick-type"] = "chip";
+				parameters["target-type"] = "enemy-goal";
+				parameters["kick-immediately"] = "N";
+				ai->setState("approach-ball", parameters);
+				return;
+			}
+			else {
+				//turn toward goal
+				sidewaysSpeed = targetAngle * -sidewaysSpeedMult;
 				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
+				lookAtAngle = ball->angle;
 			}
 		}
 		else {
@@ -479,10 +512,11 @@ void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* vi
 				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
 				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
 			}
+			lookAtAngle = ball->angle;
 		}
 
 		robot->setTargetDir(forwardSpeed, sidewaysSpeed);
-		robot->lookAt(ball);
+		robot->lookAt(Math::Rad(lookAtAngle));
 
 	}
 }
@@ -593,6 +627,7 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 				parameters["last-state"] = "take-penalty";
 				parameters["kick-type"] = "direct";
 				parameters["target-type"] = "enemy-goal";
+				parameters["kick-immediately"] = "Y";
 				ai->setState("approach-ball", parameters);
 				return;
 			}
@@ -847,6 +882,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	if (!robot->dribbler->gotBall()) {
 		//robot->dribbler->stop();
 		robot->stop();
+		robot->dribbler->start();
 		ai->setState(lastState);
 		return;
 	}
@@ -855,7 +891,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	float targetAngleError = Math::PI / 60.0f;
 	float targetAngleMultiplier = 0.35f;
 	int passStrength = 900;
-	int directKickStrength = 4000;
+	int directKickStrength = 3000;
 	float chipKickAdjust = 0.1f;
 	int validCountThreshold = 2;
 	float aimAdjustRobotDistance = 1.2f;
@@ -912,7 +948,10 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 				return;
 			}
 			else if (kickType.compare("chip") == 0)  {
-				if (robot->chipKick(target->distance + chipKickAdjust)) {
+				robot->dribbler->useChipKickLimits();
+
+				if (robot->dribbler->isRaised()) {
+					robot->coilgun->chipKick(target->distance + chipKickAdjust);
 					ai->setState(nextState);
 					robot->dribbler->useNormalLimits();
 					return;
@@ -928,6 +967,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		}
 		robot->setTargetDir(0.0f, 0.0f);
 		robot->lookAt(Math::Rad(targetAngle));
+		robot->dribbler->start();
 	}
 	
 }
@@ -979,6 +1019,7 @@ void TeamController::ApproachBallState::onEnter(Robot* robot, Parameters paramet
 	lastState = "manual-control";
 	kickType = "pass";
 	targetType = "team-robot";
+	kickImmediately = false;
 	if (parameters.find("next-state") != parameters.end()) {
 		nextState = parameters["next-state"];
 	}
@@ -991,13 +1032,17 @@ void TeamController::ApproachBallState::onEnter(Robot* robot, Parameters paramet
 	if (parameters.find("target-type") != parameters.end()) {
 		targetType = parameters["target-type"];
 	}
+	if (parameters.find("kick-immediately") != parameters.end()) {
+		if (parameters["target-type"] == "Y") kickImmediately = true;
+		else if (parameters["target-type"] == "N") kickImmediately = false;
+	}
 
 	//reset runtime parameters
 	validCount = 0;
 	areaLocked = false;
 	lockedArea = Part::MIDDLE;
 
-	maxSideSpeed = 1.0f;
+	maxSideSpeed = 0.5f;
 
 	pid.setInputLimits(-45.0f, 45.0f);
 	pid.setOutputLimits(-maxSideSpeed, maxSideSpeed);
@@ -1018,13 +1063,9 @@ void TeamController::ApproachBallState::step(float dt, Vision::Results* visionRe
 		ai->setState(nextState);
 	}
 
-	// goes to aim state when got ball is enabled, otherwise always uses chip kick limits and kicks as soon as dribbler senses ball
-	//bool aimMode = true;
-	bool aimMode = false;
-
 	robot->stop();
 
-	if (aimMode) {
+	if (!kickImmediately) {
 		robot->dribbler->useNormalLimits();
 
 		if (robot->dribbler->gotBall()) {
@@ -1099,16 +1140,16 @@ void TeamController::ApproachBallState::step(float dt, Vision::Results* visionRe
 		return;
 	}
 
-	if (aimMode && ball->distance < 0.5f) {
+	if (!kickImmediately && ball->distance < 0.5f) {
 		robot->dribbler->start();
 	}
 
 	//kick parameters
 	int passStrength = 900;
-	int directKickStrength = 4000;
+	int directKickStrength = 3000;
 	float chipKickAdjust = 0.1f;
 
-	if (!aimMode) {
+	if (kickImmediately) {
 		if (kickType.compare("chip") == 0) {
 			robot->coilgun->kickOnceGotBall(0, 0, target->distance + chipKickAdjust, 0);
 		}
@@ -1123,22 +1164,24 @@ void TeamController::ApproachBallState::step(float dt, Vision::Results* visionRe
 	// configuration parameters
 	float robotInMiddleThreshold = Math::PI / 90.0f;
 	float aimAdjustRobotDistance = 1.2f;
-	float maxSideSpeedBallAngle = 35.0f;
+	float maxSideSpeedBallAngle = 25.0f;
 
 	float sidePower = Math::map(Math::abs(Math::radToDeg(ball->angle)), 0.0f, maxSideSpeedBallAngle, 0.0f, 1.0f);
 
 	// pid-based
+	pidUpdateCounter++;
+	if (pidUpdateCounter % 10 == 0) pid.setInterval(dt);
 	pid.setSetPoint(0.0f);
 	pid.setProcessValue(Math::radToDeg(ball->angle));
 
 	float sideP = -pid.compute();
 	float sideSpeed = sideP * sidePower;
 
-	float approachP = Math::map(ball->distance, 0.0f, 1.0f, 0.25f, 1.5f);
+	float approachP = Math::map(ball->distance, 0.0f, 1.0f, 0.0625f, 0.375f);
 	float forwardSpeed = approachP * (1.0f - sidePower);
 
 	// don't move forwards if very close to the ball and the ball is quite far sideways
-	if (ballDistance < 0.05f && Math::abs(ball->distanceX) > 0.03f) {
+	if (ballDistance < 0.05f && Math::abs(ball->distanceX) > 0.015f) {
 		forwardSpeed = 0.0f;
 	}
 
@@ -1166,7 +1209,6 @@ void TeamController::ApproachBallState::step(float dt, Vision::Results* visionRe
 	}
 
 	robot->setTargetDir(forwardSpeed, sideSpeed);
-	//robot->lookAt(goal, lookAtGoalP);
 	robot->lookAt(Math::Rad(targetAngle), Config::lookAtP);
 
 	ai->dbg("forwardSpeed", forwardSpeed);

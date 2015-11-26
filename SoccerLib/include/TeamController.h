@@ -47,7 +47,9 @@ public:
 		TakeFreeKickDirectState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
-
+	private:
+		bool areaLocked;
+		Part lockedArea;
 	};
 
 	//take indirect free kick
@@ -194,6 +196,7 @@ public:
 		int validCount;
 		bool areaLocked;
 		Part lockedArea;
+		bool chipRequested;
 
 	};
 
@@ -218,7 +221,7 @@ public:
 	class ApproachBallState : public State {
 
 	public:
-		ApproachBallState(TeamController* ai) : State(ai), pid(kP, kI, kD, 0.016f) {}
+		ApproachBallState(TeamController* ai) : State(ai), kP(4.0f), kI(1.0f), kD(0.0035f), pid(kP, kI, kD, 0.016f), pidUpdateCounter(0) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 	private:
@@ -226,6 +229,7 @@ public:
 		std::string nextState;
 		std::string targetType;
 		std::string kickType;
+		bool kickImmediately;
 		int validCount;
 		bool areaLocked;
 		Part lockedArea;
@@ -236,6 +240,7 @@ public:
 		float kP;
 		float kI;
 		float kD;
+		char pidUpdateCounter;
 	};
 
 	//For maneuvering to optimal positions for situations, don't know if will have time to implement properly
