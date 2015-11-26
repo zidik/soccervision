@@ -49,7 +49,7 @@ void BallLocalizer::Ball::updateVisible(const Math::Vector & new_location, float
         float stdErrY = Math::standardDeviation(pastVelocitiesY, meanPastVelocities.y);
         
         std::vector<Math::Vector> filteredVelocities;
-        std::copy_if(pastVelocities.begin(), pastVelocities.end(), filteredVelocities.begin(), [&, meanPastVelocities, stdErrX, stdErrY](Math::Vector pastVelocity)
+        std::copy_if(pastVelocities.begin(), pastVelocities.end(), back_inserter(filteredVelocities), [&, meanPastVelocities, stdErrX, stdErrY](Math::Vector pastVelocity)
         {
             Math::Vector diff = pastVelocity - meanPastVelocities;
             bool decision =
