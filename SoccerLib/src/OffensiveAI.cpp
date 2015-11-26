@@ -6,7 +6,7 @@
 #include "Coilgun.h"
 #include "Util.h"
 
-OffensiveAI::OffensiveAI(Robot* robot, AbstractCommunication* com) : BaseAI(robot, com), targetSide(Side::UNKNOWN), running(false) {
+OffensiveAI::OffensiveAI(Robot* robot, AbstractCommunication* com, Client* client) : BaseAI(robot, com, client), targetSide(Side::UNKNOWN), running(false) {
 	startStateName = "idle";
 	
 	setupStates();

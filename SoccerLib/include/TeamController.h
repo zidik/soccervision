@@ -6,7 +6,7 @@
 class TeamController : public TestController {
 
 public:
-	enum GameSituation { UNKNOWN = -1, KICKOFF = 0, INDIRECTFREEKICK = 1, DIRECTFREEKICK = 2, GOALKICK = 3, THROWIN = 4, CORNERKICK = 4, PENALTY = 6, ENDHALF = 7 };
+	enum GameSituation { UNKNOWN = -1, KICKOFF = 0, INDIRECTFREEKICK = 1, DIRECTFREEKICK = 2, GOALKICK = 3, THROWIN = 4, CORNERKICK = 5, PENALTY = 6, PLACEDBALL = 7, ENDHALF = 8 };
 	enum TeamInPossession { NOONE = -1, ENEMY = 0, FRIENDLY = 1 };
 
 	class State : public BaseAI::State {
@@ -17,15 +17,6 @@ public:
 	protected:
 		TeamController* ai;
 
-	};
-
-	//This state keeps the robot waiting for a referee command about what situation is next
-	class WaitForRefereeState : public State {
-
-	public:
-		WaitForRefereeState(TeamController* ai) : State(ai) {}
-		void onEnter(Robot* robot, Parameters parameters);
-		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 	};
 
 	//This state detects if ball has been kicked starting with a stationary robot
@@ -47,7 +38,6 @@ public:
 		TakeKickoffState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
-
 	};
 
 	//Take direct free kick
@@ -106,7 +96,9 @@ public:
 		TakePenaltyState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
-
+	private:
+		bool areaLocked;
+		Part lockedArea;
 	};
 
 	//This state is for the goalkeeper
@@ -140,6 +132,9 @@ public:
 		FindBallState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+
+	private:
+		std::string nextState;
 	};
 
 	//Find the ball while defending the goal
@@ -191,6 +186,15 @@ public:
 		AimKickState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	private:
+		std::string lastState;
+		std::string nextState;
+		std::string targetType;
+		std::string kickType;
+		int validCount;
+		bool areaLocked;
+		Part lockedArea;
+
 	};
 
 	//Pass the ball
@@ -211,6 +215,29 @@ public:
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 	};
 
+	class ApproachBallState : public State {
+
+	public:
+		ApproachBallState(TeamController* ai) : State(ai), pid(kP, kI, kD, 0.016f) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	private:
+		std::string lastState;
+		std::string nextState;
+		std::string targetType;
+		std::string kickType;
+		int validCount;
+		bool areaLocked;
+		Part lockedArea;
+
+		float maxSideSpeed;
+
+		PID pid;
+		float kP;
+		float kI;
+		float kD;
+	};
+
 	//For maneuvering to optimal positions for situations, don't know if will have time to implement properly
 	class ManeuverState : public State {
 
@@ -220,7 +247,7 @@ public:
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 	};
 
-	TeamController(Robot* robot, AbstractCommunication* com);
+	TeamController(Robot* robot, AbstractCommunication* com, Client* client);
 	~TeamController();
 
 	void reset() override;
@@ -232,6 +259,8 @@ private:
 	TeamInPossession whoHasBall;
 	bool passNeeded;
 	bool isCaptain;
+	int friendlyGoalCounter;
+	int enemyGoalCounter;
 };
 
 #endif // TEAMCONTROLLER_H

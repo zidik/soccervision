@@ -2816,6 +2816,101 @@ Object* Vision::Results::getLargestGoal(Side side, Dir dir) {
 	}
 }
 
+Object* Vision::Results::getLargestRobot(RobotColor color, Dir dir) {
+	int area;
+	int largestArea = 0;
+	Object* robot;
+	Object* largestRobot = NULL;
+
+	if (front != NULL && dir != Dir::REAR) {
+		for (ObjectListItc it = front->robots->begin(); it != front->robots->end(); it++) {
+			robot = *it;
+
+			if (color != RobotColor::WHATEVER && robot->type != (int)color) {
+				continue;
+			}
+
+			area = robot->width * robot->height;
+
+			if (largestRobot == NULL || area > largestArea) {
+				largestRobot = robot;
+				largestArea = area;
+			}
+		}
+	}
+
+	if (rear != NULL && dir != Dir::FRONT) {
+		for (ObjectListItc it = rear->robots->begin(); it != rear->robots->end(); it++) {
+			robot = *it;
+
+			if (color != RobotColor::WHATEVER && robot->type != (int)color) {
+				continue;
+			}
+
+			area = robot->width * robot->height;
+
+			if (largestRobot == NULL || area > largestArea) {
+				largestRobot = robot;
+				largestArea = area;
+			}
+		}
+	}
+
+	if (largestRobot != NULL) {
+		return largestRobot;
+	} else {
+		return NULL;
+	}
+}
+
+Object* Vision::Results::getRobotNearObject(RobotColor color, Object* object, Dir dir, float distanceThreshold) {
+	Object* robot;
+	Object* closestRobot = NULL;
+	float distance;
+	float closestDistance = 999.0f;
+
+	if (front != NULL && dir != Dir::REAR) {
+		for (ObjectListItc it = front->robots->begin(); it != front->robots->end(); it++) {
+			robot = *it;
+
+			if (color != RobotColor::WHATEVER && robot->type != (int)color) {
+				continue;
+			}
+
+			distance = Math::sqrt(Math::pow(object->distance, 2.0f) + Math::pow(robot->distance, 2.0f) - 2 * object->distance * robot->distance * Math::cos(object->angle - robot->angle));
+
+			if (closestRobot == NULL || distance < closestDistance) {
+				closestRobot = robot;
+				closestDistance = distance;
+			}
+		}
+	}
+
+	if (rear != NULL && dir != Dir::FRONT) {
+		for (ObjectListItc it = front->robots->begin(); it != front->robots->end(); it++) {
+			robot = *it;
+
+			if (color != RobotColor::WHATEVER && robot->type != (int)color) {
+				continue;
+			}
+
+			distance = Math::sqrt(Math::pow(object->distance, 2.0f) + Math::pow(robot->distance, 2.0f) - 2 * object->distance * robot->distance * Math::cos(object->angle - robot->angle));
+
+			if (closestRobot == NULL || distance < closestDistance) {
+				closestRobot = robot;
+				closestDistance = distance;
+			}
+		}
+	}
+
+	if (closestRobot != NULL) {
+		return closestRobot;
+	}
+	else {
+		return NULL;
+	}
+}
+
 Object* Vision::Results::getFurthestGoal(Dir dir) {
 	return NULL;
 
@@ -2971,4 +3066,28 @@ bool Vision::Results::isRobotOut(Dir dir) {
 
 int Vision::Results::getVisibleBallCount() {
 	return front->balls->size() + rear->balls->size();
+}
+
+float Vision::Results::getObjectPartAngle(Object* object, Part part) {
+	int targetX;
+	int targetY = object->y;
+	float partAngle = 0.0f;
+
+	if (part == Part::LEFTSIDE) {
+		targetX = object->x - (int)((float)object->width * 0.44f);
+	}
+	else if (part == Part::RIGHTSIDE) {
+		targetX = object->x + (int)((float)object->width * 0.44f);
+	}
+	else {
+		return object->angle;
+	}
+	if (object->behind) {
+		partAngle = rear->vision->getAngle(targetX, targetY);
+	}
+	else {
+		partAngle = front->vision->getAngle(targetX, targetY);
+	}
+	
+	return partAngle;
 }

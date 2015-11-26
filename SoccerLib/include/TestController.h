@@ -291,7 +291,7 @@ public:
 	};
 
 	
-	TestController(Robot* robot, AbstractCommunication* com);
+	TestController(Robot* robot, AbstractCommunication* com, Client* client);
 	~TestController();
 
 	void onEnter();

@@ -1,4 +1,5 @@
 #include "Client.h"
+#include <sstream>
 
 
 Client::Client() {
@@ -81,15 +82,23 @@ void Client::close(websocketpp::close::status::value code, std::string reason) {
 
 void Client::send(std::string message) {
 	websocketpp::lib::error_code ec;
+	std::stringstream ss;
+	ss << '<' << message << '>';
 
-	m_endpoint.send(metadata_ptr->get_hdl(), message, websocketpp::frame::opcode::text, ec);
-	if (ec) {
-		std::cout << "> Error sending message: " << ec.message() << std::endl;
-		if (metadata_ptr->get_status() != "Connecting"){
-			// reconnect if the socket was closed but a new message is sent
-			connect();
+	int retries = 10;
+
+	for (int i = 0; i < retries; i++) {
+		m_endpoint.send(metadata_ptr->get_hdl(), ss.str(), websocketpp::frame::opcode::text, ec);
+		if (ec) {
+			std::cout << "> Error sending message: " << ec.message() << std::endl;
+			if (metadata_ptr->get_status() != "Connecting") {
+				// reconnect if the socket was closed but a new message is sent
+				connect();
+			}		
 		}
-		return;
+		else {
+			return;
+		}
 	}
 
 	//metadata_it->second->record_sent_message(message);

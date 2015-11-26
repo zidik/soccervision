@@ -101,12 +101,15 @@ public:
 			Object* getNextClosestBall(Dir dir = Dir::ANY);
 			Object* getLargestGoal(Side side, Dir dir = Dir::ANY);
 			Object* getFurthestGoal(Dir dir = Dir::ANY);
+			Object* getLargestRobot(RobotColor color, Dir dir = Dir::ANY);
+			Object* getRobotNearObject(RobotColor color, Object* object, Dir dir = Dir::ANY, float distanceThreshold = 1.0f);
 			bool isBallInGoal(Object* ball);
 			bool isBallInGoal(Object* ball, Object* blueGoal, Object* yellowGoal);
 			BallInWayMetric getBallInWayMetric(ObjectList balls, int goalY, Object* ignoreBall = NULL);
 			//bool isBallInWay(ObjectList balls, int goalY);
 			bool isRobotOut(Dir dir = Dir::ANY);
 			int getVisibleBallCount();
+			float getObjectPartAngle(Object* object, Part part);
 			Obstruction goalPathObstruction;
 
 			Vision::Result* front;

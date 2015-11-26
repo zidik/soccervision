@@ -247,6 +247,12 @@ enum Dir {
 	ANY = 3
 };
 
+enum Part {
+	LEFTSIDE = 1,
+	MIDDLE = 2,
+	RIGHTSIDE = 3
+};
+
 /*enum Obstruction {
 	NONE = 0,
 	LEFT = 1,
