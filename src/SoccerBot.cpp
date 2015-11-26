@@ -811,6 +811,8 @@ void SoccerBot::handleServerMessage(Server::Message* message) {
                 handleListScreenshotsCommand(message);
 			} else if (command.name == "camera-translator") {
 				handleCameraTranslatorCommand(command.parameters);
+			} else if (command.name == "set-dash-index") {
+				handleSetRobotIndexDashCommand(command.parameters, message);
 			}
 			else {
 				std::cout << "- Unsupported command: " << command.name << " " << Util::toString(command.parameters) << std::endl;
@@ -823,8 +825,15 @@ void SoccerBot::handleServerMessage(Server::Message* message) {
 
 void SoccerBot::handleGetControllerCommand(Server::Message* message) {
 	std::cout << "! Client #" << message->client->id << " requested controller, sending: " << activeControllerName << std::endl;
-
 	message->respond(Util::json("controller", activeControllerName));
+}
+
+void SoccerBot::handleSetRobotIndexDashCommand(Command::Parameters parameters, Server::Message* message) {
+	std::cout << "! Client #" << message->client->id << " sent dash ID: " << parameters[0] << std::endl;
+	robot->robotId.pop_back();
+	robot->robotId.push_back(parameters[0][0]);
+	activeController->handleCommand(Command::parse("<update-side>"));
+
 }
 
 void SoccerBot::handleSetControllerCommand(Command::Parameters parameters, Server::Message* message) {
@@ -1024,9 +1033,14 @@ std::string SoccerBot::getStateJSON() {
 
     Math::Position pos = robot->getPosition();
 
+	boost::posix_time::ptime time = boost::posix_time::microsec_clock::local_time();
+	boost::posix_time::time_duration duration(time.time_of_day());
+	//std::cout << duration.total_milliseconds() << std::endl;
+
     stream << "{";
 
-	stream << "\"robot_id\":" << Config::robotId << ",";
+	stream << "\"robot_id\":" << robot->robotId << ",";
+	stream << "\"dateTimeMillis\":" << duration.total_milliseconds() << ",";
 	stream << "\"robot\":{" << robot->getJSON() << "},";
     stream << "\"dt\":" << dt << ",";
     stream << "\"totalTime\":" << totalTime << ",";

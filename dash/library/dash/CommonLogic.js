@@ -2,13 +2,18 @@
  * Created by Tonnius on 29.09.2015.
  */
 Dash.CommonLogic = function() {
-    this.allStates = [[],[]];
+    //this.allStates = [[],[]];
+    this.states = [];
     this.stateSlider = null;
     this.currentStateIndexWrap = null;
     this.currentStateIndex = 0;
     this.stateCountWrap = null;
+    this.showStateActive = false;
+    this.connectedRobots = [];
+    this.connectedUIs = [];
 
-    this.connectedRobots = 0;
+    this.maxNrOfRobots = 2;
+    this.disconnectedRobots = [];
 };
 
 Dash.CommonLogic.prototype = new Dash.Bindable();
@@ -33,8 +38,8 @@ Dash.CommonLogic.prototype.initSlider = function() {
     this.currentStateIndexWrap.bind('change keyup click mousewheel', function(e) {
         var newIndex = parseInt(self.currentStateIndexWrap.val()) - 1;
 
-        if (newIndex > self.allStates.length - 1) {
-            newIndex = self.allStates.length - 1;
+        if (newIndex > self.states.length - 1) {
+            newIndex = self.states.length - 1;
         } else if (newIndex < 0) {
             newIndex = 0;
         }
@@ -53,22 +58,72 @@ Dash.CommonLogic.prototype.initSlider = function() {
 };
 
 Dash.CommonLogic.prototype.showState = function(index) {
-    if (typeof(this.allStates[0][index]) == 'undefined') {
+    if (typeof(this.states[index]) == 'undefined') {
         return;
     }
 
-    var state = this.allStates[0][index];
+    this.showStateActive = true;
+    var oneStateBundle = [];
+    var robotId = this.states[index].robot_id;
+    var state = null;
+    var maxRobots = Math.max(...this.connectedRobots);
+    for (var robotIndex = 0; robotIndex < Math.max(...this.connectedRobots)+1; robotIndex++) {
+        if(robotIndex == robotId /*&& this.connectedRobots.indexOf(robotIndex) > -1*/) {
+            oneStateBundle.push(this.states[index]);
+            state = this.states[index];
+            state.controllerState["decidingState"] = 1;
+        }
+        else {
+            //if (this.connectedRobots.indexOf(robotIndex) > -1) {
+                var timeMillisPrevious;
+                var previousStateIndex = -1;
+                var timeMillis;
+                //var allStatesLength = this.allStates[robotIndex].length - 1;
 
-    // disable slider
-    this.currentStateIndexWrap.val(index + 1);
-    this.stateSlider.slider('val',index + 1);
+                for (var stateIndex = index - 1; stateIndex >= 0; stateIndex--) {
+                    if (this.states[stateIndex].robot_id == robotIndex) {
+                        timeMillisPrevious = this.states[stateIndex].clockMillis;
+                        timeMillis = this.states[index].clockMillis;
+                        if (timeMillisPrevious <= timeMillis) {
+                            previousStateIndex = stateIndex;
+                            break;
+                        }
+                    }
 
-    this.currentStateIndex = index;
+                }
+
+                if (previousStateIndex != -1) {
+                    oneStateBundle.push(this.states[previousStateIndex]);
+                    state = this.states[previousStateIndex];
+                    state.controllerState["decidingState"] = 0;
+                }
+                /*else {
+                 oneStateBundle.push([]);
+                 }*/
+
+            //}
+        }
+    }
+    if(oneStateBundle != null) {
+        //this.connectedUIs[robotIndex].showTasksQueue(state);
+        dash.ui.showStateStats(oneStateBundle); // @TEMP
+    }
+        //this.stateSlider.slider('max', this.allStates[0].length);
+        //this.stateCountWrap.html(this.allStates[0].length);
+        //state = this.states[index];
+
+        // disable slider
+        this.currentStateIndexWrap.val(index + 1);
+        this.stateSlider.slider('val', index + 1);
+
+        this.currentStateIndex = index;
 
     // @TODO show alive wheels..
-
-    dash.renderer.renderState(state);
+    this.showStateActive = false;
+    dash.renderer.renderState(oneStateBundle);
 
     //this.showTasksQueue(state);
     //this.showStateStats(state); // @TEMP
+
+
 };

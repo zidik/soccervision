@@ -309,6 +309,7 @@ public:
 	void handleResetCommand();
 	void handleToggleGoCommand();
 	void handleToggleSideCommand();
+	void updateTargetSide();
 	void handleDriveToCommand(const Command& cmd);
 	void handleTurnByCommand(const Command& cmd);
 	void handleParameterCommand(const Command& cmd);

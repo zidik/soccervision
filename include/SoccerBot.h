@@ -57,12 +57,13 @@ public:
 	void handleScreenshotCommand(Command::Parameters parameters);
 	void handleListScreenshotsCommand(Server::Message* message);
 	void handleCameraTranslatorCommand(Command::Parameters parameters);
+	void handleSetRobotIndexDashCommand(Command::Parameters parameters, Server::Message* message);
 
 	void handleCommunicationMessages();
 	void handleCommunicationMessage(std::string message);
 
 	std::string getStateJSON();
-
+	
 	bool debugVision;
 	bool showGui;
 

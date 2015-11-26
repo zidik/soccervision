@@ -282,6 +282,8 @@ bool TestController::handleCommand(const Command& cmd) {
 		handleToggleGoCommand();
 	} else if (cmd.name == "toggle-side") {
 		handleToggleSideCommand();
+	} else if (cmd.name == "update-side") {
+		updateTargetSide();
 	} else if (cmd.name == "drive-to" && cmd.parameters.size() == 3) {
 		handleDriveToCommand(cmd);
 	} else if (cmd.name == "turn-by" && cmd.parameters.size() == 1) {
@@ -360,17 +362,63 @@ void TestController::handleToggleSideCommand() {
 	if (!toggleSideBtn.toggle() || currentStateName != "manual-control") {
 		return;
 	}
+	if (robot->robotId == "1") {
+		if (targetSide == Side::BLUE) {
+			targetSide = Side::YELLOW;
 
-	if (targetSide == Side::BLUE) {
-		targetSide = Side::YELLOW;
+			robot->setPosition(Config::fieldWidth - Config::robotRadius, Config::robotRadius, Math::PI - Math::PI / 8.0f);
+		}
+		else {
+			targetSide = Side::BLUE;
 
-		robot->setPosition(Config::fieldWidth - Config::robotRadius, Config::robotRadius, Math::PI - Math::PI / 8.0f);
-	} else {
-		targetSide = Side::BLUE;
-
-		robot->setPosition(Config::robotRadius, Config::fieldHeight - Config::robotRadius, -Math::PI / 8.0f);
+			robot->setPosition(Config::robotRadius, Config::fieldHeight - Config::robotRadius, -Math::PI / 8.0f);
+		}
 	}
+	else
+	{
+		if (targetSide == Side::BLUE) {
+			targetSide = Side::YELLOW;
+			robot->setPosition(Config::fieldWidth - Config::robotRadius, Config::fieldHeight - Config::robotRadius, Math::PI + Math::PI / 8.0f);
+			
+		}
+		else {
+			targetSide = Side::BLUE;
 
+			robot->setPosition(Config::robotRadius, Config::robotRadius, Math::PI / 8.0f);
+		}
+	}
+	std::cout << "! Now targeting " << (targetSide == Side::BLUE ? "blue" : "yellow") << " side" << std::endl;
+
+	com->send("target:" + Util::toString(targetSide));
+
+	lastTurnAroundTime = -1.0;
+}
+
+void TestController::updateTargetSide() {
+	/*if (!toggleSideBtn.toggle() || currentStateName != "manual-control") {
+		return;
+	}*/
+	if (robot->robotId == "1") {
+		if (targetSide == Side::YELLOW) {
+			//targetSide = Side::YELLOW;
+			robot->setPosition(Config::fieldWidth - Config::robotRadius, Config::robotRadius, Math::PI - Math::PI / 8.0f);
+		}
+		else {
+			//targetSide = Side::BLUE;
+			robot->setPosition(Config::robotRadius, Config::fieldHeight - Config::robotRadius, -Math::PI / 8.0f);
+		}
+	}
+	else
+	{
+		if (targetSide == Side::YELLOW) {
+			//targetSide = Side::YELLOW;
+			robot->setPosition(Config::fieldWidth - Config::robotRadius, Config::fieldHeight - Config::robotRadius, Math::PI + Math::PI / 8.0f);
+		}
+		else {
+			//targetSide = Side::BLUE;
+			robot->setPosition(Config::robotRadius, Config::robotRadius, Math::PI / 8.0f);
+		}
+	}
 	std::cout << "! Now targeting " << (targetSide == Side::BLUE ? "blue" : "yellow") << " side" << std::endl;
 
 	com->send("target:" + Util::toString(targetSide));

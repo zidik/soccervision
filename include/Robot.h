@@ -78,6 +78,8 @@ public:
 
 	std::string getJSON() { return json; }
 
+	std::string robotId = "0";
+
 	Wheel* wheelFL;
     Wheel* wheelFR;
     Wheel* wheelRL;

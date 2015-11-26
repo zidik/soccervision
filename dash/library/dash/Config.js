@@ -24,19 +24,34 @@ Dash.Config = function() {
 
 
 Dash.Config.prototype.init = function(robotNr) {
-	this.socket = {
-		host: 'localhost',
-		port: 8000,
-		socketId: 'soc' + robotNr,
-		Events: {
-			OPEN: 'open' + robotNr,
-			CLOSE: 'close' + robotNr,
-			MESSAGE_RECEIVED: 'message-received' + robotNr,
-			MESSAGE_SENT: 'message-sent' + robotNr,
-			ERROR: 'error' + robotNr
-		}
-
-	};/*
+	if(robotNr == 0) {
+		this.socket = {
+			host: 'localhost',
+			port: 8000,
+			socketId: 'soc' + robotNr,
+			Events: {
+				OPEN: 'open' + robotNr,
+				CLOSE: 'close' + robotNr,
+				MESSAGE_RECEIVED: 'message-received' + robotNr,
+				MESSAGE_SENT: 'message-sent' + robotNr,
+				ERROR: 'error' + robotNr
+			}
+		};
+	} else {
+		this.socket = {
+			host: 'localhost'+ robotNr,
+			port: 8000,
+			socketId: 'soc' + robotNr,
+			Events: {
+				OPEN: 'open' + robotNr,
+				CLOSE: 'close' + robotNr,
+				MESSAGE_RECEIVED: 'message-received' + robotNr,
+				MESSAGE_SENT: 'message-sent' + robotNr,
+				ERROR: 'error' + robotNr
+			}
+		};
+	}
+	/*
 	socket2: {
 		host: '172.17.35.231',
 		port: 8000,
