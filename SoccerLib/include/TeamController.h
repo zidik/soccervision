@@ -19,15 +19,6 @@ public:
 
 	};
 
-	//This state keeps the robot waiting for a referee command about what situation is next
-	class WaitForRefereeState : public State {
-
-	public:
-		WaitForRefereeState(TeamController* ai) : State(ai) {}
-		void onEnter(Robot* robot, Parameters parameters);
-		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
-	};
-
 	//This state detects if ball has been kicked starting with a stationary robot
 	class WaitForKickState : public State {
 
@@ -222,6 +213,29 @@ public:
 		GetPassState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	};
+
+	class ApproachBallState : public State {
+
+	public:
+		ApproachBallState(TeamController* ai) : State(ai), pid(kP, kI, kD, 0.016f) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	private:
+		std::string lastState;
+		std::string nextState;
+		std::string targetType;
+		std::string kickType;
+		int validCount;
+		bool areaLocked;
+		Part lockedArea;
+
+		float maxSideSpeed;
+
+		PID pid;
+		float kP;
+		float kI;
+		float kD;
 	};
 
 	//For maneuvering to optimal positions for situations, don't know if will have time to implement properly
