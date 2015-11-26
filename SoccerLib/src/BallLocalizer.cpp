@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <vector>
+#include <functional>
 
 BallLocalizer::BallLocalizer() {
 
@@ -15,7 +16,7 @@ BallLocalizer::~BallLocalizer() {
 
 int BallLocalizer::Ball::instances = 0;
 
-BallLocalizer::Ball::Ball(const Math::Vector & location) : location(location), velocity(0.0f, 0.0f) {
+BallLocalizer::Ball::Ball(const Math::Vector & location) : location(location), velocity(0.0f, 0.0f), pastVelocities(15) {
     id = instances++;
     createdTime = Util::millitime();
     updatedTime = createdTime;
@@ -28,19 +29,41 @@ void BallLocalizer::Ball::updateVisible(const Math::Vector & new_location, float
     double currentTime = Util::millitime();
     double timeSinceLastUpdate = currentTime - updatedTime;
 
-    if (timeSinceLastUpdate <= Config::velocityUpdateMaxTime) {
-		Math::Vector newVelocity = (new_location - location) / dt;
-        float alpha=0.6f;
-        Math::Vector smoothedVelocity = newVelocity*alpha + velocity*(1.0f - alpha);
+    applyDrag(dt);
 
-		if (smoothedVelocity.getLength() <= Config::objectMaxVelocity) {
-			velocity = smoothedVelocity;
-		} else {
-			applyDrag(dt);
-		}
-    } else {
-        applyDrag(dt);
-    }
+    if (timeSinceLastUpdate <= Config::velocityUpdateMaxTime) {
+        Math::Vector newVelocity = (new_location - location) / dt;
+        pastVelocities[next_pastVelocity] = newVelocity;
+        next_pastVelocity++;
+        next_pastVelocity %= pastVelocities.size();
+
+        std::vector<float> pastVelocitiesX;
+        std::vector<float> pastVelocitiesY;
+        pastVelocitiesX.resize(pastVelocities.size());
+        pastVelocitiesY.resize(pastVelocities.size());
+        std::transform(pastVelocities.begin(), pastVelocities.end(), pastVelocitiesX.begin(), [](Math::Vector v) { return v.x; });
+        std::transform(pastVelocities.begin(), pastVelocities.end(), pastVelocitiesY.begin(), [](Math::Vector v) { return v.y; });
+        
+        Math::Vector meanPastVelocities;
+        float stdErrX = Math::standardDeviation(pastVelocitiesX, meanPastVelocities.x);
+        float stdErrY = Math::standardDeviation(pastVelocitiesY, meanPastVelocities.y);
+        
+        std::vector<Math::Vector> filteredVelocities;
+        std::copy_if(pastVelocities.begin(), pastVelocities.end(), filteredVelocities.begin(), [&, meanPastVelocities, stdErrX, stdErrY](Math::Vector pastVelocity)
+        {
+            Math::Vector diff = pastVelocity - meanPastVelocities;
+            bool decision =
+                -stdErrX < diff.x && diff.x < stdErrX &&
+                -stdErrY < diff.y && diff.y < stdErrY;
+            return decision;
+        });
+
+        //Mean of filtered velocities
+        if (filteredVelocities.size() > 0) {
+            velocity = std::accumulate(filteredVelocities.begin(), filteredVelocities.end(), Math::Vector()) / filteredVelocities.size();
+        }
+    } 
+   
 
     location = new_location;
     updatedTime = currentTime;

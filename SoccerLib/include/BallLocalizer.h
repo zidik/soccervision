@@ -30,6 +30,8 @@ public:
 
     private:
         static int instances;
+        std::vector<Math::Vector> pastVelocities;
+        int next_pastVelocity = 0;
 
         void applyDrag(float dt);
 
