@@ -298,6 +298,7 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	debugBallList("ballsRaw", stream, visibleBalls);
 	debugBallList("ballsFiltered", stream, ballLocalizer->balls);
 
+    Math::Polygon currentCameraFOV = cameraFOV.getRotated(orientation).getTranslated(location.x,location.y) ;
 	stream << "\"cameraFOV\":" << currentCameraFOV.toJSON() << ",";
 
 	stream << "\"tasks\": [";
@@ -743,12 +744,15 @@ void Robot::debugBallList(std::string name, std::stringstream& stream, BallLocal
             first = false;
         }
 
-		stream << "{";
         Math::Vector ballWorldLocation = ball->location.getRotated(orientation) + location;
+        Math::Vector ballWorldVelocity = ball->velocity.getRotated(orientation);
+
+		stream << "{";
+        
 		stream << "\"x\": " << ballWorldLocation.x << ",";
 		stream << "\"y\": " << ballWorldLocation.y << ",";
-		stream << "\"velocityX\": " << ball->velocity.x << ",";
-		stream << "\"velocityY\": " << ball->velocity.y << ",";
+		stream << "\"velocityX\": " << ballWorldVelocity.x << ",";
+		stream << "\"velocityY\": " << ballWorldVelocity.y << ",";
 		stream << "\"createdTime\": " << ball->createdTime << ",";
 		stream << "\"updatedTime\": " << ball->updatedTime << ",";
 		stream << "\"shouldBeRemoved\": " << (ball->shouldBeRemoved() ? "true" : "false") << ",";

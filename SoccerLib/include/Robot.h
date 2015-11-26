@@ -140,7 +140,6 @@ private:
 	Odometer::Movement movement;
 	ParticleFilterLocalizer::Measurements measurements;
 	BallLocalizer::BallList visibleBalls;
-	Math::Polygon currentCameraFOV;
 
 	PID lookAtPid;
 
