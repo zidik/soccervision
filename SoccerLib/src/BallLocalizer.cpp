@@ -5,7 +5,6 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-
 BallLocalizer::BallLocalizer() {
 
 }
@@ -16,29 +15,26 @@ BallLocalizer::~BallLocalizer() {
 
 int BallLocalizer::Ball::instances = 0;
 
-BallLocalizer::Ball::Ball(float px, float py) : location(px, py) {
+BallLocalizer::Ball::Ball(Math::Vector & location) : location(location), velocity(0.0f, 0.0f) {
     id = instances++;
     createdTime = Util::millitime();
     updatedTime = createdTime;
 	removeTime = -1.0;
-	velocityX = 0.0f;
-	velocityY = 0.0f;
 	visible = true;
 	inFOV = true;
-	resurrectable = true;
 }
 
-void BallLocalizer::Ball::updateVisible(float newX, float newY, float dt) {
+void BallLocalizer::Ball::updateVisible(Math::Vector & new_location, float dt) {
     double currentTime = Util::millitime();
     double timeSinceLastUpdate = currentTime - updatedTime;
 
     if (timeSinceLastUpdate <= Config::velocityUpdateMaxTime) {
-		float newVelocityX = (newX - location.x) / dt;
-		float newVelocityY = (newY - location.y) / dt;
+		Math::Vector newVelocity = (new_location - location) / dt;
+        float alpha=0.6f;
+        Math::Vector smoothedVelocity = newVelocity*alpha + velocity*(1.0f - alpha);
 
-		if (Math::abs(newVelocityX) <= Config::objectMaxVelocity && Math::abs(newVelocityY) <= Config::objectMaxVelocity) {
-			velocityX = newVelocityX;
-			velocityY = newVelocityY;
+		if (smoothedVelocity.getLength() <= Config::objectMaxVelocity) {
+			velocity = smoothedVelocity;
 		} else {
 			applyDrag(dt);
 		}
@@ -46,69 +42,49 @@ void BallLocalizer::Ball::updateVisible(float newX, float newY, float dt) {
         applyDrag(dt);
     }
 
-    location.x = newX;
-    location.y = newY;
+    location = new_location;
     updatedTime = currentTime;
     
     visible = true;
 
-	if (removeTime != -1 && resurrectable) {
-		removeTime = -1;
-	}
+	removeTime = -1;
 }
 
 void BallLocalizer::Ball::updateInvisible(float dt) {
-    location.x += velocityX * dt;
-    location.y += velocityY * dt;
-
+	location += velocity * dt;
     applyDrag(dt);
-
     visible = false;
 }
 
 void BallLocalizer::Ball::markForRemoval(double afterSeconds) {
-    /*if (removeTime == -1) {
-        return;
-    }*/
-
     removeTime = Util::millitime() + afterSeconds;
 }
 
-bool BallLocalizer::Ball::shouldBeRemoved() {
+bool BallLocalizer::Ball::shouldBeRemoved() const {
     return removeTime != -1 && removeTime < Util::millitime();
 }
 
+
 void BallLocalizer::Ball::applyDrag(float dt) {
-    float xSign = velocityX > 0 ? 1.0f : -1.0f;
-    float ySign = velocityY > 0 ? 1.0f : -1.0f;
-    float stepDrag = Config::rollingDrag * dt;
-
-    if (Math::abs(velocityX) > stepDrag) {
-        velocityX -= stepDrag * xSign;
-    } else {
-        velocityX = 0.0f;
-    }
-
-    if (Math::abs(velocityY) > stepDrag) {
-        velocityY -= stepDrag * ySign;
-    } else {
-        velocityY = 0.0f;
-    }
+	Math::Vector drag_acceleration = -velocity.getScaledTo(Config::rollingDrag);
+	if (drag_acceleration > velocity) {
+		velocity = Math::Vector(0, 0);
+	}
+	else{
+		velocity += drag_acceleration;
+	}
 }
 
-BallLocalizer::BallList BallLocalizer::extractBalls(const ObjectList& sourceBalls, float robotX, float robotY, float robotOrientation) {
+BallLocalizer::BallList BallLocalizer::extractBalls(const ObjectList& sourceBalls, float robotX, float robotY, float robotOrientation) const {
 	BallList balls;
-	Object* screenBall;
-	Ball* worldBall;
 
-	for (ObjectListItc it = sourceBalls.begin(); it != sourceBalls.end(); it++) {
-		screenBall = *it;
-
-		float globalAngle = Math::floatModulus(robotOrientation + screenBall->angle, Math::TWO_PI);
-        float ballX = robotX + Math::cos(globalAngle) * screenBall->distance;
-        float ballY = robotY + Math::sin(globalAngle) * screenBall->distance;
-
-		worldBall = new Ball(ballX, ballY);
+	for (Object* ball: sourceBalls){
+		float globalAngle = Math::floatModulus(robotOrientation + ball->angle, Math::TWO_PI);
+        float ballX = robotX + Math::cos(globalAngle) * ball->distance;
+        float ballY = robotY + Math::sin(globalAngle) * ball->distance;
+		
+		Math::Vector location(ballX, ballY);
+		Ball* worldBall = new Ball(location);
 
 		balls.push_back(worldBall);
 	}
@@ -121,20 +97,20 @@ void BallLocalizer::update(const BallList& visibleBalls, const Math::Polygon& ca
     std::vector<int> handledBalls;
     //float globalAngle;
 
-    for (unsigned int i = 0; i < visibleBalls.size(); i++) {
-        /*globalAngle = Math::floatModulus(robotPosition.orientation + visibleBalls[i]->angle, Math::TWO_PI);
+    for (auto visibleBall: visibleBalls) {
+        /*globalAngle = Math::floatModulus(robotPosition.orientation + visibleBall->angle, Math::TWO_PI);
 
-        visibleBalls[i]->x = robotPosition.x + Math::cos(globalAngle) * visibleBalls[i]->distance;
-        visibleBalls[i]->y = robotPosition.y + Math::sin(globalAngle) * visibleBalls[i]->distance;*/
+        visibleBalls[i]->x = robotPosition.x + Math::cos(globalAngle) * visibleBall->distance;
+        visibleBalls[i]->y = robotPosition.y + Math::sin(globalAngle) * visibleBall->distance;*/
 
-        closestBall = getBallAround(visibleBalls[i]->location.x, visibleBalls[i]->location.y);
+        closestBall = getBallAround(visibleBall->location);
 
-        if (closestBall != NULL) {
-            closestBall->updateVisible(visibleBalls[i]->location.x, visibleBalls[i]->location.y, dt);
+        if (closestBall != nullptr) {
+            closestBall->updateVisible(visibleBall->location, dt);
 
             handledBalls.push_back(closestBall->id);
         } else {
-            Ball* newBall = new Ball(visibleBalls[i]->location.x, visibleBalls[i]->location.y);
+            Ball* newBall = new Ball(visibleBall->location);
 
             balls.push_back(newBall);
 
@@ -142,27 +118,23 @@ void BallLocalizer::update(const BallList& visibleBalls, const Math::Polygon& ca
         }
     }
 
-    for (unsigned int i = 0; i < balls.size(); i++) {
-        if (std::find(handledBalls.begin(), handledBalls.end(), balls[i]->id) != handledBalls.end()) {
+    for (auto ball : balls) {
+        if (std::find(handledBalls.begin(), handledBalls.end(), ball->id) != handledBalls.end()) {
             continue;
         }
 
-        balls[i]->updateInvisible(dt);
+        ball->updateInvisible(dt);
     }
 
     purge(visibleBalls, cameraFOV);
 }
 
-BallLocalizer::Ball* BallLocalizer::getBallAround(float x, float y) {
-	Math::Vector target(x, y);
+BallLocalizer::Ball* BallLocalizer::getBallAround(Math::Vector & target) {
     float distance;
     float minDistance = -1;
-    Ball* ball;
-    Ball* closestBall = NULL;
+    Ball* closestBall = nullptr;
 
-    for (unsigned int i = 0; i < balls.size(); i++) {
-        ball = balls[i];
-
+    for (auto ball : balls) {
 		distance = ball->location.distanceTo(target);
 
         if (
@@ -183,11 +155,9 @@ BallLocalizer::Ball* BallLocalizer::getBallAround(float x, float y) {
 void BallLocalizer::purge(const BallList& visibleBalls, const Math::Polygon& cameraFOV) {
 	double currentTime = Util::millitime();
     BallList remainingBalls;
-    Ball* ball;
 	bool keep;
 
-    for (unsigned int i = 0; i < balls.size(); i++) {
-        ball = balls[i];
+    for(auto ball : balls){
 		keep = true;
 
 		if (currentTime - ball->updatedTime > Config::objectPurgeLifetime) {
@@ -196,10 +166,9 @@ void BallLocalizer::purge(const BallList& visibleBalls, const Math::Polygon& cam
 			keep = false;
 		}
 
-		Math::Vector velocity(ball->velocityX, ball->velocityY);
 
-		if (velocity.getLength() > Config::objectMaxVelocity) {
-			//std::cout << "@ VELOCITY" << std::endl;
+		if (ball->velocity.getLength() > Config::objectMaxVelocity) {
+			std::cout << "@ VELOCITY" << std::endl;
 
 			keep = false;
 		}
@@ -209,8 +178,8 @@ void BallLocalizer::purge(const BallList& visibleBalls, const Math::Polygon& cam
 
 			bool ballNear = false;
 
-			for (unsigned int i = 0; i < visibleBalls.size(); i++) {
-				float distance = ball->location.distanceTo(visibleBalls[i]->location);
+            for (Ball* visibleBall : visibleBalls){
+				float distance = ball->location.distanceTo(visibleBall->location);
 
 				if (distance <= Config::objectFovCloseEnough) {
 					ballNear = true;
@@ -232,7 +201,7 @@ void BallLocalizer::purge(const BallList& visibleBalls, const Math::Polygon& cam
 			remainingBalls.push_back(ball);
 		} else {
 			delete ball;
-            ball = NULL;
+            ball = nullptr;
 		}
 
         /*if (!ball->shouldBeRemoved()) {

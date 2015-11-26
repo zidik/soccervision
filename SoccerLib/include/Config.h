@@ -201,7 +201,7 @@ namespace Config {
 	const double minKickInterval = 1.0;
 
 	// maximum time object can be lost and still considered for updating its velocity
-	const double velocityUpdateMaxTime = 0.025;
+	const double velocityUpdateMaxTime = 0.05;
 
 	// drag to apply to a rolling object
 	const float rollingDrag = 0.2f;

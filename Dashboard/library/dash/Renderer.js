@@ -152,6 +152,13 @@ Dash.Renderer.prototype.drawBall = function(ball, color, radius, useEffects) {
 	this.c.closePath();
 	this.c.fill();
 
+	this.c.lineWidth = 2 / this.canvasToWorldRatio;
+	this.c.strokeStyle = '#FFF';
+	this.c.beginPath();
+	this.c.moveTo(0, 0);
+	this.c.lineTo(ball.velocityX, ball.velocityY);
+	this.c.stroke();
+
 	this.c.restore();
 };
 

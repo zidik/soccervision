@@ -295,8 +295,8 @@ public:
 	float dotProduct(const Vector& b) const;
 	float getAngleBetween(const Vector& b) const;
 	Vector getRotated(float angle) const;
-	Vector getNormalized() const;
-	Vector getScaled(float magnitude) const;
+    Vector getScaledTo(float length) const;
+    Vector getNormalized() const { return getScaledTo(1.0f); };
 
 	Vector operator-() const { return Vector(-x, -y); };
 	Vector& operator-=(const Vector& other);
@@ -320,6 +320,18 @@ inline Vector operator*(Vector left, float magnitude) {
 }
 inline Vector operator/(Vector left, float divisor) {
 	return left /= divisor;
+}
+inline bool operator>(const Vector &v1, const Vector &v2){
+	return v1.getLength() > v2.getLength();
+}
+inline bool operator<(const Vector &v1, const Vector &v2) {
+	return v1.getLength() < v2.getLength();
+}
+inline bool operator>=(const Vector &v1, const Vector &v2) {
+	return v1.getLength() >= v2.getLength();
+}
+inline bool operator<=(const Vector &v1, const Vector &v2) {
+	return v1.getLength() <= v2.getLength();
 }
 
 inline std::ostream& operator<<(std::ostream& os, const Vector& vec) {

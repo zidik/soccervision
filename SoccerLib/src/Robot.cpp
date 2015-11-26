@@ -169,7 +169,6 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 
     handleTasks(dt);
     updateWheelSpeeds();
-    updateBallLocalizer(visionResults, dt);
 
     wheelFL->step(dt);
     wheelFR->step(dt);
@@ -342,12 +341,12 @@ void Robot::updateMeasurements() {
 	Object* blueGoal = visionResults->getLargestGoal(Side::BLUE);
 
 	if (yellowGoal != NULL) {
-		ParticleFilterLocalizer::Measurement measurement(LandmarkType::YellowGoalCenter, Pixel(yellowGoal->x, yellowGoal->y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
+		ParticleFilterLocalizer::Measurement measurement(LandmarkType::YellowGoalCenter, Pixel(yellowGoal->goal_x, yellowGoal->goal_y), (yellowGoal->behind ? Dir::REAR : Dir::FRONT));
 		measurements.push_back(measurement);
 	}
 
 	if (blueGoal != NULL) {
-		ParticleFilterLocalizer::Measurement measurement(LandmarkType::BlueGoalCenter, Pixel(blueGoal->x, blueGoal->y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
+		ParticleFilterLocalizer::Measurement measurement(LandmarkType::BlueGoalCenter, Pixel(blueGoal->goal_x, blueGoal->goal_y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
 		measurements.push_back(measurement);
 	}
 
@@ -756,8 +755,8 @@ void Robot::debugBallList(std::string name, std::stringstream& stream, BallLocal
 		stream << "{";
 		stream << "\"x\": " << ball->location.x << ",";
 		stream << "\"y\": " << ball->location.y << ",";
-		stream << "\"velocityX\": " << ball->velocityX << ",";
-		stream << "\"velocityY\": " << ball->velocityY << ",";
+		stream << "\"velocityX\": " << ball->velocity.x << ",";
+		stream << "\"velocityY\": " << ball->velocity.y << ",";
 		stream << "\"createdTime\": " << ball->createdTime << ",";
 		stream << "\"updatedTime\": " << ball->updatedTime << ",";
 		stream << "\"shouldBeRemoved\": " << (ball->shouldBeRemoved() ? "true" : "false") << ",";

@@ -83,10 +83,10 @@ Vision::Result* Vision::process() {
 void Vision::processCorners(std::vector<Pixel>& fieldCorners)
 {
 	try{
-		Pixel cornerPixel = getCornerPixel(Math::PI/4, Math::PI/4*3, 2.f, 20);
+		Pixel cornerPixel = getCornerPixel(-Math::PI*2/5, Math::PI*2/5, 2.f, 20);
 		fieldCorners.push_back(cornerPixel);
 	}
-	catch (const CouldNotFindCorner &e) {}
+	catch (const CouldNotFindCorner &) {}
 }
 
 ObjectList Vision::processGoalsUpdateRobots(Dir dir) {
@@ -826,6 +826,9 @@ bool Vision::isValidGoal(Object* goal, Side side) {
 	int halfHeight = goal->height / 2;
 
 	EdgeDistanceMetric edgeDistanceMetric = getEdgeDistanceMetric(goal->x - halfWidth, goal->y - halfHeight, goal->width, goal->height, color1, color2);
+
+	goal->goal_x = edgeDistanceMetric.centerDistance.screenX;
+	goal->goal_y = edgeDistanceMetric.centerDistance.screenY;
 
 	// also comparing pixel values because distance calculation messes up for very high pixels..
 	// expect both sides to fail as one of them can get incorecctly labelled
@@ -2226,8 +2229,8 @@ Pixel Vision::getCornerPixel(float startAngle, float endAngle, float r, int numb
 
 	for (int i = 0; i < numberOfPoints + 1; i++)
 	{
-		float x = 0.15f + r * Math::sin(startAngle + dAngle * i);
-		float y = r * Math::cos(startAngle + dAngle * i);
+		float x = r * Math::cos(startAngle + dAngle * i) + 0.15f;
+		float y = r * Math::sin(startAngle + dAngle * i);
 		Math::Vector transition = getColorTransitionPoint("white", "black", 0.17f, 0, x, y);
 		if (transition.getLength() != 0)
 		{
@@ -2238,7 +2241,7 @@ Pixel Vision::getCornerPixel(float startAngle, float endAngle, float r, int numb
 	if (transitionVec.size() < 3) throw CouldNotFindCorner();
 
 	int state = 0;
-	for (int i = 0; i < transitionVec.size() - 1; i++)
+	for (int i = 0; i+1 < transitionVec.size(); i++)
 	{
 		int oldState = state;
 		if (transitionVec.at(i).getLength() <= transitionVec.at(i+1).getLength())

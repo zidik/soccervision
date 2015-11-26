@@ -88,6 +88,7 @@ private:
     float turnNoise;
     LandmarkMap landmarks;
     ParticleList particles;
+    bool lost = false;
 };
 
 std::ostream& operator<< (std::ostream & os, ParticleFilterLocalizer::Landmark::Type type);
