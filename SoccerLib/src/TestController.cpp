@@ -284,6 +284,8 @@ bool TestController::handleCommand(const Command& cmd) {
 		handleToggleGoCommand();
 	} else if (cmd.name == "toggle-side") {
 		handleToggleSideCommand();
+	} else if (cmd.name == "update-side") {
+		updateTargetSide();
 	} else if (cmd.name == "set-field-id" && cmd.parameters.size() == 1) {
 		handleSetFieldIDCommand(cmd);
 	} else if (cmd.name == "set-robot-id" && cmd.parameters.size() == 1) {
@@ -374,19 +376,65 @@ void TestController::handleToggleSideCommand() {
 	if (!toggleSideBtn.toggle() || currentStateName != "manual-control") {
 		return;
 	}
+	if (robot->robotId == "1") {
+		if (targetSide == Side::BLUE) {
+			targetSide = Side::YELLOW;
 
-	if (targetSide == Side::BLUE) {
-		targetSide = Side::YELLOW;
+			robot->setPosition(Config::fieldWidth - Config::robotRadius, Config::robotRadius, Math::PI - Math::PI / 8.0f);
+		}
+		else {
+			targetSide = Side::BLUE;
 		defendSide = Side::BLUE;
 
-		robot->setPosition(Config::fieldWidth - Config::robotRadius, Config::robotRadius, Math::PI - Math::PI / 8.0f);
-	} else {
-		targetSide = Side::BLUE;
+			robot->setPosition(Config::robotRadius, Config::fieldHeight - Config::robotRadius, -Math::PI / 8.0f);
+		}
+	}
+	else
+	{
+		if (targetSide == Side::BLUE) {
+			targetSide = Side::YELLOW;
+			robot->setPosition(Config::fieldWidth - Config::robotRadius, Config::fieldHeight - Config::robotRadius, Math::PI + Math::PI / 8.0f);
+			
+		}
+		else {
+			targetSide = Side::BLUE;
 		defendSide = Side::YELLOW;
 
-		robot->setPosition(Config::robotRadius, Config::fieldHeight - Config::robotRadius, -Math::PI / 8.0f);
+			robot->setPosition(Config::robotRadius, Config::robotRadius, Math::PI / 8.0f);
+		}
 	}
+	std::cout << "! Now targeting " << (targetSide == Side::BLUE ? "blue" : "yellow") << " side" << std::endl;
 
+	com->send("target:" + Util::toString(targetSide));
+
+	lastTurnAroundTime = -1.0;
+}
+
+void TestController::updateTargetSide() {
+	/*if (!toggleSideBtn.toggle() || currentStateName != "manual-control") {
+		return;
+	}*/
+	if (robot->robotId == "1") {
+		if (targetSide == Side::YELLOW) {
+			//targetSide = Side::YELLOW;
+			robot->setPosition(Config::fieldWidth - Config::robotRadius, Config::robotRadius, Math::PI - Math::PI / 8.0f);
+		}
+		else {
+			//targetSide = Side::BLUE;
+			robot->setPosition(Config::robotRadius, Config::fieldHeight - Config::robotRadius, -Math::PI / 8.0f);
+		}
+	}
+	else
+	{
+		if (targetSide == Side::YELLOW) {
+			//targetSide = Side::YELLOW;
+			robot->setPosition(Config::fieldWidth - Config::robotRadius, Config::fieldHeight - Config::robotRadius, Math::PI + Math::PI / 8.0f);
+		}
+		else {
+			//targetSide = Side::BLUE;
+			robot->setPosition(Config::robotRadius, Config::robotRadius, Math::PI / 8.0f);
+		}
+	}
 	std::cout << "! Now targeting " << (targetSide == Side::BLUE ? "blue" : "yellow") << " side" << std::endl;
 	std::cout << "! Now defending " << (defendSide == Side::BLUE ? "blue" : "yellow") << " side" << std::endl;
 
@@ -823,7 +871,7 @@ std::string TestController::getJSON() {
 		stream << "\"" << (it->first) << "\": \"" << (it->second) << "\",";
 	}
 
-	Vision::Obstruction goalPathObstruction = getGoalPathObstruction();
+	Vision::Obstruction goalPathObstruction = getGoalPathObstruction(); //commented out for debugging!
 	bool isGoalPathObstructed = goalPathObstruction.left || goalPathObstruction.right;
 
 	//send some debug information to the client

@@ -1,4 +1,4 @@
-Dash.Robot = function(socket) {
+Dash.Robot = function(socket, _robotId) {
 	this.socket = socket;
 	this.controller = null;
 	this.fieldID = null;
@@ -7,6 +7,7 @@ Dash.Robot = function(socket) {
 	this.enemyColor = null;
 	this.robotID = null;
 	this.dribblerActive = false;
+	this.robotId = _robotId;
 };
 
 Dash.Robot.prototype.setController = function(name) {
@@ -151,7 +152,7 @@ Dash.Robot.prototype.setTargetDir = function(x, y, omega) {
 Dash.Robot.prototype.resetPosition = function() {
 	dash.dbg.log('! Resetting position');
 	
-	dash.socket.send('<reset-position>');
+	this.socket.send('<reset-position>');
 };
 
 Dash.Robot.prototype.turnBy = function(angle, speed) {
@@ -159,7 +160,7 @@ Dash.Robot.prototype.turnBy = function(angle, speed) {
 	
 	dash.dbg.log('! Turning by ' + Dash.Util.radToDeg(angle) + '°');
 	
-	dash.socket.send('<test-turn-by:' + angle + ':' + speed + '>');
+	this.socket.send('<test-turn-by:' + angle + ':' + speed + '>');
 };
 
 Dash.Robot.prototype.driveTo = function(x, y, orientation, speed) {
@@ -167,7 +168,7 @@ Dash.Robot.prototype.driveTo = function(x, y, orientation, speed) {
 	
 	dash.dbg.log('! Driving to ' + x + 'x' + y + ' @ ' + Dash.Util.radToDeg(orientation) + '°');
 	
-	dash.socket.send('<test-drive-to:' + x + ':' + y + ':' + orientation + ':' + speed + '>');
+	this.socket.send('<test-drive-to:' + x + ':' + y + ':' + orientation + ':' + speed + '>');
 };
 
 Dash.Robot.prototype.driveFacing = function(targetX, targetY, faceX, faceY, speed) {
@@ -175,18 +176,18 @@ Dash.Robot.prototype.driveFacing = function(targetX, targetY, faceX, faceY, spee
 	
 	dash.dbg.log('! Driving to ' + targetX + 'x' + targetY + ' facing ' + faceX + 'x' + faceY);
 	
-	dash.socket.send('<test-drive-facing:' + targetX + ':' + targetY + ':' + faceX + ':' + faceY + ':' + speed + '>');
+	this.socket.send('<test-drive-facing:' + targetX + ':' + targetY + ':' + faceX + ':' + faceY + ':' + speed + '>');
 };
 
 Dash.Robot.prototype.testRectangle = function() {
 	dash.dbg.log('! Running rectangle test');
 	
-	dash.socket.send('<test-rectangle>');
+	this.socket.send('<test-rectangle>');
 };
 
 // dash.ui.robot.setCameraTranslatorConstants(108.81935671519336, -0.025382067623573618, 0.20689130201672276, -2.829515376853199426e-01, 7.099480368253494045e-02, -7.076742557435421188e-03, 163.41286, 6.904681785333543758e+02);
 Dash.Robot.prototype.setCameraTranslatorConstants = function(A, B, C, k1, k2, k3, horizon, distortionFocus) {
 	dash.dbg.log('! Sending camera translator constants', A, B, C, k1, k2, k3, horizon, distortionFocus);
 
-	dash.socket.send('<camera-translator:' + A + ':' + B + ':' + C + ':' + k1 + ':' + k2 + ':' + k3 + ':' + horizon + ':' + distortionFocus + '>');
+	this.socket.send('<camera-translator:' + A + ':' + B + ':' + C + ':' + k1 + ':' + k2 + ':' + k3 + ':' + horizon + ':' + distortionFocus + '>');
 };

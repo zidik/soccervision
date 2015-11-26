@@ -22,6 +22,7 @@
 		<script src="library/dash/FrameCanvas.js"></script>
 		<script src="library/dash/Renderer.js"></script>
 		<script src="library/dash/UI.js"></script>
+		<script src="library/dash/CommonLogic.js"></script>
 		<script src="library/dash/FpsCounter.js"></script>
 		<script src="library/dash/Robot.js"></script>
 		<script src="library/dash/KeyboardController.js"></script>
@@ -30,6 +31,7 @@
 		<link rel="stylesheet" href="style/screen.css" type="text/css"/>
 	</head>
 	<body>
+        <div style="display: flex">
 		<div id="contents">
 			<canvas id="canvas" width="800" height="537"></canvas>
 			<div id="status" class="ctrl offensive-ai-ctrl test-ctrl teamplay-ctrl"></div>
@@ -40,7 +42,7 @@
 			<div id="controls">
 				<input type="text" id="state-slider" name="state-slider" value="1" data-min="1" data-max="1" data-step="1" />
 				<div id="range-indicator"><input type="number" name="current-state-index" id="current-state-index" value="1"/> / <span id="state-count">1</span></div>
-				<a href="#" id="state-info-btn">View state info</a>
+				<!--<a href="#" id="state-info-btn">View state info</a>-->
 			</div>
 			<div id="connecting">Trying to connect..</div>
 			<div class="modal" id="state-info"></div>
@@ -127,117 +129,10 @@
 				<canvas id="wheel-graph-rr" class="wheel-graph"></canvas>
 				<canvas id="voltage-graph" class="wheel-graph"></canvas>
 			</div>
+			<!--
 			<a href="#" id="graphs-toggle-btn">Show Large</a>
-			<div id="buttons">
-				<button id="host-btn">Host</button>
-				<button id="fetch-frame-btn" class="live-only">Show Video</button>
-				<button id="toggle-camera-translator-btn" class="live-only">Calibrate lens</button>
+			-->
 
-				<select name="controller-choice" id="controller-choice" class="live-only seperated" disabled="disabled">
-					<option value="">-- Select Controller --</option>
-					<!--option value="manual">Manual Controller</option-->
-					<option value="test">Test Controller</option>
-					<option value="offensive-ai">Offensive AI</option>
-					<option value="teamplay">Team Controller</option>
-				</select>	
-				
-				<select name="field-id-choice" id="field-id-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
-					<option value="">-- Select field ID --</option>
-					<option value="A">Field A</option>
-					<option value="B">Field B</option>
-				</select>
-				
-				<select name="team-id-choice" id="team-id-choice" class="live-only ctrl teamplay-ctrl" disabled="disabled">
-					<option value="">-- Select team ID --</option>
-					<option value="A">Team A</option>
-					<option value="B">Team B</option>
-				</select>
-				
-				<select name="team-color-choice" id="team-color-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
-					<option value="">-- Select team color --</option>
-					<option value="4">Team is YellowHigh</option>
-					<option value="5">Team is BlueHigh</option>
-				</select>
-				
-				<select name="enemy-color-choice" id="enemy-color-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
-					<option value="">-- Select enemy color --</option>
-					<option value="4">Enemy is YellowHigh</option>
-					<option value="5">Enemy is BlueHigh</option>
-				</select>
-				
-				<select name="robot-id-choice" id="robot-id-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
-					<option value="">-- Select robot ID --</option>
-					<option value="A">Robot A</option>
-					<option value="B">Robot B</option>
-					<option value="C">Robot C</option>
-					<option value="D">Robot D</option>
-				</select>
-				
-				<!-- manual controller -->
-				<button id="reset-position-btn" class="live-only ctrl manual-ctrl" disabled="disabled">Reset position</button>
-				<button id="toggle-dribbler-btn" class="live-only ctrl manual-ctrl" disabled="disabled">Toggle Dribbler</button>
-				<button id="kick-btn" class="live-only ctrl manual-ctrl" disabled="disabled">Kick</button>
-				
-				<!-- test controller -->
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-manual-control" disabled="disabled">Manual Control</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-watch-ball" disabled="disabled">Watch Ball</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-watch-goal" disabled="disabled">Watch Goal</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-watch-goal-behind" disabled="disabled">Watch Goal Behind</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-spin-around-dribbler" disabled="disabled">Spin around dribbler</button>
-				<!--button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-fetch-ball-infront" disabled="disabled">Fetch ball in-front</button-->
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-find-ball" disabled="disabled">Find ball</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-fetch-ball-front" disabled="disabled">Fetch ball front</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-fetch-ball-direct" disabled="disabled">Fetch ball direct</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-fetch-ball-behind" disabled="disabled">Fetch ball behind</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-fetch-ball-near" disabled="disabled">Fetch ball near</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-drive-circle" disabled="disabled">Drive Circle</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-accelerate" disabled="disabled">Approach accelerated</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-escape-corner" disabled="disabled">Escape corner</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-drive-home" disabled="disabled">Drive home</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-return-field" disabled="disabled">Return field</button>
-				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="reset-position" disabled="disabled">Reset position</button>
-				<button id="drive-to-btn" class="live-only ctrl test-ctrl" disabled="disabled">Drive to</button>
-				<button id="turn-by-btn" class="live-only ctrl test-ctrl" disabled="disabled">Turn by</button>
-				
-
-				<!--button id="test-turn-btn" class="live-only ctrl test-ctrl" disabled="disabled">Turn 90°</button>
-				<button id="test-drive-to-btn" class="live-only ctrl test-ctrl" disabled="disabled">Call Home</button>
-				<button id="test-drive-back-btn" class="live-only ctrl test-ctrl" disabled="disabled">Drive Forth-Back</button>
-				<button id="test-rectangle-btn" class="live-only ctrl test-ctrl" disabled="disabled">Drive Rectangle</button>
-				<button id="test-drive-facing-btn" class="live-only ctrl test-ctrl" disabled="disabled">Drive Facing Goal</button>
-
-				<button id="test-chase-ball-btn" class="live-only ctrl test-ctrl" disabled="disabled">Chase Ball</button>
-				<button id="test-find-goal-btn" class="live-only ctrl test-ctrl" disabled="disabled">Find Goal</button-->
-				
-				<!-- offensive-ai controller -->
-				<button id="ai-toggle-go-btn" class="live-only ctrl offensive-ai-ctrl" disabled="disabled">Start</button>
-				<button id="ai-toggle-side-btn" class="live-only ctrl offensive-ai-ctrl" disabled="disabled">Toggle side</button>
-				
-				<!-- team controller -->
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-manual-control" disabled="disabled">Manual Control</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-kickoff" disabled="disabled">Take Kickoff</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-freekick-direct" disabled="disabled">Take direct free kick</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-freekick-indirect" disabled="disabled">Take indirect free kick</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-goalkick" disabled="disabled">Take goal kick</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-throw-in" disabled="disabled">Take throw-in</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-cornerkick" disabled="disabled">Take corner kick</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-penalty" disabled="disabled">Take penalty</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-wait-for-kick" disabled="disabled">Wait for Kick</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-find-ball" disabled="disabled">Find ball</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-fetch-ball-front" disabled="disabled">Fetch ball front</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-fetch-ball-rear" disabled="disabled">Fetch ball rear</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-approach-ball" disabled="disabled">Approach ball</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-aim-kick" disabled="disabled">Aim kick</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-drive-to-own-goal" disabled="disabled">Drive to own goal</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-defend-goal" disabled="disabled">Defend Goal</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-intercept-ball" disabled="disabled">Intercept Ball</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-find-ball-goalkeeper" disabled="disabled">Find ball as goalkeeper</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-pass-ball" disabled="disabled">Pass ball</button>
-				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-get-pass" disabled="disabled">Get pass</button>
-				<button id="drive-to-btn" class="live-only ctrl teamplay-ctrl" disabled="disabled">Drive to</button>
-				<button id="turn-by-btn" class="live-only ctrl teamplay-ctrl" disabled="disabled">Turn by</button>
-				
-			</div>
 			<div id="parameters">
 				<input type="text" class="send-parameter-field" data-index="0" value="" placeholder="Parameter 1"/>
 				<input type="text" class="send-parameter-field" data-index="1" value="" placeholder="Parameter 2"/>
@@ -268,9 +163,139 @@
 				<div id="wheelRL" class="wheel"></div>
 				<div id="wheelRR" class="wheel"></div>
 			</div-->
+
+		</div>
+		<div id="robotControls" style="display: flex;">
+			<!--<div id="buttons">
+				<button id="stop-btn" class="live-only" disabled="disabled">STOP</button>
+				<button id="host-btn">Host</button>
+				<button id="host-btn2">Host2</button>
+				<button id="fetch-frame-btn" class="live-only">Show Video</button>
+				<button id="toggle-camera-translator-btn" class="live-only">Calibrate lens</button>
+
+				<table class="ctrl manual-ctrl test-ctrl" style="width: 100%;">
+					<tr>
+						<th style="width: 50%;">Keyboard</th>
+						<td style="width: 50%;"><input type="checkbox" name="keyboard-controller-enabled" value="1"/></td>
+					</tr>
+					<tr>
+						<th>Joystick</th>
+						<td><input type="checkbox" name="joystick-controller-enabled" value="1"/></td>
+					</tr>
+				</table>
+
+				<select name="controller-choice" id="controller-choice" class="live-only seperated" disabled="disabled">
+					<option value="">-- Select Controller --</option>
+					option value="manual">Manual Controller</option
+					<option value="test">Test Controller</option>
+					<option value="offensive-ai">Offensive AI</option>
+					<option value="teamplay">Team Controller</option>
+				</select>	
+				
+				<select name="field-id-choice" id="field-id-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
+					<option value="">-- Select field ID --</option>
+					<option value="A">Field A</option>
+					<option value="B">Field B</option>
+				</select>
+				-->
+
+				<select name="team-id-choice" id="team-id-choice" class="live-only ctrl teamplay-ctrl" disabled="disabled">
+					<option value="">-- Select team ID --</option>
+					<option value="A">Team A</option>
+					<option value="B">Team B</option>
+				</select>
+				
+				<select name="team-color-choice" id="team-color-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
+					<option value="">-- Select team color --</option>
+					<option value="4">Team is YellowHigh</option>
+					<option value="5">Team is BlueHigh</option>
+				</select>
+				
+				<select name="enemy-color-choice" id="enemy-color-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
+					<option value="">-- Select enemy color --</option>
+					<option value="4">Enemy is YellowHigh</option>
+					<option value="5">Enemy is BlueHigh</option>
+				</select>
+				
+				<select name="robot-id-choice" id="robot-id-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
+					<option value="">-- Select robot ID --</option>
+					<option value="A">Robot A</option>
+					<option value="B">Robot B</option>
+					<option value="C">Robot C</option>
+					<option value="D">Robot D</option>
+				</select>
+				
+				<!-- manual controller -->
+				<!--<button id="reset-position-btn" class="live-only ctrl manual-ctrl" disabled="disabled">Reset position</button>
+				<button id="toggle-dribbler-btn" class="live-only ctrl manual-ctrl" disabled="disabled">Toggle Dribbler</button>
+				<button id="kick-btn" class="live-only ctrl manual-ctrl" disabled="disabled">Kick</button>
+				-->
+				<!-- test controller -->
+				<!--<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-manual-control" disabled="disabled">Manual Control</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-watch-ball" disabled="disabled">Watch Ball</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-watch-goal" disabled="disabled">Watch Goal</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-watch-goal-behind" disabled="disabled">Watch Goal Behind</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-spin-around-dribbler" disabled="disabled">Spin around dribbler</button>
+				button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-fetch-ball-infront" disabled="disabled">Fetch ball in-front</button-->
+				<!--<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-find-ball" disabled="disabled">Find ball</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-fetch-ball-front" disabled="disabled">Fetch ball front</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-fetch-ball-direct" disabled="disabled">Fetch ball direct</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-fetch-ball-behind" disabled="disabled">Fetch ball behind</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-fetch-ball-near" disabled="disabled">Fetch ball near</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-drive-circle" disabled="disabled">Drive Circle</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-accelerate" disabled="disabled">Approach accelerated</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-escape-corner" disabled="disabled">Escape corner</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-drive-home" disabled="disabled">Drive home</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-return-field" disabled="disabled">Return field</button>
+				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="reset-position" disabled="disabled">Reset position</button>
+				<button id="drive-to-btn" class="live-only ctrl test-ctrl" disabled="disabled">Drive to</button>
+				<button id="turn-by-btn" class="live-only ctrl test-ctrl" disabled="disabled">Turn by</button>-->
+				
+
+				<!--button id="test-turn-btn" class="live-only ctrl test-ctrl" disabled="disabled">Turn 90°</button>
+				<button id="test-drive-to-btn" class="live-only ctrl test-ctrl" disabled="disabled">Call Home</button>
+				<button id="test-drive-back-btn" class="live-only ctrl test-ctrl" disabled="disabled">Drive Forth-Back</button>
+				<button id="test-rectangle-btn" class="live-only ctrl test-ctrl" disabled="disabled">Drive Rectangle</button>
+				<button id="test-drive-facing-btn" class="live-only ctrl test-ctrl" disabled="disabled">Drive Facing Goal</button>
+
+				<button id="test-chase-ball-btn" class="live-only ctrl test-ctrl" disabled="disabled">Chase Ball</button>
+				<button id="test-find-goal-btn" class="live-only ctrl test-ctrl" disabled="disabled">Find Goal</button-->
+
+				<!-- offensive-ai controller -->
+				<!--<button id="ai-toggle-go-btn" class="live-only ctrl offensive-ai-ctrl" disabled="disabled">Start</button>
+				<button id="ai-toggle-side-btn" class="live-only ctrl offensive-ai-ctrl" disabled="disabled">Toggle side</button>
+				
+				<!-- team controller -->
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-manual-control" disabled="disabled">Manual Control</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-kickoff" disabled="disabled">Take Kickoff</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-freekick-direct" disabled="disabled">Take direct free kick</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-freekick-indirect" disabled="disabled">Take indirect free kick</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-goalkick" disabled="disabled">Take goal kick</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-throw-in" disabled="disabled">Take throw-in</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-cornerkick" disabled="disabled">Take corner kick</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-penalty" disabled="disabled">Take penalty</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-wait-for-kick" disabled="disabled">Wait for Kick</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-find-ball" disabled="disabled">Find ball</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-fetch-ball-front" disabled="disabled">Fetch ball front</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-fetch-ball-rear" disabled="disabled">Fetch ball rear</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-approach-ball" disabled="disabled">Approach ball</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-aim-kick" disabled="disabled">Aim kick</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-drive-to-own-goal" disabled="disabled">Drive to own goal</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-defend-goal" disabled="disabled">Defend Goal</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-intercept-ball" disabled="disabled">Intercept Ball</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-find-ball-goalkeeper" disabled="disabled">Find ball as goalkeeper</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-pass-ball" disabled="disabled">Pass ball</button>
+				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-get-pass" disabled="disabled">Get pass</button>
+				<button id="drive-to-btn" class="live-only ctrl teamplay-ctrl" disabled="disabled">Drive to</button>
+				<button id="turn-by-btn" class="live-only ctrl teamplay-ctrl" disabled="disabled">Turn by</button>
+				
+			</div>
+			<div>
+				<ul id="controller-state"></ul>
+			</div>-->
 		</div>
 		<ul id="tasks"></ul>
-		<ul id="controller-state"></ul>
+        </div>
 		<!--div id="log"></div-->
 	</body>
 </html>

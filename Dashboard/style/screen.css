@@ -12,19 +12,28 @@ A {
 A:hover {
 	text-decoration: underline;
 }
+
 #contents {
-    position: absolute;
+
     width: 800px;
     height: 537px;
-    left: 50%;
+	margin-top: 2em;
+	/*float: left;
+
+	position: absolute;
+	left: 50%;
     top: 50%;
     margin-left: -410px;
     margin-top: -310px;
+    */
 	border: 10px solid rgba(128, 0, 0, 0.5);
 	border-radius: 10px;
     overflow: visible;
 }
 #contents.no-error {
+	/* position: absolute; */
+
+	/* margin-left: 0%; */
 	border: 10px solid rgba(50, 100, 200, 0.5);
 }
 #canvas {
@@ -36,9 +45,9 @@ A:hover {
 	position: absolute;
 	width: 60px;
 	height: 30px;
-	left: 50%;
-	top: 10px;
-	margin: 0 0 0 -32px;
+	left: 23.5em;
+	top: 3em;
+	/* margin: 0 0 0 -32px; */
 	background-color: #CCC;
 	border: 4px solid #AAA;
 	/*border-radius: 3px;*/
@@ -47,9 +56,9 @@ A:hover {
 	position: absolute;
 	width: 60px;
 	height: 30px;
-	left: 50%;
-	bottom: 16px;
-	margin: 0 0 0 -32px;
+	left: 24em;
+	top: 34em;
+	/* margin: 0 0 0 -32px; */
 	background-color: #CCC;
 	border-left: 1px solid #090;
 	border-top: 1px solid #090;
@@ -93,15 +102,17 @@ A:hover {
 	border-color: #900;
 }
 #controls {
-	position: absolute;
-	left: 0;
-	top: 555px;
+	/* position: absolute; */
+	margin-top: 1em;
+	/* left: 0; */
+	/* top: 555px; */
 	width: 800px;
 	height: 30px;
 }
 #range-indicator {
-	position: absolute;
+	/* position: absolute; */
 	top: 24px;
+	margin-left: 75%;
 	right: 0;
 	color: #FFF;
 	font-size: 24px;
@@ -111,8 +122,8 @@ A:hover {
 }
 #state-info-btn {
 	position: absolute;
-	left: 0;
-	top: 20px;
+	left: 1em;
+	top: 47em;
 	color: #FFF;
 	font-size: 13px;
 }
@@ -266,7 +277,7 @@ A:hover {
 	z-index: 2;
 }
 #gamepad {
-	position: absolute;
+	/* position: absolute; */
 	left: 0;
 	bottom: -120px;
 	width: 800px;
@@ -277,8 +288,8 @@ A:hover {
 }
 #time {
 	position: absolute;
-	left: 12px;
-	top: 6px;
+	left: 1em;
+	top: 3em;
 	color: #FFF;
 }
 #load {
@@ -303,8 +314,8 @@ A:hover {
 	position: absolute;
 	width: 32px;
 	height: 32px;
-	left: 10px;
-	bottom: 10px;
+	left: 1em;
+	top: 34em;
 	background: url(../images/got-ball-icon.png) no-repeat left top;
 	opacity: 0.25;
 }
@@ -324,8 +335,8 @@ A:hover {
 	position: absolute;
 	width: 32px;
 	height: 32px;
-	left: 52px;
-	bottom: 10px;
+	left: 3em;
+	top: 34em;
 	background: url(../images/dribbler-positions.png) no-repeat 0px 0px;
 }
 #dribbler-indicator.dribbler-raised {
@@ -363,8 +374,8 @@ A:hover {
 /* Tasks */
 #tasks {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 0.5em;
+    left: 61em;
     margin: 0;
     padding: 4px;
     max-height: 90%;
@@ -404,18 +415,18 @@ A:hover {
 }
 
 /* Controller states */
-#controller-state {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    margin: 0;
+.controller-state {
+    /* position: absolute; */
+    /* top: 20px; */
+    /* left: 20px; */
+    margin-top: 3em;
     padding: 4px;
     list-style: none;
     background-color: rgba(0, 0, 0, 0.25);
     border-radius: 5px;
     overflow: hidden;
 }
-#controller-state > LI {
+.controller-state > LI {
 	position: relative;
     width: 240px;
     padding: 5px 10px;
@@ -423,7 +434,7 @@ A:hover {
     background-color: rgba(0, 0, 0, 0.5);
     color: #FFF;
 }
-#controller-state > LI > UL {
+.controller-state > LI > UL {
 	margin: 0 0 0 10px;
 	padding: 0;
 	list-style: none;
@@ -433,11 +444,17 @@ A:hover {
 #options,
 #buttons,
 #parameters {
+
+	/* top: -10px; */
+
+	/*
 	position: absolute;
-	top: -10px;
-	/*background-color: rgba(0, 0, 0, 0.5);
-	border-radius: 3px;*/
-	color: #FFF;
+	background-color: rgba(0, 0, 0, 0.5);
+	border-radius: 3px;
+	*/
+	
+
+	/* color: #FFF; */
 }
 #options {
 	width: 210px;
@@ -457,25 +474,28 @@ A:hover {
 	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
 	text-shadow: 1px 1px 2px #333;
 }
-#buttons {
+.buttons {
+	margin-top: 3em;
+	margin-left: 1em;
 	width: 160px;
-	right: -180px;
+	/* right: -180px; */
 }
-#buttons BUTTON,
-#buttons SELECT {
+.buttons BUTTON,
+.buttons SELECT {
 	width: 100%;
 	line-height: 25px;
 }
-#buttons SELECT {
+.buttons SELECT {
 	padding: 5px 0;
 }
-#buttons .seperated {
+.buttons .seperated {
 	margin-top: 20px;
 }
 #parameters {
-	width: 160px;
-	left: 0px;
-	top: -40px;
+	position: absolute;
+	/* width: 160px; */
+	left: 27em;
+	top: 1em;
 	width: 600px;
 }
 #parameters INPUT {
@@ -552,8 +572,8 @@ A:hover {
 /* RX / TX */
 #rx-tx {
 	position: absolute;
-	right: 4px;
-	top: 4px;
+	left: 49em;
+	top: 3em;
 	width: 16px;
 	height: 15px;
 	z-index: 11;
@@ -584,8 +604,8 @@ A:hover {
 /* Connection */
 #connection {
 	position: absolute;
-	right: 24px;
-	top: 4px;
+	left: 48em;
+	top: 3em;
 	list-style: none;
 	margin: 0;
 	padding: 0;
@@ -675,8 +695,8 @@ A:hover {
 /* Wheel graphs */
 #wheel-graphs {
 	position: absolute;
-	top: -10px;
-	left: -230px;
+	top: 41em;
+	left: 1em;
 	width: 210px;
 	height: 200px;
 }
@@ -742,7 +762,7 @@ A:hover {
 
 #voltage-graph {
 	left: 0;
-	top: 420px;
+	top: 220px;
 	width: 210px;
 }
 

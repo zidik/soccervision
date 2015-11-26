@@ -14,6 +14,8 @@ Dash.Renderer = function(id) {
 		RR: null
 	};
 	this.voltageGraph = null;
+
+	this.driveToActiveIndex = 0;
 };
 
 Dash.Renderer.prototype.init = function() {
@@ -63,8 +65,8 @@ Dash.Renderer.prototype.init = function() {
 			var mouseX = e.offsetX,
 				mouseY = e.offsetY,
 				pos = this.mouseToWorldCoords(mouseX, mouseY);
-
-			dash.ui.driveTo(pos.x, pos.y, this.driveToOrientation);
+			dash.commonLogic.connectedUIs[this.driveToActiveIndex].driveTo(pos.x, pos.y, this.driveToOrientation);
+			//dash.ui.driveTo(pos.x, pos.y, this.driveToOrientation);
 
 			this.renderDriveTo = false;
 		}
@@ -86,9 +88,10 @@ Dash.Renderer.prototype.mouseToWorldCoords = function(mouseX, mouseY) {
 	}
 };
 
-Dash.Renderer.prototype.showDriveTo = function() {
+Dash.Renderer.prototype.showDriveTo = function(robotIndex) {
 	this.renderDriveTo = true;
 	this.driveToOrientation = 0.0;
+	this.driveToActiveIndex = robotIndex;
 };
 
 Dash.Renderer.prototype.drawRobot = function(radius, color, x, y, orientation, gotBall) {
@@ -344,102 +347,168 @@ Dash.Renderer.prototype.renderState = function(state) {
 	this.c.clearRect(-1, -1, this.width + 1, this.height + 1);
 	
 	//this.drawRuler();
-	
-	this.drawRobot(
-		dash.config.robot.radius,
-		state.targetSide == 1 ? '#00F' : state.targetSide == 0 ? '#DD0' : '#CCC',
-		state.robot.localizerX,
-		state.robot.localizerY,
-		state.robot.localizerOrientation,
-		state.robot.gotBall
-	);
 
-	this.drawRobot(
-		dash.config.robot.radius / 2,
-		'#900',
-		state.robot.odometerX,
-		state.robot.odometerY,
-		state.robot.odometerOrientation
-	);
+	for (var i = 0; i < state.length; ++i) {
+		if(state[i] != []) {
 
-	this.drawPath(state, '#060');
-
-	this.drawPolygon(state.robot.cameraFOV, 'rgba(255, 255, 255, 0.25)');
-
-	this.drawBalls(
-		state.robot.ballsRaw,
-		'#006',
-		dash.config.ball.radius * 2,
-		false
-	);
-
-	this.drawBalls(
-		state.robot.ballsFiltered,
-		'#FFA500',
-		dash.config.ball.radius,
-		true
-	);
-
-	/*this.drawRobot(
-		dash.config.robot.radius,
-		'#CCC',
-		-0.4,
-		0.4,
-		state.gyroOrientation
-	);*/
-
-	if (state.controllerState !== null) {
-		if (state.controllerState.particleLocalizer !== null && typeof(state.controllerState.particleLocalizer) === 'object') {
-			this.drawRobot(
-				dash.config.robot.radius,
-				'#060',
-				state.controllerState.particleLocalizer.x,
-				state.controllerState.particleLocalizer.y,
-				state.controllerState.particleLocalizer.orientation
-			);
-
-			for (var i = 0; i < state.controllerState.particleLocalizer.particles.length; i++) {
-				this.drawParticle(
-					state.controllerState.particleLocalizer.particles[i][0],
-					state.controllerState.particleLocalizer.particles[i][1]
+			if(i == 0) {
+				this.drawRobot(
+					dash.config.robot.radius,
+					state[i].targetSide == 1 ? '#00F' : state[i].targetSide == 0 ? '#DD0' : '#CCC',
+					state[i].robot.localizerX,
+					state[i].robot.localizerY,
+					state[i].robot.localizerOrientation,
+					state[i].robot.gotBall
+				);
+			}
+			else {
+				this.drawRobot(
+					dash.config.robot.radius,
+					state[i].targetSide == 1 ? '#00F' : state[i].targetSide == 0 ? '#DDD' : '#CCC',
+					state[i].robot.localizerX,
+					state[i].robot.localizerY,
+					state[i].robot.localizerOrientation,
+					state[i].robot.gotBall
 				);
 			}
 
-			//this.drawPath(state, 'particleLocalizer', '#060');
-		}
-
-		this.drawMeasurements(state.controllerState.measurementsPositions);
-
-		if (state.controllerState.blueGoalDistance || state.controllerState.yellowGoalDistance) {
-			this.drawIntersections(
-				state.controllerState.yellowGoalDistance,
-				state.controllerState.blueGoalDistance
+			this.drawRobot(
+				dash.config.robot.radius / 2,
+				'#900',
+				state[i].robot.odometerX,
+				state[i].robot.odometerY,
+				state[i].robot.odometerOrientation
 			);
+
+			this.drawPath(state[i], '#060');
+
+			this.drawPolygon(state[i].robot.cameraFOV, 'rgba(255, 255, 255, 0.25)');
+
+			this.drawBalls(
+				state[i].robot.ballsRaw,
+				'#006',
+				dash.config.ball.radius * 2,
+				false
+			);
+
+			this.drawBalls(
+				state[i].robot.ballsFiltered,
+				'#FFA500',
+				dash.config.ball.radius,
+				true
+			);
+
+			/*this.drawRobot(
+			 dash.config.robot.radius,
+			 '#CCC',
+			 -0.4,
+			 0.4,
+			 state[i].gyroOrientation
+			 );*/
+
+			if (state[i].controllerState !== null) {
+				/*if (state[i].controllerstate[i].odometerLocalizer !== null && typeof(state[i].controllerState.odometerLocalizer) === 'object') {
+				 this.drawRobot(
+				 dash.config.robot.radius / 2,
+				 '#600',
+				 state[i].controllerState.odometerLocalizer.x,
+				 state[i].controllerState.odometerLocalizer.y,
+				 state[i].controllerState.odometerLocalizer.orientation
+				 );
+
+				 this.drawPath(state[i], 'odometerLocalizer', '#600');
+				 }*/
+
+				/*if (state.controllerState.intersectionLocalizer !== null && typeof(state.controllerState.intersectionLocalizer) === 'object') {
+				 this.drawIntersections(
+				 state.controllerState.intersectionLocalizer.yellowDistance,
+				 state.controllerState.intersectionLocalizer.blueDistance
+				 );
+
+				 this.drawRobot(
+				 dash.config.robot.radius / 2,
+				 '#660',
+				 state.controllerState.intersectionLocalizer.x,
+				 state.controllerState.intersectionLocalizer.y,
+				 state.controllerState.intersectionLocalizer.orientation
+				 );
+
+				 this.drawPath(state, 'intersectionLocalizer', '#660');
+				 }*/
+
+				/*if (state.controllerState.kalmanLocalizer !== null && typeof(state.controllerState.kalmanLocalizer) === 'object') {
+				 this.drawRobot(
+				 dash.config.robot.radius,
+				 '#006',
+				 parseFloat(state.controllerState.kalmanLocalizer.x),
+				 parseFloat(state.controllerState.kalmanLocalizer.y),
+				 parseFloat(state.controllerState.kalmanLocalizer.orientation)
+				 );
+
+				 this.drawPath(state, 'kalmanLocalizer', '#006');
+				 }*/
+
+				if (state[i].controllerState.particleLocalizer !== null && typeof(state[i].controllerState.particleLocalizer) === 'object') {
+					this.drawRobot(
+						dash.config.robot.radius,
+						'#060',
+						state[i].controllerState.particleLocalizer.x,
+						state[i].controllerState.particleLocalizer.y,
+						state[i].controllerState.particleLocalizer.orientation
+					);
+
+					for (var i = 0; i < state[i].controllerState.particleLocalizer.particles.length; i++) {
+						this.drawParticle(
+							state[i].controllerState.particleLocalizer.particles[i][0],
+							state[i].controllerState.particleLocalizer.particles[i][1]
+						);
+					}
+
+					//this.drawPath(state[i], 'particleLocalizer', '#060');
+				}
+
+				if (state[i].controllerState.blueGoalDistance || state[i].controllerState.yellowGoalDistance) {
+					this.drawIntersections(
+						state[i].controllerState.yellowGoalDistance,
+						state[i].controllerState.blueGoalDistance
+					);
+				}
+
+
+				//this.drawMarkers();
+
+				this.drawMeasurements(state[i].controllerState.measurementsPositions);
+
+				if (state[i].controllerState.blueGoalDistance || state[i].controllerState.yellowGoalDistance) {
+					this.drawIntersections(
+						state[i].controllerState.yellowGoalDistance,
+						state[i].controllerState.blueGoalDistance
+						);
+					}
+
+			}
+			if (this.renderDriveTo) {
+				this.drawDriveTo();
+			}
+
+			this.wheelGraphs.FL.render.apply(this.wheelGraphs.FL, [state[i], 'wheelFL']);
+			this.wheelGraphs.FR.render.apply(this.wheelGraphs.FR, [state[i], 'wheelFR']);
+			this.wheelGraphs.RL.render.apply(this.wheelGraphs.RL, [state[i], 'wheelRL']);
+			this.wheelGraphs.RR.render.apply(this.wheelGraphs.RR, [state[i], 'wheelRR']);
+
+			var graphVoltage = -(state[i].robot.coilgun.voltage - 200);
+
+			// fake the voltage reading to be a wheel..
+			state[i].robot.coilGraph = {
+				stalled: state[i].robot.coilgun.isLowVoltage,
+				targetOmega: graphVoltage,
+				filteredTargetOmega: graphVoltage,
+				realOmega: graphVoltage,
+				ref: 0.0025,
+				drawLines: false
+			};
+
+			this.voltageGraph.render.apply(this.voltageGraph, [state[i], 'coilGraph']);
 		}
 	}
-
-	//this.drawMarkers();
-
-	if (this.renderDriveTo) {
-		this.drawDriveTo();
-	}
-		
-	this.wheelGraphs.FL.render.apply(this.wheelGraphs.FL, [state, 'wheelFL']);
-	this.wheelGraphs.FR.render.apply(this.wheelGraphs.FR, [state, 'wheelFR']);
-	this.wheelGraphs.RL.render.apply(this.wheelGraphs.RL, [state, 'wheelRL']);
-	this.wheelGraphs.RR.render.apply(this.wheelGraphs.RR, [state, 'wheelRR']);
-
-	var graphVoltage = -(state.robot.coilgun.voltage - 200);
-
-	// fake the voltage reading to be a wheel..
-	state.robot.coilGraph = {
-		stalled: state.robot.coilgun.isLowVoltage,
-		targetOmega: graphVoltage,
-		filteredTargetOmega: graphVoltage,
-		realOmega: graphVoltage,
-		ref: 0.0025,
-		drawLines: false
-	};
-
-	this.voltageGraph.render.apply(this.voltageGraph, [state, 'coilGraph']);
 };

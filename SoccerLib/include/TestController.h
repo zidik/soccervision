@@ -310,6 +310,7 @@ public:
 	void handleResetCommand();
 	void handleToggleGoCommand();
 	void handleToggleSideCommand();
+	void updateTargetSide();
 	void handleSetFieldIDCommand(const Command& cmd);
 	void handleSetRobotIDCommand(const Command& cmd);
 	void handleSetTeamIDCommand(const Command& cmd);

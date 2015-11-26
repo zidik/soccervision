@@ -126,13 +126,39 @@ void SoccerBot::run() {
 
 	if (!frontCamera->isOpened() && !rearCamera->isOpened()) {
 		std::cout << "! Neither of the cameras was opened, running in test mode" << std::endl;
-
+		//double time;
 		while (running) {
 			Sleep(100);
+			// for debugging!
+			/*{
+				time = Util::millitime();
 
+				if (lastStepTime != 0.0) {
+					dt = (float)(time - lastStepTime);
+				}
+				else {
+					dt = 1.0f / 60.0f;
+				}
+
+				handleServerMessages();
+				handleCommunicationMessages();
+				
+				robot->step(dt, visionResults);
+
+				if (server != NULL && stateRequested) {
+					server->broadcast(Util::json("state", getStateJSON()));
+					
+					stateRequested = false;
+				}
+
+				lastStepTime = time;
+
+			}
+			*/
 			if (SignalHandler::exitRequested) {
 				running = false;
 			}
+			
 		}
 
 		return;
@@ -836,6 +862,8 @@ void SoccerBot::handleServerMessage(Server::Message* message) {
                 handleListScreenshotsCommand(message);
 			} else if (command.name == "camera-translator") {
 				handleCameraTranslatorCommand(command.parameters);
+			} else if (command.name == "set-dash-index") {
+				handleSetRobotIndexDashCommand(command.parameters, message);
 			} else if (command.name == "clientstate") {
 				handleClientToServerStateMessage(message);
 			}
@@ -850,8 +878,15 @@ void SoccerBot::handleServerMessage(Server::Message* message) {
 
 void SoccerBot::handleGetControllerCommand(Server::Message* message) {
 	std::cout << "! Client #" << message->client->id << " requested controller, sending: " << activeControllerName << std::endl;
-
 	message->respond(Util::json("controller", activeControllerName));
+}
+
+void SoccerBot::handleSetRobotIndexDashCommand(Command::Parameters parameters, Server::Message* message) {
+	std::cout << "! Client #" << message->client->id << " sent dash ID: " << parameters[0] << std::endl;
+	robot->robotId.pop_back();
+	robot->robotId.push_back(parameters[0][0]);
+	activeController->handleCommand(Command::parse("<update-side>"));
+
 }
 
 void SoccerBot::handleSetControllerCommand(Command::Parameters parameters, Server::Message* message) {
@@ -1084,9 +1119,14 @@ std::string SoccerBot::getStateJSON() {
 
     Math::Position pos = robot->getPosition();
 
+	//boost::posix_time::ptime time = boost::posix_time::microsec_clock::local_time();
+	//boost::posix_time::time_duration duration(time.time_of_day());
+	//std::cout << duration.total_milliseconds() << std::endl;
+
     stream << "{";
 
-    
+	stream << "\"robot_id\":" << robot->robotId << ",";
+	//stream << "\"dateTimeMillis\":" << duration.total_milliseconds() << ",";
 	stream << "\"robot\":{" << robot->getJSON() << "},";
     stream << "\"dt\":" << dt << ",";
     stream << "\"totalTime\":" << totalTime << ",";
