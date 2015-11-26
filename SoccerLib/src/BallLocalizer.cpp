@@ -60,7 +60,7 @@ void BallLocalizer::Ball::updateVisible(const Math::Vector & new_location, float
 
         //Mean of filtered velocities
         if (filteredVelocities.size() > 0) {
-            velocity = std::accumulate(filteredVelocities.begin(), filteredVelocities.end(), Math::Vector()) / filteredVelocities.size();
+            velocity = std::accumulate(filteredVelocities.begin(), filteredVelocities.end(), Math::Vector()) / (float)filteredVelocities.size();
         }
     } 
    
