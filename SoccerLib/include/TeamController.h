@@ -152,9 +152,17 @@ public:
 	class FetchBallFrontState : public State {
 
 	public:
-		FetchBallFrontState(TeamController* ai) : State(ai) {}
+		FetchBallFrontState(TeamController* ai) : State(ai), kP(4.0f), kI(1.0f), kD(0.0035f), pid(kP, kI, kD, 0.016f), pidUpdateCounter(0) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	private:
+		float maxSideSpeed;
+
+		PID pid;
+		float kP;
+		float kI;
+		float kD;
+		char pidUpdateCounter;
 	};
 
 	//Fetch the ball @rear
@@ -218,6 +226,7 @@ public:
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 	};
 
+	//for slowly approaching the ball during kickoffs and what not
 	class ApproachBallState : public State {
 
 	public:

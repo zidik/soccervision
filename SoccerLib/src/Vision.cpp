@@ -3073,11 +3073,13 @@ float Vision::Results::getObjectPartAngle(Object* object, Part part) {
 	int targetY = object->y;
 	float partAngle = 0.0f;
 
+	float sideOffsetFromCentre = 0.375f;
+
 	if (part == Part::LEFTSIDE) {
-		targetX = object->x - (int)((float)object->width * 0.44f);
+		targetX = object->x - (int)((float)object->width * sideOffsetFromCentre);
 	}
 	else if (part == Part::RIGHTSIDE) {
-		targetX = object->x + (int)((float)object->width * 0.44f);
+		targetX = object->x + (int)((float)object->width * sideOffsetFromCentre);
 	}
 	else {
 		return object->angle;

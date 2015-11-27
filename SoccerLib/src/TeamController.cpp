@@ -383,13 +383,18 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 		float ballDistanceError = 0.08f;
 		float teamMateSearchSpeed = 0.6f;
 		float robotAngleError = Math::PI / 30.0f;
+		float ballCloseEnoughThreshold = 0.5f;
 
 		if (teamMate != NULL) {
-			if (abs(teamMate->angle) < robotAngleError) {
-				//move toward ball
-				forwardSpeed = minForwardSpeed + ball->distance * forwardSpeedMult;
-				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
-				robot->dribbler->start();
+			if (abs(teamMate->angle) < robotAngleError && ball->distance < ballCloseEnoughThreshold) {
+				Parameters parameters;
+				parameters["next-state"] = "manual-control";
+				parameters["last-state"] = "take-kickoff";
+				parameters["kick-type"] = "pass";
+				parameters["target-type"] = "team-robot";
+				parameters["kick-immediately"] = "Y";
+				ai->setState("approach-ball", parameters);
+				return;
 			}
 			else {
 				//turn toward teammate
@@ -458,6 +463,7 @@ void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* vi
 		float teamMateSearchSpeed = 0.4f;
 		float goalAngleError = Math::PI / 30.0f;
 		float goalInMiddleThreshold = Math::PI / 90.0f;
+		float ballCloseEnoughThreshold = 0.5f;
 
 		if (goal != NULL) {
 
@@ -484,7 +490,7 @@ void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* vi
 				}
 			}
 
-			if (abs(targetAngle) < goalAngleError) {
+			if (abs(targetAngle) < goalAngleError && ball->distance < ballCloseEnoughThreshold) {
 				Parameters parameters;
 				parameters["next-state"] = "manual-control";
 				parameters["last-state"] = "take-freekick-direct";
@@ -595,6 +601,7 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 		float teamMateSearchSpeed = 0.4f;
 		float goalAngleError = Math::PI / 30.0f;
 		float goalInMiddleThreshold = Math::PI / 90.0f;
+		float ballCloseEnoughThreshold = 0.5f;
 
 		if (goal != NULL) {
 
@@ -621,7 +628,7 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 				}
 			}
 
-			if (abs(targetAngle) < goalAngleError) {
+			if (abs(targetAngle) < goalAngleError && ball->distance < ballCloseEnoughThreshold) {
 				Parameters parameters;
 				parameters["next-state"] = "manual-control";
 				parameters["last-state"] = "take-penalty";
@@ -707,11 +714,20 @@ void TeamController::FindBallGoalkeeperState::step(float dt, Vision::Results* vi
 }
 
 void TeamController::FetchBallFrontState::onEnter(Robot* robot, Parameters parameters) {
-	//TODO fill this out
+	maxSideSpeed = 1.3f;
+
+	pid.setInputLimits(-0.75f, 0.75f);
+	pid.setOutputLimits(-maxSideSpeed, maxSideSpeed);
+	pid.setMode(AUTO_MODE);
+	pid.setBias(0.0f);
+	pid.setTunings(kP, kI, kD);
+	pid.reset();
 }
 
 void TeamController::FetchBallFrontState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 	Object* ball = visionResults->getClosestBall(Dir::FRONT);
+	Object* ownGoal = visionResults->getLargestGoal(ai->defendSide, Dir::REAR);
+	Object* enemyGoal = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
 
 	if (robot->dribbler->gotBall()) {
 		Parameters parameters;
@@ -728,13 +744,6 @@ void TeamController::FetchBallFrontState::step(float dt, Vision::Results* vision
 		ai->setState("find-ball", parameters);
 	}
 	else {
-		
-		//configuration parameters
-		float forwardSpeedMultiplier = 1.0f;
-		float sidewaysSpeedMultiplier = 3.0f;
-
-		float forwardSpeed = 0.0f, sidewaysSpeed = 0.0f;
-
 		float ballMinDistance = 0.3f;
 
 		if (ball->distance <= ballMinDistance) {
@@ -744,11 +753,57 @@ void TeamController::FetchBallFrontState::step(float dt, Vision::Results* vision
 			robot->dribbler->stop();
 		}
 
-		forwardSpeed = ball->distanceY * forwardSpeedMultiplier;
-		sidewaysSpeed = ball->distanceX * sidewaysSpeedMultiplier;
+		float ballDistance = ball->getDribblerDistance();
 
-		robot->setTargetDir(forwardSpeed, sidewaysSpeed);
-		robot->lookAt(ball);
+		float maxSideSpeedBallAngle = 25.0f;
+
+		float sidePower = Math::map(Math::abs(Math::radToDeg(ball->angle)), 0.0f, maxSideSpeedBallAngle, 0.0f, 1.0f);
+
+		// pid-based
+		pidUpdateCounter++;
+		if (pidUpdateCounter % 10 == 0) pid.setInterval(dt);
+		pid.setSetPoint(0.0f);
+		pid.setProcessValue(ball->distanceX);
+
+		float sideP = -pid.compute();
+		float sideSpeed = sideP * sidePower;
+
+		float approachP = Math::map(ball->distance, 0.0f, 1.0f, 0.25f, 1.3f);
+		float forwardSpeed = approachP * (1.0f - sidePower);
+
+		// don't move forwards if very close to the ball and the ball is quite far sideways
+		if (ballDistance < 0.05f && Math::abs(ball->distanceX) > 0.015f) {
+			forwardSpeed = 0.0f;
+		}
+
+		robot->setTargetDir(forwardSpeed, sideSpeed);
+
+		//if can see own goal, look at it with rear camera, but only if angle delta is close to 180deg
+		if (ownGoal != NULL) {
+			float lookAtAngle;
+			float angleDelta = ownGoal->angle - ball->angle;
+			if (angleDelta < 0.0f) angleDelta += Math::TWO_PI;
+			float angleDeltaLimit = 45.0f;
+			float lookAtAngleMultiplier = Math::map(Math::radToDeg(abs(angleDelta - Math::PI)), 0.0f, angleDeltaLimit, 0.0f, 0.5f);
+
+			lookAtAngle = Math::degToRad(ownGoal->angle - lookAtAngleMultiplier * (angleDelta - Math::PI));
+
+			robot->lookAtBehind(Math::Rad(lookAtAngle));
+		}
+		else if (enemyGoal != NULL) {
+			float lookAtAngle;
+			float angleDelta = enemyGoal->angle - ball->angle;
+			float angleDeltaLimit = 45.0f;
+			float lookAtAngleMultiplier = Math::map(Math::radToDeg(abs(angleDelta)), 0.0f, angleDeltaLimit, 0.0f, 0.5f);
+
+			lookAtAngle = Math::degToRad(enemyGoal->angle - lookAtAngleMultiplier * angleDelta);
+
+			robot->lookAt(Math::Rad(lookAtAngle));
+		}
+		else {
+			//turn toward ball slowly, so that its trajectory is more likely to be intercepted
+			robot->lookAt(ball, Config::lookAtP / 8.0f);
+		}
 	}
 }
 
