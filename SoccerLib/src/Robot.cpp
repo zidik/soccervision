@@ -224,7 +224,7 @@ void Robot::step(float dt, Vision::Results* visionResults) {
     //TODO: Shouldn't it be move& update, not update& move?
     updateMeasurements();
 	robotLocalizer->update(measurements);
-	robotLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt);
+	robotLocalizer->move(movement.velocityX, -movement.velocityY, movement.omega, dt);
 	odometerLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt);
 	robotLocalizer->calculatePosition();
 	Math::Position localizerPosition = robotLocalizer->getPosition();
@@ -618,12 +618,6 @@ void Robot::lookAt(const Math::Angle& angle, float lookAtP) {
 	float omega = lookAtPid.compute();
 
 	setTargetOmega(-Math::degToRad(omega));*/
-}
-void Robot::lookAt(const Math::Vector target, float lookAtP) {
-    lookAtPidRad.setSetPoint(0.0f);
-    lookAtPidRad.setProcessValue(target.getAngle());
-    float targetOmega = lookAtPid.compute();
-    setTargetOmega(-targetOmega);
 }
 
 void Robot::lookAtBehind(Object* object) {

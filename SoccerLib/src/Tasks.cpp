@@ -62,19 +62,21 @@ void DriveToTask::onStart(Robot& robot, float dt) {
 }
 
 bool DriveToTask::onStep(Robot& robot, float dt) {
-    Math::Position pos = robot.getPosition();
+	Math::Position pos = robot.getPosition();
 	Math::Vector target(targetX, targetY);
 
-    currentDistance = pos.location.distanceTo(target);
+	currentDistance = pos.location.distanceTo(target);
 
-    float currentOrientation = pos.orientation;
-    float orientationDiff = Math::getAngleDiff(currentOrientation, targetOrientation);
+	float currentOrientation = pos.orientation;
+	float orientationDiff = Math::getAngleDiff(currentOrientation, targetOrientation);
 
-    if (currentDistance <= positionThreshold && Math::abs(orientationDiff) < orientationThreshold) {
-        return false;
-    }
+	if (currentDistance <= positionThreshold && Math::abs(orientationDiff) < orientationThreshold) {
+		return false;
+	}
 
-    float omega = orientationDiff / (currentDistance * 0.5f);
+	float alpha = (currentDistance * 0.5f);
+	if (alpha < 0.1f) {alpha = 0.1f;}
+	float omega = orientationDiff / alpha;
     float useSpeed = speed;
 
     if (currentDistance < 0.2f) {
