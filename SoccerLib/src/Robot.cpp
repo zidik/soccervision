@@ -16,7 +16,7 @@
 
 typedef ParticleFilterLocalizer::Landmark::Type LandmarkType;
 
-Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : location(0.0f, 0.0f) , conf(conf), com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f) {
+Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : location(0.0f, 0.0f) , conf(conf), com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f), lookAtPidRad(0.35f, 0.0f, 0.0012f, 0.016f) {
     targetOmega = 0;
     targetDir = Math::Vector(0, 0);
    
@@ -42,6 +42,14 @@ Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* 
 	lookAtPid.setMode(AUTO_MODE);
 	lookAtPid.setBias(0.0f);
 	lookAtPid.reset();
+    
+
+    lookAtPidRad.setInputLimits(-Math::PI, Math::PI);
+    lookAtPidRad.setOutputLimits(-lookAtLimit, lookAtLimit);
+    lookAtPidRad.setMode(AUTO_MODE);
+    lookAtPidRad.reset();
+
+
 }
 
 Robot::~Robot() {
@@ -612,8 +620,8 @@ void Robot::lookAt(const Math::Angle& angle, float lookAtP) {
 	setTargetOmega(-Math::degToRad(omega));*/
 }
 void Robot::lookAt(const Math::Vector target, float lookAtP) {
-    lookAtPid.setSetPoint(0.0f);
-    lookAtPid.setProcessValue(target.getAngle());
+    lookAtPidRad.setSetPoint(0.0f);
+    lookAtPidRad.setProcessValue(target.getAngle());
     float targetOmega = lookAtPid.compute();
     setTargetOmega(-targetOmega);
 }

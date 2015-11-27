@@ -143,6 +143,7 @@ private:
 	BallLocalizer::BallList visibleBalls;
 
 	PID lookAtPid;
+    PID lookAtPidRad;
 
 	std::string json;
 };
