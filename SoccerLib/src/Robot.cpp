@@ -296,7 +296,7 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	stream << "},";
 
 	debugBallList("ballsRaw", stream, visibleBalls);
-	debugBallList("ballsFiltered", stream, ballLocalizer->balls);
+	debugBallList("ballsFiltered", stream, ballLocalizer->getBalls());
 
     Math::Polygon currentCameraFOV = cameraFOV.getRotated(orientation).getTranslated(location.x,location.y) ;
 	stream << "\"cameraFOV\":" << currentCameraFOV.toJSON() << ",";
@@ -610,6 +610,12 @@ void Robot::lookAt(const Math::Angle& angle, float lookAtP) {
 	float omega = lookAtPid.compute();
 
 	setTargetOmega(-Math::degToRad(omega));*/
+}
+void Robot::lookAt(const Math::Vector target, float lookAtP) {
+    lookAtPid.setSetPoint(0.0f);
+    lookAtPid.setProcessValue(target.getAngle());
+    float targetOmega = lookAtPid.compute();
+    setTargetOmega(-targetOmega);
 }
 
 void Robot::lookAtBehind(Object* object) {

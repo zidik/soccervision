@@ -138,6 +138,11 @@ float Vector::getLength() const {
     return sqrt(pow(x, 2) + pow(y, 2));
 }
 
+float Vector::getAngle() const
+{
+    return atan2(y, x);
+}
+
 float Vector::distanceTo(const Vector& b) const {
 	return sqrt(pow(x - b.x, 2) + pow(y - b.y, 2));
 }

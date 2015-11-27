@@ -47,9 +47,15 @@ public:
     void transformLocations(Math::Vector & dtLocation, float dtOrientation);
     void update(const BallList& visibleBalls, const Math::Polygon& cameraFOV, float dt);
 
-    BallList balls; //TODO: Should be private
+    const BallList& getBalls() const{ return balls; }
+    const Ball* getClosestBall() const {
+        auto closest = min_element(balls.begin(), balls.end(), [](Ball* b1, Ball* b2) { return b1->location < b2->location; });
+        return closest == balls.end() ? nullptr : *closest;
+    }
+    
 
 private:
+    BallList balls; //TODO: Should be private
     Ball* getBallAround(Math::Vector & location);
     void purge(const BallList& visibleBalls, const Math::Polygon& cameraFOV);
     //bool isValid(Ball* ball, const BallList& visibleBalls, const Math::Polygon& cameraFOV);

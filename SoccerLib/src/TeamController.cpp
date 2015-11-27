@@ -216,7 +216,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		}
 		return;
 	}
-
+    
 	Object* defendedGoal = visionResults->getLargestGoal(ai->getDefendSide(), Dir::REAR);
 
 	//if goal is not visible in back camera, switch to driving in front of goal state.
@@ -225,8 +225,9 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		return;
 	}
 
+    
 	//probably should add function to vision to get fastest moving ball instead, but in 2v2 this should work, as there is only one ball
-	Object* ball = visionResults->getClosestBall();
+    const BallLocalizer::Ball* ball = robot->ballLocalizer->getClosestBall();
 
 	// configuration parameters
 	float maximumFetchDistance = 0.15f;
@@ -236,7 +237,8 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	float sidewaysSpeedMultiplier = 1.0f;
 
 	//if can't see ball
-	if (ball == NULL) {
+	if (ball == nullptr) {
+        return;
 		//scan for ball
 		robot->stop();
 		ai->setState("find-ball-goalkeeper");
@@ -255,23 +257,28 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		}
 		*/
 	} //ball found, check if it isn't in a goal
+    else {
+        ballWasSeen = true;
+        bool shouldIntercept = false;
+        //check if ball is close enough to fetch
+        if (ball->location.getLength() < maximumFetchDistance) {
+            robot->stop();
+            bool behind = ball->location.y < 0;
+            if (behind) {
+                ai->setState("fetch-ball-rear");
+            }
+            else {
+                ai->setState("fetch-ball-front");
+            }
+        }
+        else {
+            robot->lookAt(ball->location);
+        }
+    }
+    /*
 	else if (!visionResults->isBallInGoal(ball)) {
-		if (!ballWasSeen) ballWasSeen = true;
 
-		bool shouldIntercept = false;
 		float forwardSpeed = 0.0f, sideWaysSpeed = 0.0f;
-		
-		//check if ball is close enough to fetch
-		if (ball->distance < maximumFetchDistance) {
-			robot->stop();
-			if (ball->behind) {
-				ai->setState("fetch-ball-rear");
-			}
-			else {
-				ai->setState("fetch-ball-front");
-			}
-			return;
-		}
 		
 		//check if ball is moving fast enough toward robot
 		if (ball->relativeMovement.dY < minimumMovingDeltaY) {
@@ -292,6 +299,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		robot->lookAt(ball);
 		
 	}
+    */
 }
 
 void TeamController::InterceptBallState::onEnter(Robot* robot, Parameters parameters) {

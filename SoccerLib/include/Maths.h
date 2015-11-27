@@ -291,7 +291,8 @@ public:
 	Vector(float x, float y) : x(x), y(y) {}
 
 	float getLength() const;
-	float distanceTo(const Vector& b) const;
+    float getAngle() const;
+    float distanceTo(const Vector& b) const;
 	float dotProduct(const Vector& b) const;
 	float getAngleBetween(const Vector& b) const;
 	Vector getRotated(float angle) const;

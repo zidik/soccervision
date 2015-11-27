@@ -58,7 +58,8 @@ public:
 
 	void lookAt(Object* object, float lookAtP = Config::lookAtP, bool stare = true);
 	void lookAt(const Math::Angle& angle, float lookAtP = Config::lookAtP);
-	void lookAtBehind(Object* object);
+    void lookAt(const Math::Vector target, float lookAtP = Config::lookAtP);
+    void lookAtBehind(Object* object);
 	void lookAtBehind(const Math::Angle& angle);
 	void turnBy(float angle, float speed = 1.0f);
     void driveTo(float x, float y, float orientation, float speed = 1.0f);
