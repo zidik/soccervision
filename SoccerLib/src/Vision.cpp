@@ -3088,11 +3088,11 @@ float Vision::Results::getObjectPartAngle(Object* object, Part part) {
 
 	//std::cout << "targetX: " << targetX << std::endl;
 	if (!object->behind) {
-		partAngle = front->vision->getDistance(targetX, targetY).angle;
+		partAngle = front->vision->getAngle(targetX, targetY + object->height / 2);
 		//std::cout << "X: " << targetX << " Y: " << targetY << " part-angle-front: " << partAngle << std::endl;
 	}
 	else {
-		partAngle = rear->vision->getDistance(targetX, targetY).angle;
+		partAngle = rear->vision->getAngle(targetX, targetY + object->height / 2);
 		//std::cout << "X: " << targetX << " Y: " << targetY << " part-angle-rear: " << partAngle << std::endl;
 	}
 	return partAngle;
