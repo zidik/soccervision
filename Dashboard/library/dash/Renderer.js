@@ -222,7 +222,7 @@ Dash.Renderer.prototype.drawIntersections = function(yellowDistance, blueDistanc
 	if (yellowDistance > 0) {
 		this.c.strokeStyle = '#DD0';
 		this.c.beginPath();
-		this.c.arc(0, Dash.Config.field.height / 2, yellowDistance, 0, Math.PI * 2, true);
+		this.c.arc(0, dash.config.field.height / 2, yellowDistance, 0, Math.PI * 2, true);
 		this.c.closePath();
 		this.c.stroke();
 	}
@@ -230,7 +230,7 @@ Dash.Renderer.prototype.drawIntersections = function(yellowDistance, blueDistanc
 	if (blueDistance > 0) {
 		this.c.strokeStyle = '#00F';
 		this.c.beginPath();
-		this.c.arc(Dash.Config.field.width, Dash.Config.field.height / 2, blueDistance, 0, Math.PI * 2, true);
+		this.c.arc(dash.config.field.width, dash.config.field.height / 2, blueDistance, 0, Math.PI * 2, true);
 		this.c.closePath();
 		this.c.stroke();
 	}
@@ -457,12 +457,12 @@ Dash.Renderer.prototype.renderState = function(state) {
 						state[i].controllerState.particleLocalizer.orientation
 					);
 
-					for (var i = 0; i < state[i].controllerState.particleLocalizer.particles.length; i++) {
+					/*for (var i = 0; i < state[i].controllerState.particleLocalizer.particles.length; i++) {
 						this.drawParticle(
 							state[i].controllerState.particleLocalizer.particles[i][0],
 							state[i].controllerState.particleLocalizer.particles[i][1]
 						);
-					}
+					}*/
 
 					//this.drawPath(state[i], 'particleLocalizer', '#060');
 				}

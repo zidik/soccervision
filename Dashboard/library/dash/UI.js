@@ -505,17 +505,89 @@ Dash.UI.prototype.initControls = function(controls) {
 	table.append(row2);
     $('#buttons-' + this.robotId).append(table);
 
-	var sel = $('<select/>', {
+	var selController = $('<select/>', {
 		name: "controller-choice",
 		id: "controller-choice",
 		class: "live-only seperated",
 		disabled: "disabled"
 	}).appendTo('#buttons-' + this.robotId);
 
-	$("<option />", {value: "", text: "-- Select Controller --"}).appendTo(sel);
-	$("<option />", {value: "test", text: "Test Controller"}).appendTo(sel);
-	$("<option />", {value: "offensive-ai", text: "Offensive AI"}).appendTo(sel);
+	$("<option />", {value: "", text: "-- Select Controller --"}).appendTo(selController);
+	$("<option />", {value: "test", text: "Test Controller"}).appendTo(selController);
+	$("<option />", {value: "offensive-ai", text: "Offensive AI"}).appendTo(selController);
 
+	var selTeamId = $('<select/>', {
+		name: "team-id-choice",
+		id: "team-id-choice",
+		class: "live-only ctrl test-ctrl teamplay-ctrl",
+		disabled: "disabled"
+	}).appendTo('#buttons-' + this.robotId);
+
+	$("<option />", {value: "", text: "-- Select team ID --"}).appendTo(selTeamId);
+	$("<option />", {value: "A", text: "Team A"}).appendTo(selTeamId);
+	$("<option />", {value: "B", text: "Team B"}).appendTo(selTeamId);
+	
+	var selTeamColor = $('<select/>', {
+		name: "team-color-choice",
+		id: "team-color-choice",
+		class: "live-only ctrl test-ctrl teamplay-ctrl",
+		disabled: "disabled"
+	}).appendTo('#buttons-' + this.robotId);
+
+	$("<option />", {value: "", text: "-- Select team color --"}).appendTo(selTeamColor);
+	$("<option />", {value: "4", text: "Team is YellowHigh"}).appendTo(selTeamColor);
+	$("<option />", {value: "5", text: "Team is BlueHigh"}).appendTo(selTeamColor);
+	
+	var selEnemyColor = $('<select/>', {
+		name: "enemy-color-choice",
+		id: "enemy-color-choice",
+		class: "live-only ctrl test-ctrl teamplay-ctrl",
+		disabled: "disabled"
+	}).appendTo('#buttons-' + this.robotId);
+
+	$("<option />", {value: "", text: "-- Select enemy color --"}).appendTo(selEnemyColor);
+	$("<option />", {value: "4", text: "Enemy is YellowHigh"}).appendTo(selEnemyColor);
+	$("<option />", {value: "5", text: "Enemy is BlueHigh"}).appendTo(selEnemyColor);
+	
+	var selRobotId = $('<select/>', {
+		name: "robot-id-choice",
+		id: "robot-id-choice",
+		class: "live-only ctrl test-ctrl teamplay-ctrl",
+		disabled: "disabled"
+	}).appendTo('#buttons-' + this.robotId);
+
+	$("<option />", {value: "", text: "-- Select robot ID --"}).appendTo(selRobotId);
+	$("<option />", {value: "A", text: "Robot A"}).appendTo(selRobotId);
+	$("<option />", {value: "B", text: "Robot B"}).appendTo(selRobotId);
+	$("<option />", {value: "C", text: "Robot C"}).appendTo(selRobotId);
+	$("<option />", {value: "D", text: "Robot D"}).appendTo(selRobotId);
+	/*<select name="team-id-choice" id="team-id-choice" class="live-only ctrl teamplay-ctrl" disabled="disabled">
+					<option value="">-- Select team ID --</option>
+					<option value="A">Team is YellowHigh</option>
+					<option value="B">Team B</option>
+				</select>
+				
+				<select name="team-color-choice" id="team-color-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
+					<option value="">-- Select team color --</option>
+					<option value="4">Team is YellowHigh</option>
+					<option value="5">Team is BlueHigh</option>
+				</select>
+				
+				<select name="enemy-color-choice" id="enemy-color-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
+					<option value="">-- Select enemy color --</option>
+					<option value="4">Enemy is YellowHigh</option>
+					<option value="5">Enemy is BlueHigh</option>
+				</select>
+				
+				<select name="robot-id-choice" id="robot-id-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
+					<option value="">-- Select robot ID --</option>
+					<option value="A">Robot A</option>
+					<option value="B">Robot B</option>
+					<option value="C">Robot C</option>
+					<option value="D">Robot D</option>
+				</select>
+	*/
+	
 	this.keyboardController.enabled = parseInt(keyboardEnabled) == 1;
 	this.joystickController.enabled = parseInt(joystickEnabled) == 1;
 	//row1.prop('checked', this.keyboardController.enabled);
@@ -1226,7 +1298,7 @@ Dash.UI.prototype.addState = function(state) {
 	}
 
 	if (this.states.length >= 10000) {
-		this.states.shift();
+		dash.commonLogic.states.shift();
 		full = true;
 	}
 

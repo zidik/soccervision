@@ -210,7 +210,7 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	travelledDistance += velocity * dt;
 	travelledRotation += movement.omega * dt;
 
-	updateMeasurements();
+	//updateMeasurements(); //debugging
 	updateBallLocalizer(visionResults, dt);
 	handleQueuedChipKickRequest();
 
@@ -237,7 +237,7 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 
 	//update objects location in absolute coordinate system
 	//using localizer
-	updateAllObjectsAbsoluteMovement(visionResults, localizerPosition.location.x, localizerPosition.location.y, localizerPosition.orientation, dt);
+	//updateAllObjectsAbsoluteMovement(visionResults, localizerPosition.location.x, localizerPosition.location.y, localizerPosition.orientation, dt); //debugging
 
 	//using odometer
 	//updateAllObjectsAbsoluteMovement(visionResults, odometerLocalizer->x, odometerLocalizer->y, odometerLocalizer->orientation, dt);
@@ -349,7 +349,7 @@ void Robot::updateMeasurements() {
 		ParticleFilterLocalizer::Measurement measurement(LandmarkType::BlueGoalCenter, Pixel(blueGoal->goal_x, blueGoal->goal_y), (blueGoal->behind ? Dir::REAR : Dir::FRONT));
 		measurements.push_back(measurement);
 	}
-
+	
 	for (Pixel pixel : visionResults->front->fieldCorners)
 	{
 		ParticleFilterLocalizer::Measurement measurement(LandmarkType::FieldCorner, pixel, Dir::FRONT);
@@ -360,6 +360,7 @@ void Robot::updateMeasurements() {
 		ParticleFilterLocalizer::Measurement measurement(LandmarkType::FieldCorner, pixel, Dir::REAR);
 			measurements.push_back(measurement);
 	}
+	
 
 }
 

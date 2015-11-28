@@ -126,11 +126,11 @@ void SoccerBot::run() {
 
 	if (!frontCamera->isOpened() && !rearCamera->isOpened()) {
 		std::cout << "! Neither of the cameras was opened, running in test mode" << std::endl;
-		//double time;
+		double time;
 		while (running) {
 			Sleep(100);
 			// for debugging!
-			/*{
+			{
 				time = Util::millitime();
 
 				if (lastStepTime != 0.0) {
@@ -154,7 +154,7 @@ void SoccerBot::run() {
 				lastStepTime = time;
 
 			}
-			*/
+			
 			if (SignalHandler::exitRequested) {
 				running = false;
 			}
