@@ -482,6 +482,20 @@ void Robot::spinAroundDribbler(bool reverse, float period, float radius, float f
 	setTargetDir(forwardSpeed, -speed, omega);
 }
 
+void Robot::spinAroundObject(Object* object, bool reverse, float period, float radius) {
+	float forwardSpeed = (object->distanceY - radius) * 3.2f;
+	float sideSpeed = (2.0f * Math::PI * radius) / period;
+	float omega = (2.0f * Math::PI) / period;
+
+	if (reverse) {
+		sideSpeed *= -1.0f;
+		omega *= -1.0f;
+	}
+	omega += object->angle * 2.2f;
+
+	setTargetDir(forwardSpeed, -sideSpeed, omega);
+}
+
 float Robot::getTimeSincLastDroveBehindBall() {
 	return (float)Util::duration(lastDriveBehindBallTime); 
 }

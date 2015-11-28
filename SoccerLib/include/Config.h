@@ -61,7 +61,7 @@ namespace Config {
 	const float robotMaxDistance = 5.5f;
 
 	//Maximum ratio for valid pixels to scanned pixels when searching for robot markers
-	const float robotScanMinMatchRatio = 0.15f;
+	const float robotScanMinMatchRatio = 0.225f;
 
 	// goals with area over this value are definately considered to be valid
 	const int goalCertainArea = 10000;
@@ -222,7 +222,9 @@ namespace Config {
 	const float objectFovCloseEnough = 0.5f;
 
 	// maximum number of frames after which a persistent object location is deletied
-	const int objectLocationMaxAge = 8;
+	//const int objectLocationMaxAge = 8;
+	//This turns persistency in vision.cpp off
+	const int objectLocationMaxAge = 1;
 
 	//Maximum distance delta between estimated position and new found object position for it to be considered the same object
 	const float objectPersistenceMinDistance = 0.5f;

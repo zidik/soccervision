@@ -49,6 +49,7 @@ public:
     void setTargetDir(const Math::Angle& dir, float speed = 1.0f, float omega = 0.0f);
 	void setTargetOmega(float omega) { targetOmega = omega * conf->robot.rotationDir; }
 	void spinAroundDribbler(bool reverse = false, float period = Config::robotSpinAroundDribblerPeriod, float radius = Config::robotSpinAroundDribblerRadius, float forwardSpeed = Config::robotSpinAroundDribblerForwardSpeed);
+	void spinAroundObject(Object* object, bool reverse = false, float period = 5.0f, float radius = 0.3f);
     void setPosition(float x, float y, float orientation);
 	void stop();
 	void kick(int microseconds = Config::robotDefaultKickStrength);

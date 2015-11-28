@@ -460,7 +460,7 @@ bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
 			rightY = y + goal->height / 3;
 		}
 
-		iterations = (int)(Math::min((float)(goal->height), (float)(goal->width) / 2.0f) + 10);
+		iterations = (int)(Math::min((float)(goal->height), (float)(goal->width) / 2.0f) + 5);
 
 		//calculate scanning points
 		if (endX == x) {
@@ -3082,14 +3082,18 @@ float Vision::Results::getObjectPartAngle(Object* object, Part part) {
 		targetX = object->x + (int)((float)object->width * sideOffsetFromCentre);
 	}
 	else {
+		std::cout << object->angle << std::endl;
 		return object->angle;
 	}
-	if (object->behind) {
-		partAngle = rear->vision->getAngle(targetX, targetY);
+
+	//std::cout << "targetX: " << targetX << std::endl;
+	if (!object->behind) {
+		partAngle = front->vision->getDistance(targetX, targetY).angle;
+		//std::cout << "X: " << targetX << " Y: " << targetY << " part-angle-front: " << partAngle << std::endl;
 	}
 	else {
-		partAngle = front->vision->getAngle(targetX, targetY);
+		partAngle = rear->vision->getDistance(targetX, targetY).angle;
+		//std::cout << "X: " << targetX << " Y: " << targetY << " part-angle-rear: " << partAngle << std::endl;
 	}
-	
 	return partAngle;
 }

@@ -38,7 +38,7 @@
 		"dribbler": {
 			"speed": -9000,
 			"normalLowerLimit": 100,
-			"normalUpperLimit": 65,
+			"normalUpperLimit": 75,
 			"chipKickLowerLimit": 0,
 			"chipKickUpperLimit": 10,
 			"moveDuration": 0.4,

@@ -462,6 +462,7 @@ void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* vi
 		float ballDistanceError = 0.05f;
 		float teamMateSearchSpeed = 0.4f;
 		float goalAngleError = Math::PI / 30.0f;
+		float ballAngleError = Math::PI / 30.0f;
 		float goalInMiddleThreshold = Math::PI / 90.0f;
 		float ballCloseEnoughThreshold = 0.5f;
 
@@ -478,8 +479,8 @@ void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* vi
 			else {
 				if (abs(closestRobot->angle) < goalInMiddleThreshold) {
 					areaLocked = true;
-					//TODO choose locked area based on robots position on the field
-					lockedArea = Part::RIGHTSIDE;
+					if (closestRobot->angle > goal->angle) lockedArea = Part::LEFTSIDE;
+					else lockedArea = Part::RIGHTSIDE;
 					targetAngle = visionResults->getObjectPartAngle(goal, lockedArea);
 				}
 				else if (closestRobot->angle > goal->angle) {
@@ -505,24 +506,31 @@ void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* vi
 				sidewaysSpeed = targetAngle * -sidewaysSpeedMult;
 				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
 				lookAtAngle = ball->angle;
+
+				robot->setTargetDir(forwardSpeed, sidewaysSpeed);
+				robot->lookAt(Math::Rad(lookAtAngle));
 			}
 		}
 		else {
-			if (abs(ball->distance - ballRotateDistance) < ballDistanceError) {
+			if (abs(ball->distance - ballRotateDistance) < ballDistanceError && ball->angle < ballAngleError) {
 				//search for goal
-				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
-				sidewaysSpeed = teamMateSearchSpeed * robotSearchDir;
+				robot->spinAroundObject(ball, false, 4.3f, ballRotateDistance);
+				//forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
+				//sidewaysSpeed = teamMateSearchSpeed * robotSearchDir;
 			}
 			else {
 				//move ball to correct distance
 				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
 				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
+				lookAtAngle = ball->angle;
+
+				robot->setTargetDir(forwardSpeed, sidewaysSpeed);
+				robot->lookAt(Math::Rad(lookAtAngle));
 			}
-			lookAtAngle = ball->angle;
+			
 		}
 
-		robot->setTargetDir(forwardSpeed, sidewaysSpeed);
-		robot->lookAt(Math::Rad(lookAtAngle));
+		
 
 	}
 }
@@ -590,22 +598,24 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 		float forwardSpeed = 0.0f;
 		float sidewaysSpeed = 0.0f;
 		float lookAtAngle = 0.0f;
+		float targetAngle;
 
 		//configuration parameters
 		float forwardSpeedMult = 1.1f;
-		float sidewaysSpeedMult = 1.1f;
+		float sidewaysSpeedMult = 0.9f;
 		float robotSearchDir = -1.0f;
 		float minForwardSpeed = 0.1f;
 		float ballRotateDistance = 0.2f;
 		float ballDistanceError = 0.05f;
 		float teamMateSearchSpeed = 0.4f;
 		float goalAngleError = Math::PI / 30.0f;
+		float ballAngleError = Math::PI / 30.0f;
 		float goalInMiddleThreshold = Math::PI / 90.0f;
 		float ballCloseEnoughThreshold = 0.5f;
 
 		if (goal != NULL) {
 
-			float targetAngle;
+			
 			Object* closestRobot = visionResults->getRobotNearObject(ai->enemyColor, goal, Dir::FRONT);
 			if (areaLocked) {
 				targetAngle = visionResults->getObjectPartAngle(goal, lockedArea);
@@ -628,6 +638,8 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 				}
 			}
 
+			//std::cout << "goal-angle: " << goal->angle << " - targetAngle" << targetAngle << std::endl;
+
 			if (abs(targetAngle) < goalAngleError && ball->distance < ballCloseEnoughThreshold) {
 				Parameters parameters;
 				parameters["next-state"] = "manual-control";
@@ -640,28 +652,41 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 			}
 			else {
 				//turn toward goal
-				sidewaysSpeed = targetAngle * -sidewaysSpeedMult;
-				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
-				lookAtAngle = ball->angle;
+				bool spinDirection;
+				if (targetAngle > 0.0f) spinDirection = false;
+				else spinDirection = true;
+				float spinPeriod = Math::map(abs(targetAngle), 0.0f, Math::PI / 3.0f, 15.1f, 2.8f);
+				ai->dbg("spinPeriod", spinPeriod);
+				ai->dbg("spinDirection", spinDirection);
+				robot->spinAroundObject(ball, spinDirection, spinPeriod, ballRotateDistance);
 			}
 		}
 		else {
-			if (abs(ball->distance - ballRotateDistance) < ballDistanceError) {
+			if (abs(ball->distance - ballRotateDistance) < ballDistanceError && ball->angle < ballAngleError) {
 				//search for goal
-				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
-				sidewaysSpeed = teamMateSearchSpeed * robotSearchDir;
+				robot->spinAroundObject(ball, false, 2.8f, ballRotateDistance);
+				//forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
+				//sidewaysSpeed = teamMateSearchSpeed * robotSearchDir;
 			}
 			else {
-				//move ball to correct distance
-				forwardSpeed = (ball->distance - ballRotateDistance) * forwardSpeedMult;
-				sidewaysSpeed = ball->distanceX * sidewaysSpeedMult;
+				float maxSideSpeedBallAngle = 35.0f;
+				float maxSideSpeedDistanceX = 1.0f;
+				float maxSideSpeed = 0.75f;
+
+				float sidePower = Math::map(Math::abs(Math::radToDeg(ball->angle)), 0.0f, maxSideSpeedBallAngle, 0.0f, 1.0f);
+
+				float sideP = Math::map(ball->distanceX, -maxSideSpeedDistanceX, maxSideSpeedDistanceX, -maxSideSpeed, maxSideSpeed);
+				float sideSpeed = sideP * sidePower;
+
+				float approachP = Math::map(ball->distance, 0.0f, 1.0f, 0.0625f, 0.75f);
+				float forwardSpeed = approachP * (1.0f - sidePower);
+
+				robot->setTargetDir(forwardSpeed, sideSpeed);
+				robot->lookAt(ball);
 			}
-			lookAtAngle = ball->angle;
 		}
-
-		robot->setTargetDir(forwardSpeed, sidewaysSpeed);
-		robot->lookAt(Math::Rad(lookAtAngle));
-
+		ai->dbg("targetVisible", goal != NULL);
+		ai->dbg("targetAngle", targetAngle);
 	}
 }
 
@@ -772,21 +797,23 @@ void TeamController::FetchBallFrontState::step(float dt, Vision::Results* vision
 		float forwardSpeed = approachP * (1.0f - sidePower);
 
 		// don't move forwards if very close to the ball and the ball is quite far sideways
-		if (ballDistance < 0.05f && Math::abs(ball->distanceX) > 0.015f) {
+		if (ballDistance < 0.05f && Math::abs(ball->distanceX) > 0.03f) {
 			forwardSpeed = 0.0f;
 		}
 
 		robot->setTargetDir(forwardSpeed, sideSpeed);
-
+		if (ballDistance < 0.15f) {
+			robot->lookAt(ball);
+		}
 		//if can see own goal, look at it with rear camera, but only if angle delta is close to 180deg
-		if (ownGoal != NULL) {
+		else if (ownGoal != NULL) {
 			float lookAtAngle;
 			float angleDelta = ownGoal->angle - ball->angle;
 			if (angleDelta < 0.0f) angleDelta += Math::TWO_PI;
 			float angleDeltaLimit = 45.0f;
 			float lookAtAngleMultiplier = Math::map(Math::radToDeg(abs(angleDelta - Math::PI)), 0.0f, angleDeltaLimit, 0.0f, 0.5f);
 
-			lookAtAngle = Math::degToRad(ownGoal->angle - lookAtAngleMultiplier * (angleDelta - Math::PI));
+			lookAtAngle = ownGoal->angle - lookAtAngleMultiplier * (angleDelta - Math::PI);
 
 			robot->lookAtBehind(Math::Rad(lookAtAngle));
 		}
@@ -796,14 +823,14 @@ void TeamController::FetchBallFrontState::step(float dt, Vision::Results* vision
 			float angleDeltaLimit = 45.0f;
 			float lookAtAngleMultiplier = Math::map(Math::radToDeg(abs(angleDelta)), 0.0f, angleDeltaLimit, 0.0f, 0.5f);
 
-			lookAtAngle = Math::degToRad(enemyGoal->angle - lookAtAngleMultiplier * angleDelta);
+			lookAtAngle = enemyGoal->angle - lookAtAngleMultiplier * angleDelta;
 
 			robot->lookAt(Math::Rad(lookAtAngle));
 		}
 		else {
 			//turn toward ball slowly, so that its trajectory is more likely to be intercepted
 			robot->lookAt(ball, Config::lookAtP / 8.0f);
-		}
+		}		
 	}
 }
 
@@ -947,8 +974,8 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	float targetAngleMultiplier = 0.35f;
 	int passStrength = 900;
 	int directKickStrength = 3000;
-	float chipKickAdjust = 0.1f;
-	int validCountThreshold = 2;
+	float chipKickAdjust = -0.1f;
+	int validCountThreshold = 3;
 	float aimAdjustRobotDistance = 1.2f;
 	float robotInMiddleThreshold = Math::PI / 180.0f;
 
@@ -968,8 +995,8 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		else {
 			if (abs(closestRobot->angle) < robotInMiddleThreshold) {
 				areaLocked = true;
-				//TODO choose locked area based on robots position on the field
-				lockedArea = Part::RIGHTSIDE;
+				if (closestRobot->angle > target->angle) lockedArea = Part::LEFTSIDE;
+				else lockedArea = Part::RIGHTSIDE;
 				targetAngle = visionResults->getObjectPartAngle(target, lockedArea);
 			}
 			else if (closestRobot->angle > target->angle) {
@@ -1088,14 +1115,15 @@ void TeamController::ApproachBallState::onEnter(Robot* robot, Parameters paramet
 		targetType = parameters["target-type"];
 	}
 	if (parameters.find("kick-immediately") != parameters.end()) {
-		if (parameters["target-type"] == "Y") kickImmediately = true;
-		else if (parameters["target-type"] == "N") kickImmediately = false;
+		if (parameters["kick-immediately"] == "Y") kickImmediately = true;
+		else if (parameters["kick-immediately"] == "N") kickImmediately = false;
 	}
 
 	//reset runtime parameters
 	validCount = 0;
 	areaLocked = false;
 	lockedArea = Part::MIDDLE;
+	targetAngleBuffer.clear();
 
 	maxSideSpeed = 0.5f;
 
@@ -1251,8 +1279,8 @@ void TeamController::ApproachBallState::step(float dt, Vision::Results* visionRe
 	else {
 		if (abs(closestRobot->angle) < robotInMiddleThreshold) {
 			areaLocked = true;
-			//TODO choose locked area based on robots position on the field
-			lockedArea = Part::RIGHTSIDE;
+			if (closestRobot->angle > target->angle) lockedArea = Part::LEFTSIDE;
+			else lockedArea = Part::RIGHTSIDE;
 			targetAngle = visionResults->getObjectPartAngle(target, lockedArea);
 		}
 		else if (closestRobot->angle > target->angle) {
@@ -1262,6 +1290,16 @@ void TeamController::ApproachBallState::step(float dt, Vision::Results* visionRe
 			targetAngle = visionResults->getObjectPartAngle(target, Part::RIGHTSIDE);
 		}
 	}
+
+	//averages target angles for smoother robot
+	targetAngleBuffer.push_back(targetAngle);
+
+	while (targetAngleBuffer.size() > 4) targetAngleBuffer.erase(targetAngleBuffer.begin());
+
+	float targetAngleSum = 0.0f;
+
+	for (std::vector<float>::iterator it = targetAngleBuffer.begin(); it != targetAngleBuffer.end(); it++) targetAngleSum += *it;
+	targetAngle = targetAngleSum / targetAngleBuffer.size();
 
 	robot->setTargetDir(forwardSpeed, sideSpeed);
 	robot->lookAt(Math::Rad(targetAngle), Config::lookAtP);
