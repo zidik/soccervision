@@ -98,9 +98,6 @@ public:
 		TakePenaltyState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
-	private:
-		bool areaLocked;
-		Part lockedArea;
 	};
 
 	//This state is for the goalkeeper
@@ -254,6 +251,39 @@ public:
 		std::vector<float> targetAngleBuffer;
 	};
 
+	//for driving to ball for taking a kick
+	class GoToBallState : public State {
+
+	public:
+		GoToBallState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	private:
+		std::string lastState;
+		std::string nextState;
+		std::string targetType;
+		std::string kickType;
+		bool kickImmediately;
+	};
+
+	//for driving to ball for taking a kick
+	class FindTargetState : public State {
+
+	public:
+		FindTargetState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	private:
+		std::string lastState;
+		std::string nextState;
+		std::string targetType;
+		std::string kickType;
+		bool kickImmediately;
+		int validCount;
+		bool areaLocked;
+		Part lockedArea;
+	};
+
 	//For maneuvering to optimal positions for situations, don't know if will have time to implement properly
 	class ManeuverState : public State {
 
@@ -268,6 +298,7 @@ public:
 
 	void reset() override;
 	void handleRefereeCommand(const Command& cmd);
+	float getChipKickDistance(float targetDistance);
 
 private:
 	void setupStates();
@@ -277,6 +308,9 @@ private:
 	bool isCaptain;
 	int friendlyGoalCounter;
 	int enemyGoalCounter;
+	int passStrength;
+	int directKickStrength;
+	float chipKickAdjust;
 };
 
 #endif // TEAMCONTROLLER_H
