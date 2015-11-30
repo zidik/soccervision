@@ -810,7 +810,7 @@ void SoccerBot::handleServerMessage(Server::Message* message) {
 
         if (
 			activeController == NULL
-			|| (!activeController->handleCommand(command) && !activeController->handleRequest(message->content))
+			|| (!activeController->handleCommand(command) && !activeController->handleRequest(message->content) && !activeController->handleServerMessage(message))
 		) {
 			if (command.name == "get-controller") {
 				handleGetControllerCommand(message);

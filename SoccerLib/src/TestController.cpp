@@ -172,7 +172,7 @@
 * - should not see goal in invalid places
 */
 
-TestController::TestController(Robot* robot, AbstractCommunication* com, Client* client) : BaseAI(robot, com, client), targetSide(Side::BLUE), defendSide(Side::YELLOW), manualSpeedX(0.0f), manualSpeedY(0.0f), manualOmega(0.0f), manualDribblerSpeed(0), manualKickStrength(0), blueGoalDistance(0.0f), yellowGoalDistance(0.0f), lastCommandTime(-1.0), lastBallTime(-1.0), lastNearLineTime(-1.0), lastNearGoalTime(-1.0), lastInCornerTime(-1.0), lastGoalObstructedTime(-1.0), lastTargetGoalAngle(0.0f), lastBall(NULL), lastTurnAroundTime(-1.0), lastClosestGoalDistance(-1.0f), lastTargetGoalDistance(-1.0f), framesRobotOutFront(0), framesRobotOutRear(0), isRobotOutFront(false), isRobotOutRear(false), isNearLine(false), isInCorner(false), isBallInWay(false), isAvoidingBallInWay(false), inCornerFrames(0), nearLineFrames(0), nearGoalFrames(0), visibleBallCount(0), visionResults(NULL), fieldID('A'), robotID('A'), teamID('A'), teamColor(RobotColor::WHATEVER), enemyColor(RobotColor::WHATEVER) {
+TestController::TestController(Robot* robot, AbstractCommunication* com, Client* client) : BaseAI(robot, com, client), targetSide(Side::BLUE), defendSide(Side::YELLOW), manualSpeedX(0.0f), manualSpeedY(0.0f), manualOmega(0.0f), manualDribblerSpeed(0), manualKickStrength(0), blueGoalDistance(0.0f), yellowGoalDistance(0.0f), lastCommandTime(-1.0), lastBallTime(-1.0), lastNearLineTime(-1.0), lastNearGoalTime(-1.0), lastInCornerTime(-1.0), lastGoalObstructedTime(-1.0), lastTargetGoalAngle(0.0f), lastBall(NULL), lastTurnAroundTime(-1.0), lastClosestGoalDistance(-1.0f), lastTargetGoalDistance(-1.0f), framesRobotOutFront(0), framesRobotOutRear(0), isRobotOutFront(false), isRobotOutRear(false), isNearLine(false), isInCorner(false), isBallInWay(false), isAvoidingBallInWay(false), inCornerFrames(0), nearLineFrames(0), nearGoalFrames(0), visibleBallCount(0), visionResults(NULL), fieldID('X'), robotID('X'), teamID('X'), teamColor(RobotColor::WHATEVER), enemyColor(RobotColor::WHATEVER) {
 	setupStates();
 
 	speedMultiplier = 1.0f;
@@ -309,6 +309,16 @@ bool TestController::handleCommand(const Command& cmd) {
 	}
 
 	return true;
+}
+
+bool TestController::handleServerMessage(Server::Message* message) {
+	Command command = Command::parse(message->content);
+	if (command.name == "get-ids") {
+		handleGetIdsMessage(message);
+	}
+	else {	
+		return false;
+	}
 }
 
 void TestController::handleTargetVectorCommand(const Command& cmd) {
@@ -496,6 +506,15 @@ void TestController::handleRefereeCommand(const Command& cmd)
 	}	
 }
 
+void TestController::handleGetIdsMessage(Server::Message* message) {
+	std::stringstream outputString;
+
+	outputString << fieldID << "|" << teamID << "|" << robotID << "|" << (int)teamColor << "|" << (int)enemyColor;
+
+	std::cout << "! Client #" << message->client->id << " requested ids, sending: " << outputString.str() << std::endl;
+
+	message->respond(Util::json("ids", outputString.str()));
+}
 
 void TestController::updateVisionInfo(Vision::Results* visionResults) {
 	Object* blueGoal = visionResults->getLargestGoal(Side::BLUE);

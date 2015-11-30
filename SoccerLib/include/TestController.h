@@ -301,7 +301,8 @@ public:
 	virtual void setState(std::string state);
 	virtual void setState(std::string state, Parameters parameters);
 
-    bool handleCommand(const Command& cmd);
+	bool handleCommand(const Command& cmd);
+	bool handleServerMessage(Server::Message* message);
 	void handleTargetVectorCommand(const Command& cmd);
 	void handleDribblerCommand(const Command& cmd);
 	void handleAdjustDribblerLimitsCommand(const Command& cmd);
@@ -310,6 +311,7 @@ public:
 	void handleResetCommand();
 	void handleToggleGoCommand();
 	void handleToggleSideCommand();
+	void handleGetIdsMessage(Server::Message* message);
 	void handleSetFieldIDCommand(const Command& cmd);
 	void handleSetRobotIDCommand(const Command& cmd);
 	void handleSetTeamIDCommand(const Command& cmd);

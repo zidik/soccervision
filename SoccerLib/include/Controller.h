@@ -6,6 +6,7 @@
 #include "Client.h"
 #include "Command.h"
 #include "Config.h"
+#include "Server.h"
 
 #include <string>
 #include <map>
@@ -21,6 +22,7 @@ public:
 	virtual void onExit() {}
 	virtual bool handleRequest(std::string request) { return false; }
 	virtual bool handleCommand(const Command& cmd) { return false; }
+	virtual bool handleServerMessage(Server::Message* message) { return false; }
 	virtual void handleCommunicationMessage(std::string message) {}
 	virtual Side getTargetSide() { return Side::UNKNOWN; }
 	virtual bool isPlaying() { return false; }

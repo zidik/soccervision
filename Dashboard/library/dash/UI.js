@@ -887,6 +887,10 @@ Dash.UI.prototype.handleMessage = function(message) {
 			this.handleControllerMessage(message.payload);
 		break;
 		
+		case 'ids':
+			this.handleIdsMessage(message.payload);
+		break;
+		
 		case 'state':
 			this.handleStateMessage(message.payload);
 		break;
@@ -932,9 +936,30 @@ Dash.UI.prototype.handleControllerMessage = function(controller) {
 		} else {
 			$(this).hide();
 		}
-	});
+	});	
 
 	dash.socket.send('<get-state>');
+};
+
+Dash.UI.prototype.handleIdsMessage = function(ids) {
+	dash.dbg.log('! Received ids: ' + ids);
+	
+	var splitted = ids.split("|")
+	
+	$('#field-id-choice').val(splitted[0]);	
+	this.robot.fieldID = splitted[0];
+	
+	$('#team-id-choice').val(splitted[1]);	
+	this.robot.teamID = splitted[1];
+	
+	$('#robot-id-choice').val(splitted[2]);	
+	this.robot.robotID = splitted[2];
+	
+	$('#team-color-choice').val(splitted[3]);	
+	this.robot.teamColor = splitted[3];
+	
+	$('#enemy-color-choice').val(splitted[4]);	
+	this.robot.enemyColor = splitted[4];
 };
 
 Dash.UI.prototype.handleStateMessage = function(state) {
