@@ -160,6 +160,14 @@ public:
 		float kI;
 		float kD;
 		char pidUpdateCounter;
+
+		enum FetchStyle {
+			DIRECT = 0,
+			DEFENSIVE = 1,
+			OFFENSIVE = 2
+		};
+
+		FetchStyle fetchStyle;
 	};
 
 	//Fetch the ball @rear
@@ -202,6 +210,8 @@ public:
 		bool areaLocked;
 		Part lockedArea;
 		bool chipRequested;
+
+		std::vector<float> targetAngleBuffer;
 
 	};
 

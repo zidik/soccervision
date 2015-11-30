@@ -85,24 +85,25 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 					whoHasBall = TeamInPossession::ENEMY;
 				}
 
-				if (command == "KICKOFF-"){ currentSituation = GameSituation::KICKOFF; }
-				else if (command == "IFREEK--"){ currentSituation = GameSituation::INDIRECTFREEKICK; }
-				else if (command == "DFREEK--"){ currentSituation = GameSituation::DIRECTFREEKICK; }
-				else if (command == "GOALK---"){ currentSituation = GameSituation::GOALKICK; }
-				else if (command == "THROWIN-"){ currentSituation = GameSituation::THROWIN; }
-				else if (command == "CORNERK-"){ currentSituation = GameSituation::CORNERKICK; }
-				else if (command == "PENALTY-"){ currentSituation = GameSituation::PENALTY; }
-				else if (command == "GOAL----"){
+				if (command == "KICKOFF-") { currentSituation = GameSituation::KICKOFF; }
+				else if (command == "IFREEK--") { currentSituation = GameSituation::INDIRECTFREEKICK; }
+				else if (command == "DFREEK--") { currentSituation = GameSituation::DIRECTFREEKICK; }
+				else if (command == "GOALK---") { currentSituation = GameSituation::GOALKICK; }
+				else if (command == "THROWIN-") { currentSituation = GameSituation::THROWIN; }
+				else if (command == "CORNERK-") { currentSituation = GameSituation::CORNERKICK; }
+				else if (command == "PENALTY-") { currentSituation = GameSituation::PENALTY; }
+				else if (command == "GOAL----") {
 					if (commandForOurTeam) friendlyGoalCounter++;
 					else enemyGoalCounter++;
 				}
-			} else {
+			}
+			else {
 				std::string command = cmd.parameters[0].substr(3);
 
-				if (command == "START----") { 
+				if (command == "START----") {
 					std::cout << "Teamcontroller start" << std::endl;
 					if (whoHasBall == TeamInPossession::FRIENDLY) {
-						switch (currentSituation){
+						switch (currentSituation) {
 						case GameSituation::KICKOFF:
 							setState("take-kickoff");
 							std::cout << "- taking kickoff" << std::endl;
@@ -155,7 +156,7 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 					setState("manual-control");
 					return;
 				}
-			}			
+			}
 		}
 	}
 }
@@ -181,7 +182,7 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 
 	if (ball != NULL) {
 		//write down initial ball location if not done already, relative coordinates
-		if (startingBallPos.x < -999.0f){
+		if (startingBallPos.x < -999.0f) {
 			startingBallPos.x = ball->distanceX;
 			startingBallPos.y = ball->distanceY;
 
@@ -207,7 +208,7 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 
 			}
 		}
-	}	
+	}
 }
 
 void TeamController::DefendGoalState::onEnter(Robot* robot, Parameters parameters) {
@@ -253,7 +254,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		robot->stop();
 		ai->setState("find-ball-goalkeeper");
 		return;
-		
+
 		//using simpler solution for now, where robot will search for ball whenever it doesn't see it
 		/*
 		//if ball has not been seen before, start scanning for ball
@@ -272,7 +273,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 
 		bool shouldIntercept = false;
 		float forwardSpeed = 0.0f, sideWaysSpeed = 0.0f;
-		
+
 		//check if ball is close enough to fetch
 		if (ball->distance < maximumFetchDistance) {
 			robot->stop();
@@ -284,7 +285,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 			}
 			return;
 		}
-		
+
 		//check if ball is moving fast enough toward robot
 		if (ball->relativeMovement.dY < minimumMovingDeltaY) {
 			shouldIntercept = true;
@@ -302,7 +303,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		}
 		robot->setTargetDir(forwardSpeed, sideWaysSpeed);
 		robot->lookAt(ball);
-		
+
 	}
 }
 
@@ -505,7 +506,7 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 
 void TeamController::FindBallState::onEnter(Robot* robot, Parameters parameters) {
 	//TODO fill this out
-	nextState = "manual-control";	
+	nextState = "manual-control";
 	if (parameters.find("next-state") != parameters.end()) {
 		nextState = parameters["next-state"];
 	}
@@ -552,6 +553,13 @@ void TeamController::FindBallGoalkeeperState::step(float dt, Vision::Results* vi
 }
 
 void TeamController::FetchBallFrontState::onEnter(Robot* robot, Parameters parameters) {
+	fetchStyle = FetchStyle::DIRECT;
+
+	if (parameters.find("fetch-style") != parameters.end()) {
+		if (parameters["fetch-style"] == "defensive") fetchStyle = FetchStyle::DEFENSIVE;
+		else if (parameters["fetch-style"] == "offensive") fetchStyle = FetchStyle::OFFENSIVE;
+	}
+
 	maxSideSpeed = 1.3f;
 
 	pid.setInputLimits(-0.75f, 0.75f);
@@ -582,18 +590,19 @@ void TeamController::FetchBallFrontState::step(float dt, Vision::Results* vision
 		ai->setState("find-ball", parameters);
 	}
 	else {
-		float ballMinDistance = 0.3f;
+		float ballMinDistance = 1.0f;
 
 		if (ball->distance <= ballMinDistance) {
 			robot->dribbler->start();
 			robot->dribbler->useNormalLimits();
-		} else {
+		}
+		else {
 			robot->dribbler->stop();
 		}
 
 		float ballDistance = ball->getDribblerDistance();
 
-		float maxSideSpeedBallAngle = 25.0f;
+		float maxSideSpeedBallAngle = 20.0f;
 
 		float sidePower = Math::map(Math::abs(Math::radToDeg(ball->angle)), 0.0f, maxSideSpeedBallAngle, 0.0f, 1.0f);
 
@@ -615,35 +624,49 @@ void TeamController::FetchBallFrontState::step(float dt, Vision::Results* vision
 		}
 
 		robot->setTargetDir(forwardSpeed, sideSpeed);
+
+		switch (fetchStyle) {
+		case FetchStyle::DEFENSIVE:
+			if (ownGoal != NULL) {
+				float lookAtAngle;
+				float angleDelta = ownGoal->angle - ball->angle;
+				if (angleDelta < 0.0f) angleDelta += Math::TWO_PI;
+				float angleDeltaLimit = 45.0f;
+				float lookAtAngleMultiplier = Math::map(Math::radToDeg(abs(angleDelta - Math::PI)), 0.0f, angleDeltaLimit, 0.0f, 0.5f);
+
+				lookAtAngle = ownGoal->angle - lookAtAngleMultiplier * (angleDelta - Math::PI);
+
+				robot->lookAtBehind(Math::Rad(lookAtAngle));
+			}
+			else {
+				//turn toward ball slowly, so that its trajectory is more likely to be intercepted
+				robot->lookAt(ball, Config::lookAtP / 8.0f);
+			}
+			break;
+		case FetchStyle::DIRECT:
+			//turn toward ball slowly, so that its trajectory is more likely to be intercepted
+			robot->lookAt(ball, Config::lookAtP / 8.0f);
+			break;
+		case FetchStyle::OFFENSIVE:
+			if (enemyGoal != NULL) {
+				float lookAtAngle;
+				float angleDelta = enemyGoal->angle - ball->angle;
+				float angleDeltaLimit = 45.0f;
+				float lookAtAngleMultiplier = Math::map(Math::radToDeg(abs(angleDelta)), 0.0f, angleDeltaLimit, 0.0f, 0.5f);
+
+				lookAtAngle = enemyGoal->angle - lookAtAngleMultiplier * angleDelta;
+
+				robot->lookAt(Math::Rad(lookAtAngle));
+			}
+			else {
+				//turn toward ball slowly, so that its trajectory is more likely to be intercepted
+				robot->lookAt(ball, Config::lookAtP / 8.0f);
+			}
+			break;
+		}
 		if (ballDistance < 0.15f) {
 			robot->lookAt(ball);
 		}
-		//if can see own goal, look at it with rear camera, but only if angle delta is close to 180deg
-		else if (ownGoal != NULL) {
-			float lookAtAngle;
-			float angleDelta = ownGoal->angle - ball->angle;
-			if (angleDelta < 0.0f) angleDelta += Math::TWO_PI;
-			float angleDeltaLimit = 45.0f;
-			float lookAtAngleMultiplier = Math::map(Math::radToDeg(abs(angleDelta - Math::PI)), 0.0f, angleDeltaLimit, 0.0f, 0.5f);
-
-			lookAtAngle = ownGoal->angle - lookAtAngleMultiplier * (angleDelta - Math::PI);
-
-			robot->lookAtBehind(Math::Rad(lookAtAngle));
-		}
-		else if (enemyGoal != NULL) {
-			float lookAtAngle;
-			float angleDelta = enemyGoal->angle - ball->angle;
-			float angleDeltaLimit = 45.0f;
-			float lookAtAngleMultiplier = Math::map(Math::radToDeg(abs(angleDelta)), 0.0f, angleDeltaLimit, 0.0f, 0.5f);
-
-			lookAtAngle = enemyGoal->angle - lookAtAngleMultiplier * angleDelta;
-
-			robot->lookAt(Math::Rad(lookAtAngle));
-		}
-		else {
-			//turn toward ball slowly, so that its trajectory is more likely to be intercepted
-			robot->lookAt(ball, Config::lookAtP / 8.0f);
-		}		
 	}
 }
 
@@ -817,6 +840,15 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 			}
 		}
 
+		targetAngleBuffer.push_back(targetAngle);
+
+		while (targetAngleBuffer.size() > 4) targetAngleBuffer.erase(targetAngleBuffer.begin());
+
+		float targetAngleSum = 0.0f;
+
+		for (std::vector<float>::iterator it = targetAngleBuffer.begin(); it != targetAngleBuffer.end(); it++) targetAngleSum += *it;
+		targetAngle = targetAngleSum / targetAngleBuffer.size();
+
 		if (abs(targetAngle) < targetAngleError) {
 			validCount++;
 		}
@@ -839,7 +871,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 				robot->dribbler->useNormalLimits();
 				return;
 			}
-			else if (kickType.compare("chip") == 0)  {
+			else if (kickType.compare("chip") == 0) {
 				robot->dribbler->useChipKickLimits();
 
 				if (robot->dribbler->isRaised()) {
@@ -861,7 +893,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		robot->lookAt(Math::Rad(targetAngle));
 		robot->dribbler->start();
 	}
-	
+
 }
 
 void TeamController::PassBallState::onEnter(Robot* robot, Parameters parameters) {
