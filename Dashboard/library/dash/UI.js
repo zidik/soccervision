@@ -936,7 +936,9 @@ Dash.UI.prototype.handleControllerMessage = function(controller) {
 		} else {
 			$(this).hide();
 		}
-	});	
+	});
+	
+	dash.socket.send('<get-ids>');
 
 	dash.socket.send('<get-state>');
 };

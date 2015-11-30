@@ -315,6 +315,7 @@ bool TestController::handleServerMessage(Server::Message* message) {
 	Command command = Command::parse(message->content);
 	if (command.name == "get-ids") {
 		handleGetIdsMessage(message);
+		return true;
 	}
 	else {	
 		return false;
