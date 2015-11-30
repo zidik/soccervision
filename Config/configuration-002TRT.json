@@ -1,0 +1,57 @@
+{
+    "camera": {
+        "serial": {
+            "front": 374363729,
+            "rear": 391119441
+        },
+        "translation": {
+            "front": {
+                "A": 103.14,
+                "B": -0.01114,
+                "C": 0.19381,
+                "horizon": 170.61
+            },
+            "rear": {
+                "A": 108.62,
+                "B": -0.02309,
+                "C": 0.19692,
+                "horizon": 149.91
+            }
+        }
+    },
+	
+	"robot": {
+        "radius": 0.12425,
+        "dribblerDistance": 0.17,
+		"rotateDir": -1,
+		"teammateIP": "192.168.0.101",
+        "wheel": {
+            "angle1": 45.0,
+            "angle2": 135.0,
+            "angle3": -135.0,
+            "angle4": -45.0,
+            "diagonalOffset": 0.1167,
+            "radius": 0.035,
+			"maxSpeed": 6000,
+			"speedToMetric": 225.0
+        },
+		"dribbler": {
+			"speed": 9000,
+			"normalLowerLimit": 25,
+			"normalUpperLimit": 0,
+			"chipKickLowerLimit": 90,
+			"chipKickUpperLimit": 100,
+			"moveDuration": 0.4,
+			"stabilityDelay": 0.2,
+			"minServoLimit": 800,
+			"maxServoLimit": 2200
+		},
+		"chipkick": {
+			"a": 1.994E-7,
+			"b": -1.953E-4,
+			"c": 0.066,
+			"d": -2.38,
+			"e": 1254.333
+		}
+    }
+}
