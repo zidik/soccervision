@@ -16,7 +16,7 @@ TeamController::TeamController(Robot* robot, AbstractCommunication* com, Client*
 	friendlyGoalCounter = 0;
 	enemyGoalCounter = 0;
 
-	passStrength = 900;
+	passStrength = 625;
 	directKickStrength = 3000;
 	chipKickAdjust = 0.5f;
 };
@@ -882,6 +882,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 				}
 			}
 			else {
+				ai->client->send("run-fetch-ball-front");
 				robot->kick(ai->passStrength);
 				ai->setState(nextState);
 				robot->dribbler->useNormalLimits();
@@ -985,6 +986,7 @@ void TeamController::ApproachBallState::step(float dt, Vision::Results* visionRe
 
 	// make it fall out of this state after kick
 	if (robot->coilgun->getTimeSinceLastKicked() <= 0.032f && stateDuration > 0.032f) {
+		if (kickType.compare("pass") == 0) ai->client->send("run-fetch-ball-front");
 		ai->setState(nextState);
 	}
 
