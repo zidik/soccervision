@@ -713,8 +713,16 @@ void TeamController::DriveToOwnGoalState::onEnter(Robot* robot, Parameters param
 		driveSpeed = Util::toFloat(parameters["speed"]);
 	}
 	robot->clearTasks();
-	robot->driveTo(0.6f, 1.5f, 0.0f, driveSpeed);
-	robot->driveTo(0.35f, 1.5f, 0.0f, driveSpeed);
+
+	if (ai->defendSide == Side::YELLOW) {
+		robot->driveTo(0.6f, 1.5f, 0.0f, driveSpeed);
+		robot->driveTo(0.35f, 1.5f, 0.0f, driveSpeed);
+	}
+	else {
+		robot->driveTo(Config::fieldWidth - 0.6f, 1.5f, 0.0f, driveSpeed);
+		robot->driveTo(Config::fieldWidth - 0.35f, 1.5f, 0.0f, driveSpeed);
+	}
+	
 }
 
 void TeamController::DriveToOwnGoalState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
