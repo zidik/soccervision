@@ -334,7 +334,7 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 
 	if (robot->dribbler->gotBall()) {
 		Parameters parameters;
-		parameters["next-state"] = "manual-control";
+		parameters["next-state"] = "drive-to-own-goal";
 		parameters["last-state"] = "take-kickoff";
 		parameters["kick-type"] = "pass";
 		parameters["target-type"] = "team-robot";
@@ -351,7 +351,7 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 	}
 	else {
 		Parameters parameters;
-		parameters["next-state"] = "manual-control";
+		parameters["next-state"] = "drive-to-own-goal";
 		parameters["last-state"] = "take-kickoff";
 		parameters["kick-type"] = "pass";
 		parameters["target-type"] = "team-robot";
@@ -653,9 +653,13 @@ void TeamController::FetchBallRearState::step(float dt, Vision::Results* visionR
 }
 
 void TeamController::DriveToOwnGoalState::onEnter(Robot* robot, Parameters parameters) {
+	float driveSpeed = 0.5f;
+	if (parameters.find("speed") != parameters.end()) {
+		driveSpeed = Util::toFloat(parameters["speed"]);
+	}
 	robot->clearTasks();
-	robot->driveTo(0.6f, 1.5f, 0.0f, 0.5f);
-	robot->driveTo(0.35f, 1.5f, 0.0f, 0.5f);
+	robot->driveTo(0.6f, 1.5f, 0.0f, driveSpeed);
+	robot->driveTo(0.35f, 1.5f, 0.0f, driveSpeed);
 }
 
 void TeamController::DriveToOwnGoalState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
