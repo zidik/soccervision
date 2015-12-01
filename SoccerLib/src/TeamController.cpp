@@ -216,6 +216,15 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 }
 
 void TeamController::DefendGoalState::onEnter(Robot* robot, Parameters parameters) {
+	float maxSideSpeed = 1.0f;
+	float inputLimit = 0.75;
+
+	pid.setInputLimits(-inputLimit, inputLimit);
+	pid.setOutputLimits(-maxSideSpeed, maxSideSpeed);
+	pid.setMode(AUTO_MODE);
+	pid.setBias(0.0f);
+	pid.setTunings(kP, kI, kD);
+	pid.reset();
 }
 
 void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -225,6 +234,12 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	if (robot->dribbler->gotBall()) {
 		Parameters parameters;
 		parameters["next-state"] = "defend-goal";
+		parameters["last-state"] = "defend-goal";
+		parameters["kick-type"] = "chip";
+		parameters["target-type"] = "enemy-goal";
+		ai->setState("aim-kick", parameters);
+
+		/*
 		if (ai->passNeeded) {
 			robot->stop();
 			ai->setState("pass-ball", parameters);
@@ -232,7 +247,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		else {
 			robot->stop();
 			ai->setState("aim-kick", parameters);
-		}
+		}*/
 		return;
 	}
     
@@ -245,7 +260,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		ai->setState("drive-to-own-goal");
 		return;
 	}
-	if (abs(defendedGoal->distance - goalDistanceTarget) > 0.2) {
+	if (abs(defendedGoal->distance - goalDistanceTarget) > 0.30) {
 		robot->stop();
 		ai->setState("drive-to-own-goal");
 		return;
@@ -269,7 +284,20 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	goalError = Math::limit(goalError, 0.8f);
 	ballError = Math::limit(ballError, 0.8f);
 
-	robot->setTargetDir(goalError, ballError);
+	// pid-based
+	pidUpdateCounter++;
+	if (pidUpdateCounter % 10 == 0) pid.setInterval(dt);
+	pid.setSetPoint(0.0f);
+	pid.setProcessValue(ballError);
+
+	float sideSpeed = -pid.compute();
+	float sidePower = 0.15;
+	if (ball != nullptr) {
+		//std::cout << "Distance between robot and ball: " << ball->location.getLength() << std::endl;
+		sidePower = Math::map(ball->location.getLength(), 0.0f, 2.0f, 1.0f, 0.15f);
+	}
+	//std::cout << "Sidepower: " << sidePower << std::endl;
+	robot->setTargetDir(goalError * 2.0f, sideSpeed * sidePower);
 	robot->lookAtBehind(defendedGoal);
 
 
@@ -283,16 +311,21 @@ void TeamController::InterceptBallState::step(float dt, Vision::Results* visionR
 	if (robot->dribbler->gotBall()) {
 		Parameters parameters;
 		parameters["next-state"] = "defend-goal";
+		parameters["last-state"] = "defend-goal";
+		parameters["kick-type"] = "chip";
+		parameters["target-type"] = "enemy-goal";
+		ai->setState("aim-kick", parameters);
+		/*
 		if (ai->passNeeded) {
 			ai->setState("pass-ball", parameters);
 		}
 		else {
 			ai->setState("aim-kick", parameters);
-		}
+		}*/
 		return;
 	}
 
-	Object* ball = visionResults->getClosestBall();
+	Object* ball = visionResults->getClosestBall(Dir::FRONT);
 
 	//configuration parameters
 	float ballFetchMinDistance = 0.3f;
@@ -309,8 +342,10 @@ void TeamController::InterceptBallState::step(float dt, Vision::Results* visionR
 		if (ball->distance < ballFetchMinDistance) {
 			Parameters parameters;
 			parameters["next-state"] = "defend-goal";
+			parameters["last-state"] = "defend-goal";
+			parameters["fetch-style"] = "defensive";
 			if (!ball->behind) ai->setState("fetch-ball-front", parameters);
-			else  ai->setState("fetch-ball-behind", parameters);
+			else ai->setState("fetch-ball-behind", parameters);
 			return;
 		}
 		else {
@@ -576,12 +611,19 @@ void TeamController::FindBallGoalkeeperState::step(float dt, Vision::Results* vi
 
 void TeamController::FetchBallFrontState::onEnter(Robot* robot, Parameters parameters) {
 	fetchStyle = FetchStyle::DIRECT;
+	nextState = "find-ball";
+	lastState = "find-ball";
 
 	if (parameters.find("fetch-style") != parameters.end()) {
 		if (parameters["fetch-style"] == "defensive") fetchStyle = FetchStyle::DEFENSIVE;
 		else if (parameters["fetch-style"] == "offensive") fetchStyle = FetchStyle::OFFENSIVE;
 	}
-
+	if(parameters.find("next-state") != parameters.end()) {
+		nextState = parameters["next-state"];
+	}
+	if (parameters.find("last-state") != parameters.end()) {
+		lastState = parameters["last-state"];
+	}
 	maxSideSpeed = 1.3f;
 
 	pid.setInputLimits(-0.75f, 0.75f);
@@ -599,7 +641,7 @@ void TeamController::FetchBallFrontState::step(float dt, Vision::Results* vision
 
 	if (robot->dribbler->gotBall()) {
 		Parameters parameters;
-		parameters["next-state"] = "find-ball";
+		parameters["next-state"] = nextState;
 		parameters["target-type"] = "enemy-goal";
 		parameters["kick-type"] = "chip";
 		parameters["last-state"] = "fetch-ball-front";
@@ -609,7 +651,7 @@ void TeamController::FetchBallFrontState::step(float dt, Vision::Results* vision
 	if (ball == NULL) {
 		Parameters parameters;
 		parameters["next-state"] = "fetch-ball-front";
-		ai->setState("find-ball", parameters);
+		ai->setState(lastState, parameters);
 	}
 	else {
 		float ballMinDistance = 1.0f;
@@ -708,7 +750,7 @@ void TeamController::FetchBallRearState::step(float dt, Vision::Results* visionR
 }
 
 void TeamController::DriveToOwnGoalState::onEnter(Robot* robot, Parameters parameters) {
-	float driveSpeed = 0.5f;
+	float driveSpeed = 1.0f;
 	if (parameters.find("speed") != parameters.end()) {
 		driveSpeed = Util::toFloat(parameters["speed"]);
 	}
@@ -719,8 +761,8 @@ void TeamController::DriveToOwnGoalState::onEnter(Robot* robot, Parameters param
 		robot->driveTo(0.35f, 1.5f, 0.0f, driveSpeed);
 	}
 	else {
-		robot->driveTo(Config::fieldWidth - 0.6f, 1.5f, 0.0f, driveSpeed);
-		robot->driveTo(Config::fieldWidth - 0.35f, 1.5f, 0.0f, driveSpeed);
+		robot->driveTo(Config::fieldWidth - 0.6f, 1.5f, Math::PI, driveSpeed);
+		robot->driveTo(Config::fieldWidth - 0.35f, 1.5f, Math::PI, driveSpeed);
 	}
 	
 }
@@ -734,8 +776,8 @@ void TeamController::DriveToOwnGoalState::step(float dt, Vision::Results* vision
 }
 
 void TeamController::AimKickState::onEnter(Robot* robot, Parameters parameters) {
-	nextState = "manual-control";
-	lastState = "manual-control";
+	nextState = "find-ball";
+	lastState = "find-ball";
 	kickType = "pass";
 	targetType = "team-robot";
 	if (parameters.find("next-state") != parameters.end()) {

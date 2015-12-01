@@ -105,10 +105,15 @@ public:
 	class DefendGoalState : public State {
 
 	public:
-		DefendGoalState(TeamController* ai) : State(ai) {}
+		DefendGoalState(TeamController* ai) : State(ai), kP(2.5f), kI(0.75f), kD(0.00275f), pid(kP, kI, kD, 0.016f), pidUpdateCounter(0) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
-		
+	private:
+		PID pid;
+		float kP;
+		float kI;
+		float kD;
+		char pidUpdateCounter;
 	};
 
 	//For intercepting a moving ball
@@ -181,6 +186,8 @@ public:
 		};
 
 		FetchStyle fetchStyle;
+		std::string lastState;
+		std::string nextState;
 	};
 
 	//Fetch the ball @rear
