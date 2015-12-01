@@ -118,8 +118,9 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 							std::cout << "- taking direct free kick" << std::endl;
 							return;
 						case GameSituation::GOALKICK:
-							setState("take-goalkick");
-							std::cout << "- taking goal kick" << std::endl;
+							client->send("run-take-goalkick");
+							setState("get-pass");
+							std::cout << "- waiting for goal kick" << std::endl;
 							return;
 						case GameSituation::THROWIN:
 							setState("take-throwin");
@@ -400,6 +401,7 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 void TeamController::TakeFreeKickDirectState::onEnter(Robot* robot, Parameters parameters) {
 	robot->dribbler->useNormalLimits();
 	robot->dribbler->stop();
+	ai->client->send("run-defend-goal");
 }
 
 void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
