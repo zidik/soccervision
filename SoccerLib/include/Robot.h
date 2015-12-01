@@ -36,6 +36,7 @@ public:
     float getOrientation() const { return orientation; }
 	float getVelocity() { return velocity; }
 	float getDribblerStabilityDelay();
+	Configuration* getConf() { return conf; }
 	bool isAccelerating() { return velocity > lastVelocity; }
 	bool isBraking() { return velocity < lastVelocity; }
 	float getOmega() { return omega; }

@@ -12,7 +12,8 @@ TeamController::TeamController(Robot* robot, AbstractCommunication* com, Client*
 	whoHasBall = TeamInPossession::NOONE;
 	currentSituation = GameSituation::UNKNOWN;
 	passNeeded = true;
-	isCaptain = false;
+	isCaptain = robot->getConf()->robot.captain;
+	if (isCaptain) std::cout << "!!! I AM THE CAPTAIN NOW !!! ";
 	friendlyGoalCounter = 0;
 	enemyGoalCounter = 0;
 
@@ -100,7 +101,7 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 			else {
 				std::string command = cmd.parameters[0].substr(3);
 
-				if (command == "START----") {
+				if (command == "START----" && isCaptain) {
 					std::cout << "Teamcontroller start" << std::endl;
 					if (whoHasBall == TeamInPossession::FRIENDLY) {
 						switch (currentSituation) {

@@ -188,6 +188,7 @@ public:
 			dribblerDistance{ pt.get<float>("dribblerDistance") },
 			rotationDir{ pt.get<int>("rotateDir") },
 			teammateIP(pt.get<std::string>("teammateIP")),
+			captain(pt.get<bool>("captain")),
 			wheelRadius{ pt.get<float>("wheel.radius") },
 			wheelAngles{ _wheelAngles },
 			maxWheelSpeed{ pt.get<int>("wheel.maxSpeed") },
@@ -234,6 +235,7 @@ public:
 		const int maxServoLimit;
 		const float * const chipKickParameters;
 		const std::string teammateIP;
+		const bool captain;
 		
 	private:
 		float _wheelAngles[4];

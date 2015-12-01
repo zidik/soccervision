@@ -59,6 +59,7 @@
         "dribblerDistance": null,
 		"rotateDir": null,
 		"teammateIP": null,
+		"captain": null,
         "wheel": {
             "angle1": null,
             "angle2": null,
