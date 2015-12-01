@@ -135,6 +135,20 @@ public:
 		std::string nextState;
 	};
 
+	//Find any object given in as a parameter
+	class FindObjectState : public State {
+
+	public:
+		FindObjectState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+
+	private:
+		std::string nextState;
+		std::string lastState;
+		std::string targetType;
+	};
+
 	//Find the ball while defending the goal
 	class FindBallGoalkeeperState : public State {
 
@@ -285,6 +299,23 @@ public:
 		int validCount;
 		bool areaLocked;
 		Part lockedArea;
+	};
+
+	//Press an enemy robot
+	class PressOpponentState : public State {
+
+	public:
+		PressOpponentState(TeamController* ai) : State(ai), kP(3.0f), kI(1.0f), kD(0.0035f), pid(kP, kI, kD, 0.016f), pidUpdateCounter(0) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	private:
+		float maxSideSpeed;
+
+		PID pid;
+		float kP;
+		float kI;
+		float kD;
+		char pidUpdateCounter;
 	};
 
 	//For maneuvering to optimal positions for situations, don't know if will have time to implement properly

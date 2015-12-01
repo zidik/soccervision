@@ -58,6 +58,7 @@ void TeamController::setupStates() {
 	states["take-cornerkick"] = new TakeCornerKickState(this);
 	states["take-penalty"] = new TakePenaltyState(this);
 	states["find-ball"] = new FindBallState(this);
+	states["find-object"] = new FindObjectState(this);
 	states["find-ball-goalkeeper"] = new FindBallGoalkeeperState(this);
 	states["fetch-ball-front"] = new FetchBallFrontState(this);
 	states["fetch-ball-rear"] = new FetchBallRearState(this);
@@ -68,6 +69,7 @@ void TeamController::setupStates() {
 	states["approach-ball"] = new ApproachBallState(this);
 	states["go-to-ball"] = new GoToBallState(this);
 	states["find-target"] = new FindTargetState(this);
+	states["press-opponent"] = new PressOpponentState(this);
 	states["maneuver"] = new ManeuverState(this);
 }
 
@@ -472,7 +474,6 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 }
 
 void TeamController::FindBallState::onEnter(Robot* robot, Parameters parameters) {
-	//TODO fill this out
 	nextState = "manual-control";
 	if (parameters.find("next-state") != parameters.end()) {
 		nextState = parameters["next-state"];
@@ -508,6 +509,60 @@ void TeamController::FindBallState::step(float dt, Vision::Results* visionResult
 	}
 	else {
 		robot->setTargetDir(0.0f, 0.0f, ballSearchSpeed);
+	}
+}
+
+void TeamController::FindObjectState::onEnter(Robot* robot, Parameters parameters) {
+	nextState = "manual-control";
+	lastState = "manual-control";
+	targetType = "team-robot";
+	if (parameters.find("next-state") != parameters.end()) {
+		nextState = parameters["next-state"];
+	}
+	if (parameters.find("last-state") != parameters.end()) {
+		lastState = parameters["last-state"];
+	}
+	if (parameters.find("target-type") != parameters.end()) {
+		targetType = parameters["target-type"];
+	}
+}
+
+void TeamController::FindObjectState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	Object* target;
+	if (targetType.compare("team-robot") == 0) target = visionResults->getLargestRobot(ai->teamColor, Dir::FRONT);
+	else if (targetType.compare("enemy-robot") == 0) target = visionResults->getLargestRobot(ai->enemyColor, Dir::FRONT);
+	else if (targetType.compare("enemy-goal") == 0) target = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
+	else if (targetType.compare("team-goal") == 0) target = visionResults->getLargestGoal(ai->defendSide, Dir::FRONT);
+	else if (targetType.compare("ball") == 0) target = visionResults->getClosestBall(Dir::FRONT);
+	else target = visionResults->getClosestBall(Dir::FRONT);
+
+	if (robot->dribbler->gotBall()) {
+		Parameters parameters;
+		parameters["next-state"] = "find-object";
+		parameters["target-type"] = "enemy-goal";
+		parameters["kick-type"] = "chip";
+		parameters["last-state"] = "find-object";
+		ai->setState("aim-kick", parameters);
+	}
+
+	//configuration parameters
+	float searchSpeed = 3.0f;
+
+	if (target != NULL) {
+		//TODO fix this nonsense, takes a while
+		if (target->behind) {
+			Parameters parameters;
+
+			ai->setState(nextState);
+		}
+		else {
+			Parameters parameters;
+
+			ai->setState(nextState);
+		}
+	}
+	else {
+		robot->setTargetDir(0.0f, 0.0f, searchSpeed);
 	}
 }
 
@@ -1322,6 +1377,87 @@ void TeamController::FindTargetState::step(float dt, Vision::Results* visionResu
 			else {
 				robot->spinAroundObject(ball, false, 2.8f, ballRotateDistance);
 			}
+		}
+	}
+}
+
+void TeamController::PressOpponentState::onEnter(Robot* robot, Parameters parameters) {
+	maxSideSpeed = 1.3f;
+
+	pid.setInputLimits(-0.75f, 0.75f);
+	pid.setOutputLimits(-maxSideSpeed, maxSideSpeed);
+	pid.setMode(AUTO_MODE);
+	pid.setBias(0.0f);
+	pid.setTunings(kP, kI, kD);
+	pid.reset();
+}
+
+void TeamController::PressOpponentState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	Object* enemyRobot = visionResults->getLargestRobot(ai->enemyColor, Dir::FRONT);
+	Object* ownGoal = visionResults->getLargestGoal(ai->defendSide, Dir::REAR);
+	Object* ball = visionResults->getClosestBall(Dir::FRONT);
+
+	if (robot->dribbler->gotBall()) {
+		Parameters parameters;
+		parameters["next-state"] = "find-ball";
+		parameters["target-type"] = "enemy-goal";
+		parameters["kick-type"] = "chip";
+		parameters["last-state"] = "press-opponent";
+		ai->setState("aim-kick", parameters);
+	}
+
+	if (enemyRobot == NULL) {
+		Parameters parameters;
+		parameters["next-state"] = "press-opponent";
+		parameters["target-type"] = "enemy-robot";
+		ai->setState("find-object", parameters);
+	}
+	else {
+
+		if (ball != NULL && ball->distance < 0.5f) {
+			Parameters parameters;
+			parameters["fetch-style"] = "defensive";
+			ai->setState("fetch-ball-front", parameters);
+		}
+
+		float pressingDistance = 0.25f;
+		float searchForGoalDistance = 0.35f;
+		float ballMinDistance = 1.0f;
+
+		float maxSideSpeedRobotAngle = 15.0f;
+
+		float sidePower = Math::map(Math::abs(Math::radToDeg(enemyRobot->angle)), 0.0f, maxSideSpeedRobotAngle, 0.0f, 1.0f);
+
+		// pid-based
+		pidUpdateCounter++;
+		if (pidUpdateCounter % 10 == 0) pid.setInterval(dt);
+		pid.setSetPoint(0.0f);
+		pid.setProcessValue(enemyRobot->distanceX);
+
+		float sideP = -pid.compute();
+		float sideSpeed = sideP * sidePower;
+
+		float approachP = Math::map(enemyRobot->distance - pressingDistance, -0.5f, 0.5f, -1.25f, 1.25f);
+		float forwardSpeed = approachP * (1.0f - sidePower);
+
+		robot->setTargetDir(forwardSpeed, sideSpeed);
+
+		if (ownGoal != NULL) {
+			float lookAtAngle;
+			float angleDelta = ownGoal->angle - enemyRobot->angle;
+			if (angleDelta < 0.0f) angleDelta += Math::TWO_PI;
+			float angleDeltaLimit = 45.0f;
+			float lookAtAngleMultiplier = Math::map(Math::radToDeg(abs(angleDelta - Math::PI)), 0.0f, angleDeltaLimit, 0.0f, 0.5f);
+
+			lookAtAngle = ownGoal->angle - lookAtAngleMultiplier * (angleDelta - Math::PI);
+
+			robot->lookAtBehind(Math::Rad(lookAtAngle));
+		}
+		else {
+			//turn toward ball slowly, so that its trajectory is more likely to be intercepted
+			robot->lookAt(enemyRobot, Config::lookAtP / 8.0f);
+
+			if (enemyRobot->distance < searchForGoalDistance) robot->spinAroundObject(enemyRobot, false, 2.3f, pressingDistance);
 		}
 	}
 }
