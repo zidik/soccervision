@@ -29,6 +29,7 @@ public:
 
 	private:
 		Math::Vector startingBallPos;
+		std::string nextState;
 	};
 
 	//State for taking kickoff

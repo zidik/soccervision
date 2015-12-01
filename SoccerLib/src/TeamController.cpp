@@ -140,7 +140,10 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 						}
 					}
 					else {
-						setState("wait-for-kick");
+						Parameters parameters;
+						parameters["next-state"] = "fetch-ball-front";
+						setState("wait-for-kick", parameters);
+						client->send("run-defend-goal");
 						return;
 					}
 				}
@@ -169,6 +172,11 @@ float TeamController::getChipKickDistance(float targetDistance) {
 }
 
 void TeamController::WaitForKickState::onEnter(Robot* robot, Parameters parameters) {
+	nextState = "manual-control";
+	if (parameters.find("next-state") != parameters.end()) {
+		nextState = parameters["next-state"];
+	}
+	
 	//reset starting ball position
 	startingBallPos.x = -1000.0f;
 	startingBallPos.y = -1000.0f;
@@ -196,17 +204,9 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 			if (abs(currentBallPos.x - startingBallPos.x) > kickDetectionDeltaPosition || abs(currentBallPos.y - startingBallPos.y) > kickDetectionDeltaPosition /*|| ball->relativeMovement.speed > kickDetectionMovingSpeed*/) {
 				//kick detected
 
-				//TO-DO write here what states to go to based on game situation, currently
-				ai->setState("manual-control");
-				return;
-				//if ()
-				switch (ai->currentSituation) {
-				case GameSituation::KICKOFF:
-					ai->setState("");
-					//TODO send to teammate to defend goal
-					return;
-				}
-
+				Parameters parameters;
+				parameters["fetch-style"] = "defensive";
+				ai->setState(nextState, parameters);
 			}
 		}
 	}
@@ -812,6 +812,19 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	int validCountThreshold = 3;
 	float aimAdjustRobotDistance = 1.2f;
 	float robotInMiddleThreshold = Math::PI / 180.0f;
+	float maxAimDuration = 3.5f;
+
+	// if aiming has taken too long, perform a weak kick and give up
+	if (combinedDuration > maxAimDuration) {
+		Object* ownGoal = visionResults->getLargestGoal(ai->defendSide, Dir::ANY);
+
+		// only perform the give-up weak kick if not looking towards own goal
+		if (ownGoal == NULL || ownGoal->behind || abs(ownGoal->angle) > Math::PI / 3.0f) {
+			robot->kick(ai->passStrength);
+			ai->setState(lastState);
+			return;
+		}
+	}
 
 	if (target == NULL) {
 		robot->spinAroundDribbler();
@@ -841,12 +854,11 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 			}
 		}
 
+		//average filtering
+		int numberOfSamples = 4;
 		targetAngleBuffer.push_back(targetAngle);
-
-		while (targetAngleBuffer.size() > 4) targetAngleBuffer.erase(targetAngleBuffer.begin());
-
+		while (targetAngleBuffer.size() > numberOfSamples) targetAngleBuffer.erase(targetAngleBuffer.begin());
 		float targetAngleSum = 0.0f;
-
 		for (std::vector<float>::iterator it = targetAngleBuffer.begin(); it != targetAngleBuffer.end(); it++) targetAngleSum += *it;
 		targetAngle = targetAngleSum / targetAngleBuffer.size();
 

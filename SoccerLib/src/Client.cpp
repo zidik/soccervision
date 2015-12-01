@@ -101,6 +101,8 @@ void Client::send(std::string message) {
 		}
 	}
 
+	return;
+
 	//metadata_it->second->record_sent_message(message);
 }
 /*
