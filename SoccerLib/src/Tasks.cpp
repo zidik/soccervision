@@ -62,19 +62,21 @@ void DriveToTask::onStart(Robot& robot, float dt) {
 }
 
 bool DriveToTask::onStep(Robot& robot, float dt) {
-    Math::Position pos = robot.getPosition();
+	Math::Position pos = robot.getPosition();
 	Math::Vector target(targetX, targetY);
 
-    currentDistance = pos.location.distanceTo(target);
+	currentDistance = pos.location.distanceTo(target);
 
-    float currentOrientation = pos.orientation;
-    float orientationDiff = Math::getAngleDiff(currentOrientation, targetOrientation);
+	float currentOrientation = pos.orientation;
+	float orientationDiff = Math::getAngleDiff(currentOrientation, targetOrientation);
 
-    if (currentDistance <= positionThreshold && Math::abs(orientationDiff) < orientationThreshold) {
-        return false;
-    }
+	if (currentDistance <= positionThreshold && Math::abs(orientationDiff) < orientationThreshold) {
+		return false;
+	}
 
-    float omega = orientationDiff / (currentDistance * 0.5f);
+	float alpha = (currentDistance * 0.5f);
+	if (alpha < 0.1f) {alpha = 0.1f;}
+	float omega = orientationDiff / alpha;
     float useSpeed = speed;
 
     if (currentDistance < 0.2f) {
@@ -400,7 +402,7 @@ std::string DriveForTask::toString() {
 
 // drive behind ball
 void DriveBehindBallTask::onStart(Robot& robot, float dt) {
-	startSpeed = robot.getVelocity();
+	startSpeed = robot.getSpeed();
 	duration = 0.0f;
 	arcRadius = offsetDistance / Math::cos(targetAngle - Math::PI);
 	arcDistance = arcRadius * Math::TWO_PI / 4.0f; // quarter of a circle
@@ -434,7 +436,7 @@ bool DriveBehindBallTask::onStep(Robot& robot, float dt) {
 	float sideSpeed = Math::map(travelledDistance, ballSideDistance, totalDistance, 0.0f, useSpeed);
 	float forwardSpeed = useSpeed - sideSpeed;
 
-	Math::Vector dirVector = Math::Vector::createForwardVec(targetAngle, forwardSpeed/* * brakeMultiplier*/);
+	Math::Vector dirVector = Math::Vector::fromPolar(targetAngle, forwardSpeed/* * brakeMultiplier*/);
 
 	dirVector.y += side * sideSpeed;
 

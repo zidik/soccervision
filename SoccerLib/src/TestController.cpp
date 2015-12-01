@@ -851,7 +851,7 @@ std::string TestController::getJSON() {
 	stream << "\"stateDuration\": \"" << currentStateDuration << "\",";
 	stream << "\"combinedDuration\": \"" << combinedStateDuration << "\",";
 	stream << "\"totalDuration\": \"" << totalDuration << "\",";
-	stream << "\"realSpeed\": \"" << robot->getVelocity() << "\",";
+	stream << "\"realSpeed\": \"" << robot->getSpeed() << "\",";
 	stream << "\"travelledDistance\": \"" << robot->getTravelledDistance() << "\",";
 	stream << "\"travelledTurns\": \"" << (robot->getTravelledRotation() / Math::TWO_PI) << "\",";
 	stream << "\"targetSide\": \"" << (targetSide == Side::BLUE ? "blue" : targetSide == Side::YELLOW ? "yellow" : "not chosen") << "\",";
@@ -1589,7 +1589,7 @@ void TestController::FetchBallFrontState::onEnter(Robot* robot, Parameters param
 
 // resets decision properties
 void TestController::FetchBallFrontState::reset(Robot* robot) {
-	forwardSpeed = robot->getVelocity();
+	forwardSpeed = robot->getSpeed();
 	startBrakingDistance = -1.0f;
 	startBrakingVelocity = -1.0f;
 	lastBallDistance = -1.0f;
@@ -1702,7 +1702,7 @@ void TestController::FetchBallFrontState::step(float dt, Vision::Results* vision
 	float offsetDistance = 0.4f;
 
 	float ballDistance = ball->getDribblerDistance();
-	float realSpeed = robot->getVelocity();
+	float realSpeed = robot->getSpeed();
 	float ballAngle = ball->angle;
 	float goalAngle = goal->angle;
 	float angleDiff = Math::abs(goalAngle - ballAngle);
@@ -1730,7 +1730,7 @@ void TestController::FetchBallFrontState::step(float dt, Vision::Results* vision
 	// only choose the braking distance once
 	if (startBrakingDistance == -1.0f && ballDistance < adaptiveBrakingDistance) {
 		startBrakingDistance = adaptiveBrakingDistance;
-		startBrakingVelocity = robot->getVelocity();
+		startBrakingVelocity = robot->getSpeed();
 	}
 
 	// calculate the target angle to drive behind the ball, facing the target goal
@@ -1778,7 +1778,7 @@ void TestController::FetchBallFrontState::step(float dt, Vision::Results* vision
 
 	ai->dbg("forwardSpeed", forwardSpeed);
 	ai->dbg("limitedSpeed", limitedSpeed);
-	ai->dbg("realSpeed", robot->getVelocity());
+	ai->dbg("realSpeed", robot->getSpeed());
 	ai->dbg("startBrakingDistance", startBrakingDistance);
 	ai->dbg("startBrakingVelocity", startBrakingVelocity);
 	ai->dbg("ballDistance", ballDistance);
@@ -1792,7 +1792,7 @@ void TestController::FetchBallFrontState::step(float dt, Vision::Results* vision
 }
 
 void TestController::FetchBallDirectState::onEnter(Robot* robot, Parameters parameters) {
-	forwardSpeed = robot->getVelocity();
+	forwardSpeed = robot->getSpeed();
 	//nearLineFrames = 0;
 	//nearLine = false;
 	robot->coilgun->cancelKickOnceGotBall(true);
@@ -1885,7 +1885,7 @@ void TestController::FetchBallDirectState::step(float dt, Vision::Results* visio
 	float brakeAcceleration = 2.0f * ai->speedMultiplier;
 	float nearLineSpeed = 0.4f;
 	float nearBallDistance = 0.1f;
-	float realSpeed = robot->getVelocity();
+	float realSpeed = robot->getSpeed();
 	float ballDistance = ball->getDribblerDistance();
 	float brakeDistance = Math::getAccelerationDistance(forwardSpeed, 0.0f, brakeAcceleration);
 
@@ -1955,7 +1955,7 @@ void TestController::FetchBallBehindState::onEnter(Robot* robot, Parameters para
 	startBallDistance = -1.0f;
 	searchDir = 0.0f;
 	targetMode = TargetMode::UNDECIDED;
-	forwardSpeed = robot->getVelocity();
+	forwardSpeed = robot->getSpeed();
 	avgBallGoalDistance.clear();
 }
 
@@ -2207,7 +2207,7 @@ void TestController::FetchBallBehindState::step(float dt, Vision::Results* visio
 }
 
 void TestController::FetchBallNearState::onEnter(Robot* robot, Parameters parameters) {
-	enterVelocity = robot->getVelocity();
+	enterVelocity = robot->getSpeed();
 	enterDistance = -1.0f;
 	smallestForwardSpeed = -1.0f;
 	useChipKick = false;
@@ -3249,7 +3249,7 @@ float TestController::DriveCircleState::getCircleTargetAngle(float start, float 
 }
 
 void TestController::AccelerateState::onEnter(Robot* robot, Parameters parameters) {
-	forwardSpeed = robot->getVelocity();
+	forwardSpeed = robot->getSpeed();
 }
 
 void TestController::AccelerateState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -3280,7 +3280,7 @@ void TestController::AccelerateState::step(float dt, Vision::Results* visionResu
 	float minApproachSpeed = 0.3f;
 	float accelerateAcceleration = 2.8f;
 	float brakeAcceleration = 2.5f;
-	float realSpeed = robot->getVelocity();
+	float realSpeed = robot->getSpeed();
 	float ballDistance = ball->getDribblerDistance();
 	float brakeDistance = Math::getAccelerationDistance(forwardSpeed, 0.0f, brakeAcceleration);
 	bool braking = ballDistance < brakeDistance;

@@ -32,13 +32,13 @@ public:
 
 	void step(float dt, Vision::Results* visionResults);
 
-    const Math::Position getPosition() const { return Math::Position(x, y, orientation);  }
+    Math::Position getPosition() const { return Math::Position(location, orientation);  }
     float getOrientation() const { return orientation; }
-	float getVelocity() { return velocity; }
+	float getSpeed() const { return speed; }
 	float getDribblerStabilityDelay();
 	Configuration* getConf() { return conf; }
-	bool isAccelerating() { return velocity > lastVelocity; }
-	bool isBraking() { return velocity < lastVelocity; }
+	bool isAccelerating() { return speed > lastSpeed; }
+	bool isBraking() { return speed < lastSpeed; }
 	float getOmega() { return omega; }
 	float getTravelledDistance() { return travelledDistance; }
 	float getTravelledRotation() { return travelledRotation; }
@@ -60,7 +60,8 @@ public:
 
 	void lookAt(Object* object, float lookAtP = Config::lookAtP, bool stare = true);
 	void lookAt(const Math::Angle& angle, float lookAtP = Config::lookAtP);
-	void lookAtBehind(Object* object);
+    void lookAt(const Math::Vector target, float lookAtP = Config::lookAtP);
+    void lookAtBehind(Object* object);
 	void lookAtBehind(const Math::Angle& angle);
 	void turnBy(float angle, float speed = 1.0f);
     void driveTo(float x, float y, float orientation, float speed = 1.0f);
@@ -109,11 +110,10 @@ private:
 	void debugBallList(std::string name, std::stringstream& stream, BallLocalizer::BallList balls);
 	void handleQueuedChipKickRequest();
 
-    float x;
-    float y;
+    Math::Vector location;
     float orientation;
-	float velocity;
-	float lastVelocity;
+	float speed;
+	float lastSpeed;
 	float omega;
 	float travelledDistance;
 	float travelledRotation;
@@ -143,7 +143,6 @@ private:
 	Odometer::Movement movement;
 	ParticleFilterLocalizer::Measurements measurements;
 	BallLocalizer::BallList visibleBalls;
-	Math::Polygon currentCameraFOV;
 
 	PID lookAtPid;
 	char pidUpdateCounter;

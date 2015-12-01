@@ -127,7 +127,7 @@ Matrix4x1::Matrix4x1(
 
 
 // 2D Vector
-Vector Vector::createForwardVec(float dir, float magnitude) {
+Vector Vector::fromPolar(float dir, float magnitude) {
     return Vector(
         Math::cos(dir) * magnitude,
         Math::sin(dir) * magnitude
@@ -136,6 +136,11 @@ Vector Vector::createForwardVec(float dir, float magnitude) {
 
 float Vector::getLength() const {
     return sqrt(pow(x, 2) + pow(y, 2));
+}
+
+float Vector::getAngle() const
+{
+    return atan2(y, x);
 }
 
 float Vector::distanceTo(const Vector& b) const {

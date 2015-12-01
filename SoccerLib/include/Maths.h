@@ -291,7 +291,8 @@ public:
 	Vector(float x, float y) : x(x), y(y) {}
 
 	float getLength() const;
-	float distanceTo(const Vector& b) const;
+    float getAngle() const;
+    float distanceTo(const Vector& b) const;
 	float dotProduct(const Vector& b) const;
 	float getAngleBetween(const Vector& b) const;
 	Vector getRotated(float angle) const;
@@ -303,7 +304,7 @@ public:
 	Vector& operator+=(const Vector& other);
 	Vector& operator*=(float magnitude);
 	Vector& operator/=(float divisor);
-	static Vector createForwardVec(float dir, float magnitude = 1.0f);
+	static Vector fromPolar(float dir, float magnitude = 1.0f);
 
 	float x = 0.0f;
 	float y = 0.0f;
@@ -362,6 +363,7 @@ static float getSlope(std::vector<Vector> points)
 
 struct Position {
 	Position() = default;
+    Position(const Math::Vector &location, float orientation) : location(location), orientation(orientation) {}
 	Position(float x, float y, float orientation) : location(x, y), orientation(orientation) {}
 
 	Vector location;
@@ -460,7 +462,7 @@ private:
 };
 
 static float getAngleBetween(Math::Vector pointA, Math::Vector pointB, float orientationB) {
-	Vector forwardVec = Vector::createForwardVec(orientationB);
+	Vector forwardVec = Vector::fromPolar(orientationB);
 	Vector dirVec = pointA - pointB;
 
 	float angle = atan2(dirVec.y, dirVec.x) - atan2(forwardVec.y, forwardVec.x);

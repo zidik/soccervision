@@ -105,12 +105,10 @@ public:
 	class DefendGoalState : public State {
 
 	public:
-		DefendGoalState(TeamController* ai) : State(ai), ballWasSeen(false) {}
+		DefendGoalState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
-
-	private:
-		bool ballWasSeen;
+		
 	};
 
 	//For intercepting a moving ball
@@ -187,12 +185,6 @@ public:
 		DriveToOwnGoalState(TeamController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
-
-	private:
-		float goalSearchDir;
-		bool droveTowardEnemyGoal;
-		bool droveTowardFriendlyGoal;
-		bool searchedEnemyGoal;
 	};
 
 	//Aim for a kick

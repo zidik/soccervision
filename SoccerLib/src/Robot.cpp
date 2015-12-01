@@ -16,15 +16,13 @@
 
 typedef ParticleFilterLocalizer::Landmark::Type LandmarkType;
 
-Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : conf(conf), com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f), pidUpdateCounter(0) {
+Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : location(0.0f, 0.0f) , conf(conf), com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f), pidUpdateCounter(0) {
     targetOmega = 0;
     targetDir = Math::Vector(0, 0);
    
-    x = 0.0f;
-    y = 0.0f;
     orientation = 0.0f;
-	velocity = 0.0f;
-	lastVelocity = 0.0f;
+	speed = 0.0f;
+	lastSpeed = 0.0f;
 	omega = 0.0f;
 	travelledDistance = 0.0f;
 	travelledRotation = 0.0f;
@@ -201,21 +199,24 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 		wheelRR->getRealOmega()
 	);
 
-	Math::Vector velocityVec(movement.velocityX, movement.velocityY);
-	lastVelocity = velocity;
-	velocity = velocityVec.getLength();
-
+    
+	Math::Vector velocityOdometer(movement.velocityX, movement.velocityY);
+	lastSpeed = speed;
+	speed = velocityOdometer.getLength();
 	omega = movement.omega;
 
-	travelledDistance += velocity * dt;
-	travelledRotation += movement.omega * dt;
+	travelledDistance += speed * dt;
+	travelledRotation += omega * dt;
 
-	updateMeasurements();
+    Math::Vector locationChangeOdometer = velocityOdometer*dt;
+    ballLocalizer->transformLocations(locationChangeOdometer, movement.omega*dt);
 	updateBallLocalizer(visionResults, dt);
-	handleQueuedChipKickRequest();
+	
 
+    //TODO: Shouldn't it be move& update, not update& move?
+    updateMeasurements();
 	robotLocalizer->update(measurements);
-	robotLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt);
+	robotLocalizer->move(movement.velocityX, -movement.velocityY, movement.omega, dt);
 	odometerLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt);
 	robotLocalizer->calculatePosition();
 	Math::Position localizerPosition = robotLocalizer->getPosition();
@@ -223,11 +224,12 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	//As rest of the code uses unconventional coordinate system, result must be changed:
 	localizerPosition.location.y = conf->field.height - localizerPosition.location.y;
 	//HACK END
+
+    //TODO: Remove this, it's legacy
 	Math::Position odometerPosition = odometerLocalizer->getPosition();
 
 	// use localizer position
-	x = localizerPosition.location.x;
-	y = localizerPosition.location.y;
+    location = localizerPosition.location;
 	orientation = localizerPosition.orientation;
 
 	// use odometer position
@@ -241,6 +243,8 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 
 	//using odometer
 	//updateAllObjectsAbsoluteMovement(visionResults, odometerLocalizer->x, odometerLocalizer->y, odometerLocalizer->orientation, dt);
+
+    handleQueuedChipKickRequest();
 
 	std::stringstream stream;
 
@@ -292,8 +296,9 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	stream << "},";
 
 	debugBallList("ballsRaw", stream, visibleBalls);
-	debugBallList("ballsFiltered", stream, ballLocalizer->balls);
+	debugBallList("ballsFiltered", stream, ballLocalizer->getBalls());
 
+    Math::Polygon currentCameraFOV = cameraFOV.getRotated(orientation).getTranslated(location.x,location.y) ;
 	stream << "\"cameraFOV\":" << currentCameraFOV.toJSON() << ",";
 
 	stream << "\"tasks\": [";
@@ -358,7 +363,7 @@ void Robot::updateMeasurements() {
 	for (Pixel pixel : visionResults->rear->fieldCorners)
 	{
 		ParticleFilterLocalizer::Measurement measurement(LandmarkType::FieldCorner, pixel, Dir::REAR);
-			measurements.push_back(measurement);
+		measurements.push_back(measurement);
 	}
 
 }
@@ -379,30 +384,18 @@ void Robot::updateBallLocalizer(Vision::Results* visionResults, float dt) {
 	BallLocalizer::BallList rearBalls;
 	
 	if (visionResults->front != NULL) {
-		frontBalls = ballLocalizer->extractBalls(
-			*visionResults->front->balls,
-			x,
-			y,
-			orientation
-		);
+		frontBalls = ballLocalizer->extractBalls(*visionResults->front->balls);
 	}
 
 	if (visionResults->rear != NULL) {
-		rearBalls = ballLocalizer->extractBalls(
-			*visionResults->rear->balls,
-			x,
-			y,
-			orientation
-		);
+		rearBalls = ballLocalizer->extractBalls(*visionResults->rear->balls);
 	}
 	
 	visibleBalls.reserve(frontBalls.size() + rearBalls.size());
 	visibleBalls.insert(visibleBalls.end(), frontBalls.begin(), frontBalls.end());
 	visibleBalls.insert(visibleBalls.end(), rearBalls.begin(), rearBalls.end());
 
-	currentCameraFOV = cameraFOV.getRotated(orientation).getTranslated(x, y);
-
-	ballLocalizer->update(visibleBalls, currentCameraFOV, dt);
+	ballLocalizer->update(visibleBalls, cameraFOV, dt);
 
 	//std::cout << "@ UP front: " << frontBalls.size() << ", rear: " << rearBalls.size() << ", merged: " << visibleBalls.size() << std::endl;
 }
@@ -465,7 +458,7 @@ void Robot::setTargetDir(float x, float y, float omega) {
 }
 
 void Robot::setTargetDir(const Math::Angle& dir, float speed, float omega) {
-    Math::Vector dirVector = Math::Vector::createForwardVec(dir.rad(), speed);
+    Math::Vector dirVector = Math::Vector::fromPolar(dir.rad(), speed);
 
     setTargetDir(dirVector.x, dirVector.y, omega);
 }
@@ -574,8 +567,7 @@ void Robot::handleQueuedChipKickRequest() {
 }
 
 void Robot::setPosition(float x, float y, float orientation) {
-    this->x = x;
-    this->y = y;
+    location = Math::Vector(x, y);
 	this->orientation = Math::floatModulus(orientation, Math::TWO_PI);
 
 	robotLocalizer->setPosition(x, y, orientation);
@@ -768,11 +760,15 @@ void Robot::debugBallList(std::string name, std::stringstream& stream, BallLocal
             first = false;
         }
 
+        Math::Vector ballWorldLocation = ball->location.getRotated(orientation) + location;
+        Math::Vector ballWorldVelocity = ball->velocity.getRotated(orientation);
+
 		stream << "{";
-		stream << "\"x\": " << ball->location.x << ",";
-		stream << "\"y\": " << ball->location.y << ",";
-		stream << "\"velocityX\": " << ball->velocity.x << ",";
-		stream << "\"velocityY\": " << ball->velocity.y << ",";
+        
+		stream << "\"x\": " << ballWorldLocation.x << ",";
+		stream << "\"y\": " << ballWorldLocation.y << ",";
+		stream << "\"velocityX\": " << ballWorldVelocity.x << ",";
+		stream << "\"velocityY\": " << ballWorldVelocity.y << ",";
 		stream << "\"createdTime\": " << ball->createdTime << ",";
 		stream << "\"updatedTime\": " << ball->updatedTime << ",";
 		stream << "\"shouldBeRemoved\": " << (ball->shouldBeRemoved() ? "true" : "false") << ",";
