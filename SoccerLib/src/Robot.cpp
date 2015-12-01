@@ -199,8 +199,8 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 		wheelRR->getRealOmega()
 	);
 
-    
-	Math::Vector velocityOdometer(movement.velocityX, movement.velocityY);
+    // negative Y direction is hack because odometry uses unconventional coordinate system.
+	Math::Vector velocityOdometer(movement.velocityX, -movement.velocityY);
 	lastSpeed = speed;
 	speed = velocityOdometer.getLength();
 	omega = movement.omega;
@@ -216,6 +216,7 @@ void Robot::step(float dt, Vision::Results* visionResults) {
     //TODO: Shouldn't it be move& update, not update& move?
     updateMeasurements();
 	robotLocalizer->update(measurements);
+    // negative Y direction is hack because odometry uses unconventional coordinate system.
 	robotLocalizer->move(movement.velocityX, -movement.velocityY, movement.omega, dt);
 	odometerLocalizer->move(movement.velocityX, movement.velocityY, movement.omega, dt);
 	robotLocalizer->calculatePosition();
