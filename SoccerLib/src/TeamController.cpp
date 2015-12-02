@@ -830,18 +830,26 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	int validCountThreshold = 5;
 	float aimAdjustRobotDistance = 1.2f;
 	float robotInMiddleThreshold = Math::PI / 180.0f;
-	float maxAimDuration = 3.5f;
-
+	float maxAimDuration = 2.0f;
+	
 	// if aiming has taken too long, perform a weak kick and give up
 	if (combinedDuration > maxAimDuration) {
+		if (kickType.compare("pass") == 0) {
+			targetType = "team-robot";
+			kickType = "pass";
+			ai->client->send("run-get-pass");
+		}
+	}
+
+	if (combinedDuration > maxAimDuration * 3) {
 		Object* ownGoal = visionResults->getLargestGoal(ai->defendSide, Dir::ANY);
 
-		// only perform the give-up weak kick if not looking towards own goal
 		if (ownGoal == NULL || ownGoal->behind || abs(ownGoal->angle) > Math::PI / 3.0f) {
-			robot->kick(ai->passStrength);
+			robot->kick(ai->directKickStrength);
 			ai->setState(lastState);
 			return;
 		}
+
 	}
 
 	//if enemy robot is close in front, turn around and try to drive around him
@@ -936,6 +944,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 			}
 
 		}
+		
 		robot->setTargetDir(0.0f, 0.0f);
 		robot->lookAt(Math::Rad(targetAngle));
 		robot->dribbler->start();
