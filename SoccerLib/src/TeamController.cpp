@@ -797,6 +797,10 @@ void TeamController::AimKickState::onEnter(Robot* robot, Parameters parameters) 
 	validCount = 0;
 	areaLocked = false;
 	lockedArea = Part::MIDDLE;
+
+	avoidBallSide = TargetMode::UNDECIDED;
+	validKickFrames = 0;
+	avoidBallDuration = 0.0f;
 }
 
 void TeamController::AimKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -861,8 +865,9 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 			}
 		}
 
+
 		//average filtering
-		int numberOfSamples = 4;
+		/*int numberOfSamples = 4;
 		targetAngleBuffer.push_back(targetAngle);
 		while (targetAngleBuffer.size() > numberOfSamples) targetAngleBuffer.erase(targetAngleBuffer.begin());
 		float targetAngleSum = 0.0f;
@@ -913,7 +918,161 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		robot->setTargetDir(0.0f, 0.0f);
 		robot->lookAt(Math::Rad(targetAngle));
 		robot->dribbler->start();
+		*/
 	}
+
+
+	Object* goal = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
+	Object* rearGoal = visionResults->getLargestGoal(Side::UNKNOWN, Dir::REAR);
+
+	// configuration parameters
+	float searchPeriod = 2.0f;
+	float reversePeriod = 1.0f;
+	float reverseSpeed = 1.5f;
+	//float maxAimDuration = 6.0f;
+	int weakKickStrength = 2250; // kicks it a bit, but might stay on the field in new place
+
+	
+
+	// configuration
+	float avoidBallSpeed = 0.65f;
+	float minForwardSpeed = 0.1f;
+	float minBallAvoidSideSpeed = 0.25f;
+	float maxRobotKickOmega = Math::PI / 4.0f;
+	float maxBallAvoidTime = 1.5f;
+	double minKickInterval = 1.0;
+
+	// need to decide whether kicking is a good idea
+	int halfWidth = Config::cameraWidth / 2;
+	int leftEdge = goal->x - goal->width / 2;
+	int rightEdge = goal->x + goal->width / 2;
+	int goalWidth = goal->width;
+	int goalHalfWidth = goalWidth / 2;
+	int goalKickThresholdPixels = (int)((float)goalHalfWidth * (1.0f - Config::goalKickThreshold));
+	double timeSinceLastKick = lastKickTime != 0.0 ? Util::duration(lastKickTime) : -1.0;
+	Vision::Obstruction goalPathObstruction = ai->getGoalPathObstruction();
+	bool isGoalPathObstructed = goalPathObstruction.left || goalPathObstruction.right;
+	float forwardSpeed = 0.0f;
+	float sideSpeed = 0.0f;
+	Vision::BallInWayMetric ballInWayMetric = visionResults->getBallInWayMetric(*visionResults->front->balls, goal->y + goal->height / 2);
+	bool validWindow = false;
+	bool isKickTooSoon = lastKickTime != -1.0 && timeSinceLastKick < minKickInterval;
+	bool isLowVoltage = robot->coilgun->isLowVoltage();
+	bool isBallInWay = ai->shouldAvoidBallInWay(ballInWayMetric, goal->distance);
+	bool shouldManeuverBallInWay = ai->shouldManeuverBallInWay(ballInWayMetric, goal->distance, isLowVoltage);
+
+
+	if (isGoalPathObstructed) {
+		// check whether there's another ball close by
+		float anotherBallCloseDistance = 0.3f;
+		Object* nextClosestBall = visionResults->getNextClosestBall(Dir::FRONT);
+		bool nearbyAnotherBall = nextClosestBall != NULL && nextClosestBall->getDribblerDistance() < anotherBallCloseDistance;
+
+		// decide which way to avoid the balls once
+		if (avoidBallSide == TargetMode::UNDECIDED) {
+			if (isGoalPathObstructed) {
+				if (goalPathObstruction.invalidCountLeft > goalPathObstruction.invalidCountRight) {
+					avoidBallSide = TargetMode::RIGHT;
+				}
+				else {
+					avoidBallSide = TargetMode::LEFT;
+				}
+			}
+			else {
+				// make sure to drive near the centerline of the field not out further
+				if (robot->getPosition().location.y < Config::fieldHeight / 2.0f) {
+					avoidBallSide = ai->targetSide == Side::BLUE ? TargetMode::RIGHT : TargetMode::LEFT;
+				}
+				else {
+					avoidBallSide = ai->targetSide == Side::BLUE ? TargetMode::LEFT : TargetMode::RIGHT;
+				}
+			}
+		}
+
+		
+
+		avoidBallDuration += dt;
+
+		sideSpeed = (avoidBallSide == TargetMode::LEFT ? -1.0f : 1.0f) * Math::map(avoidBallDuration, 0.0f, 1.0f, 0.0f, avoidBallSpeed);
+
+		// not sure if this is good after all
+		forwardSpeed = Math::map(goal->distance, 0.5f, 1.0f, 0.0f, Math::abs(sideSpeed));
+	}
+
+	// check whether the aiming is precise enough
+	if (!goal->behind) {
+		if (
+			leftEdge + goalKickThresholdPixels < halfWidth
+			&& rightEdge - goalKickThresholdPixels > halfWidth
+			) {
+			validWindow = true;
+		}
+	}
+
+	// always apply some forward speed (can think that has ball when really doesn't)
+	forwardSpeed = Math::max(forwardSpeed, minForwardSpeed);
+
+	bool isRobotOmegaLowEnough = Math::abs(robot->getOmega()) <= maxRobotKickOmega;
+	bool isFrameValid = validWindow
+		&& !isKickTooSoon
+		&& !isGoalPathObstructed
+		&& isRobotOmegaLowEnough
+		&& robot->dribbler->gotBall(true)
+		&& !shouldManeuverBallInWay;
+
+	if (isFrameValid) {
+		validKickFrames++;
+	}
+	else {
+		validKickFrames = 0;
+	}
+
+	bool performKick = validKickFrames >= Config::goalKickValidFrames;
+	bool wasKicked = false;
+	bool waitingBallToSettle = false;
+	bool useChipKick = false;
+	float chipKickDistance = 0.0f;
+
+	// only perform the kick if valid view has been observed for a couple of frames
+	if (performKick) {
+		if (isBallInWay) {
+			useChipKick = robot->dribbler->getBallInDribblerTime() >= 0.2f;
+
+			if (useChipKick) {
+				// TODO closest ball may be too close to kick over
+				//float chipKickDistance = Math::max(goal->distance - 1.0f, 0.5f);
+
+				// try to kick 1m past the furhest ball but no further than 1m before the goal, also no less then 0.5m
+				/*chipKickDistance = ai->getChipKickDistance(ballInWayMetric, goal->distance);
+
+				if (robot->chipKick(chipKickDistance)) {
+					wasKicked = true;
+				}*/
+			}
+			else {
+				waitingBallToSettle = true;
+			}
+		}
+		else {
+			// TODO restore normal kicking
+			robot->kick();
+			//robot->chipKick(Math::min(Math::max(goal->distance - 0.5f, 1.0f), 1.5f));
+
+			wasKicked = true;
+		}
+
+		if (wasKicked) {
+			ai->resetLastBall();
+
+			lastKickTime = Util::millitime();
+		}
+	}
+	else {
+		robot->setTargetDir(forwardSpeed, sideSpeed);
+		robot->lookAt(goal, Config::lookAtP, true);
+	}
+
+
 
 }
 
