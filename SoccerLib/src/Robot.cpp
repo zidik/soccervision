@@ -480,13 +480,24 @@ void Robot::spinAroundObject(Object* object, bool reverse, float period, float r
 	float forwardSpeed = (object->distanceY - radius) * 3.2f;
 	float sideSpeed = (2.0f * Math::PI * radius) / period;
 	float omega = (2.0f * Math::PI) / period;
+	float angleMultiplier = 6.0f;
 
 	if (reverse) {
 		sideSpeed *= -1.0f;
 		omega *= -1.0f;
 	}
-	omega += object->angle * 2.2f;
 
+	if (object->behind) {
+		float newAngle;
+		sideSpeed *= -1.0f;
+		if (object->angle < 0.0f) newAngle = object->angle + Math::PI;
+		else newAngle = object->angle - Math::PI;
+		omega += newAngle * angleMultiplier;
+	}
+	else {
+		omega += object->angle * angleMultiplier;
+	}
+	
 	setTargetDir(forwardSpeed, -sideSpeed, omega);
 }
 

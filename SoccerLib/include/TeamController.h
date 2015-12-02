@@ -308,6 +308,19 @@ public:
 		Part lockedArea;
 	};
 
+	//for driving around the opponent with back to opponent
+	class BackAroundOpponentState : public State {
+
+	public:
+		BackAroundOpponentState(TeamController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	private:
+		std::string lastState;
+		std::string nextState;
+		int opponentSeenCounter;
+	};
+
 	//Press an enemy robot
 	class PressOpponentState : public State {
 
