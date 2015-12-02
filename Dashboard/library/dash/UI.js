@@ -263,7 +263,7 @@ Dash.UI.prototype.initSocket = function() {
 		if (rem_index > -1) {
 			dash.commonLogic.connectedRobots.splice(rem_index, 1);
 		}
-		dash.commonLogic.disconnectedRobots.push(self.robotIndex);
+		
 		$('#connecting').show();
 		$('#buttons-'+self.robotId+' .live-only').attr('disabled', 'disabled');
 		
@@ -1186,6 +1186,7 @@ Dash.UI.prototype.handleStateMessage = function(state) {
     if(dash.commonLogic.connectedRobots.indexOf(state.robot_id) == -1) {
         dash.commonLogic.connectedRobots.push(state.robot_id);
         dash.commonLogic.connectedUIs.push(this);
+		dash.commonLogic.allConnectedRobotsThisSession.push(state.robot_id);
     }
 
     this.addState(state);

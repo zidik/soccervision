@@ -2,7 +2,7 @@
  * Created by Tonnius on 29.09.2015.
  */
 Dash.CommonLogic = function() {
-    //this.allStates = [[],[]];
+    this.allStateBundles = [];
     this.states = [];
     this.stateSlider = null;
     this.currentStateIndexWrap = null;
@@ -10,8 +10,9 @@ Dash.CommonLogic = function() {
     this.stateCountWrap = null;
     this.showStateActive = false;
     this.connectedRobots = [];
+	this.allConnectedRobotsThisSession = [];
     this.connectedUIs = [];
-
+	
     this.maxNrOfRobots = 2;
     this.disconnectedRobots = [];
 };
@@ -31,7 +32,10 @@ Dash.CommonLogic.prototype.initSlider = function() {
 
     this.stateSlider.slider({
         onChange: function(value) {
-            self.showState(value - 1);
+			if(this.currentStateIndex == this.states.length - 1)
+				self.showState(value - 1);
+			else
+				self.showStateBundle(value - 1);
         }
     });
 
@@ -46,7 +50,10 @@ Dash.CommonLogic.prototype.initSlider = function() {
 
         self.currentStateIndexWrap.html(newIndex + 1);
 
-        self.showState(newIndex);
+        if(this.currentStateIndex == this.states.length - 1)
+				self.showState(value - 1);
+			else
+				self.showStateBundle(value - 1);
     });
 
     $('.slider').slider({
@@ -67,7 +74,7 @@ Dash.CommonLogic.prototype.showState = function(index) {
     var robotId = this.states[index].robot_id;
     var state = null;
     var maxRobots = Math.max(...this.connectedRobots);
-    for (var robotIndex = 0; robotIndex < Math.max(...this.connectedRobots)+1; robotIndex++) {
+    for (var robotIndex = 0; robotIndex < this.allConnectedRobotsThisSession.length; robotIndex++) {
         if(robotIndex == robotId /*&& this.connectedRobots.indexOf(robotIndex) > -1*/) {
             oneStateBundle.push(this.states[index]);
             state = this.states[index];
@@ -107,6 +114,8 @@ Dash.CommonLogic.prototype.showState = function(index) {
     if(oneStateBundle != null) {
         //this.connectedUIs[robotIndex].showTasksQueue(state);
         dash.ui.showStateStats(oneStateBundle); // @TEMP
+		dash.renderer.renderState(oneStateBundle);
+		this.allStateBundles.push(oneStateBundle);
     }
         //this.stateSlider.slider('max', this.allStates[0].length);
         //this.stateCountWrap.html(this.allStates[0].length);
@@ -120,10 +129,28 @@ Dash.CommonLogic.prototype.showState = function(index) {
 
     // @TODO show alive wheels..
     this.showStateActive = false;
-    dash.renderer.renderState(oneStateBundle);
+    
 
     //this.showTasksQueue(state);
     //this.showStateStats(state); // @TEMP
 
 
 };
+
+Dash.CommonLogic.prototype.showStateBundle = function(index) {
+	    if(oneStateBundle != null) {
+        //this.connectedUIs[robotIndex].showTasksQueue(state);
+        dash.ui.showStateStats(this.allStateBundles[index]); // @TEMP
+		dash.renderer.renderState(this.allStateBundles[index]);
+    }
+        //this.stateSlider.slider('max', this.allStates[0].length);
+        //this.stateCountWrap.html(this.allStates[0].length);
+        //state = this.states[index];
+
+        // disable slider
+        this.currentStateIndexWrap.val(index + 1);
+        this.stateSlider.slider('val', index + 1);
+
+        this.currentStateIndex = index;
+	
+} 
