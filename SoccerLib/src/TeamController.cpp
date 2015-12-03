@@ -230,7 +230,7 @@ void TeamController::DefendGoalState::onEnter(Robot* robot, Parameters parameter
 
 void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 
-	float goalDistanceTarget = 0.35f;
+	float goalDistanceTarget = 0.4f;
 
 	if (robot->dribbler->gotBall()) {
 		Parameters parameters;
@@ -262,7 +262,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
         robot->ballLocalizer->getBallsGoingToBlueGoal(goingToGoal);
         break;
     case YELLOW:
-        robot->ballLocalizer->getBallsGoingToBlueGoal(goingToGoal);
+        robot->ballLocalizer->getBallsGoingToYellowGoal(goingToGoal);
         break;
     default:
         std::cout << "Wrong Side!";
@@ -285,8 +285,8 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		return;
 	}
     //if goal is to close or far, drive to own goal
-    float goalError = goalDistanceTarget - defendedGoal->distance;
-	if (abs(goalError) > 0.30) {
+    float goalError = defendedGoal->distance - goalDistanceTarget;
+	if (goalError > 0.30) {
 		robot->stop();
 		ai->setState("drive-to-own-goal");
 		return;
@@ -316,10 +316,8 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		sidePower = Math::map(ball->location.getLength(), 0.0f, 2.0f, 1.0f, 0.15f);
 	}
 
-	//try using alternative speed because pid reacts slow initially
-	float alternativeSpeed = ballError * 5.0f;
 	//std::cout << "Sidepower: " << sidePower << std::endl;
-	robot->setTargetDir(goalError * 2.0f, Math::max(sideSpeed * sidePower, alternativeSpeed));
+	robot->setTargetDir(-goalError * 2.0f, sideSpeed * sidePower);
 	robot->lookAtBehind(defendedGoal);
 
 }
