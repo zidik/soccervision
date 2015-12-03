@@ -270,6 +270,9 @@
     <ClInclude Include="include\BallManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\BallLocalizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\BaseAI.cpp">

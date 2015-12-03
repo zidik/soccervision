@@ -6,7 +6,8 @@
 namespace Geometry {
     class LineSegment {
     public:
-        LineSegment(Math::Vector p1, Math::Vector p2) : _p1(p1), _p2(p2) {}
+        LineSegment() = default;
+        LineSegment(Math::Vector & p1, Math::Vector & p2) : _p1(p1), _p2(p2) {}
         Math::Vector& p1() { return _p1; }
         Math::Vector& p2() { return _p2; }
     private:

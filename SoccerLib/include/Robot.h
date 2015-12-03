@@ -6,6 +6,7 @@
 #include "Odometer.h"
 #include "ParticleFilterLocalizer.h"
 #include "BallManager.h"
+#include "BallLocalizer.h"
 #include "Vision.h"
 #include "Tasks.h"
 #include "AbstractCommunication.h"
@@ -91,6 +92,7 @@ public:
 	Coilgun* coilgun;
 	ParticleFilterLocalizer* robotLocalizer;
 	BallManager* ballManager;
+    BallLocalizer* ballLocalizer;
 	OdometerLocalizer* odometerLocalizer;
 
 private:
@@ -101,6 +103,7 @@ private:
 	void setupRobotLocalizer();
 	void setupOdometerLocalizer();
 	void setupBallManager();
+    void setupBallLocalizer();
 	void setupCameraFOV();
     void updateWheelSpeeds();
 	void updateMeasurements();

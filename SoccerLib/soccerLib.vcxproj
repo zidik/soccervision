@@ -147,6 +147,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\AbstractCommunication.h" />
+    <ClInclude Include="include\BallLocalizer.h" />
     <ClInclude Include="include\BallManager.h" />
     <ClInclude Include="include\BaseAI.h" />
     <ClInclude Include="include\BaseCamera.h" />
