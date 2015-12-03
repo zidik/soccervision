@@ -68,6 +68,7 @@ void Robot::setup() {
 	setupCameraFOV();
 	setupRobotLocalizer();
 	setupBallManager();
+    setupBallLocalizer();
 	setupOdometerLocalizer();
     setupWheels();
 	setupCoilgun();
@@ -127,7 +128,7 @@ void Robot::setupBallManager() {
 }
 
 void Robot::setupBallLocalizer(){
-    ballLocalizer = new BallLocalizer(ballManager);
+    ballLocalizer = new BallLocalizer(ballManager, robotLocalizer);
 }
 
 void Robot::setupOdometerLocalizer() {
