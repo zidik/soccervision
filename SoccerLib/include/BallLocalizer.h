@@ -17,7 +17,7 @@ public:
         bool shouldBeRemoved() const;
         float distanceTo(const Ball & other) const { return location.distanceTo(other.location); }
         float distanceTo(const Ball * const other) const { return distanceTo(*other); }
-        void transformLocation(Math::Vector & dtLocation, float dtOrientation) { location = (location-dtLocation).getRotated(dtOrientation); }
+        void transformLocation(Math::Vector & dtLocation, float dtOrientation) { location = (location-dtLocation).getRotated(-dtOrientation); }
 
         int id;
         double createdTime;
