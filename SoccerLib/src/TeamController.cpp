@@ -292,7 +292,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	pid.setProcessValue(ballError);
 
 	float sideSpeed = -pid.compute();
-	float sidePower = 0.15;
+	float sidePower = 0.15f;
 	if (ball != nullptr) {
 		//std::cout << "Distance between robot and ball: " << ball->location.getLength() << std::endl;
 		sidePower = Math::map(ball->location.getLength(), 0.0f, 2.0f, 1.0f, 0.15f);
@@ -1004,7 +1004,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		}
 
 		//average filtering
-		int numberOfSamples = 7;
+		size_t numberOfSamples = 7;
 		targetAngleBuffer.push_back(targetAngle);
 		while (targetAngleBuffer.size() > numberOfSamples) targetAngleBuffer.erase(targetAngleBuffer.begin());
 		float targetAngleSum = 0.0f;
@@ -1329,7 +1329,7 @@ void TeamController::ApproachBallState::step(float dt, Vision::Results* visionRe
 	}
 
 	//average filtering
-	int numberOfSamples = 7;
+	size_t numberOfSamples = 7;
 	targetAngleBuffer.push_back(targetAngle);
 	while (targetAngleBuffer.size() > numberOfSamples) targetAngleBuffer.erase(targetAngleBuffer.begin());
 	float targetAngleSum = 0.0f;
