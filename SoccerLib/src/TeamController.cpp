@@ -253,7 +253,30 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	}
     
 	Object* defendedGoal = visionResults->getLargestGoal(ai->getDefendSide(), Dir::REAR);
-	const BallManager::Ball* ball = robot->ballManager->getClosestBall();
+
+
+    BallManager::BallList goingToGoal;
+    switch (ai->getDefendSide())
+    {
+    case BLUE:
+        robot->ballLocalizer->getBallsGoingToBlueGoal(goingToGoal);
+        break;
+    case YELLOW:
+        robot->ballLocalizer->getBallsGoingToBlueGoal(goingToGoal);
+        break;
+    default:
+        std::cout << "Wrong Side!";
+    }
+    
+    const BallManager::Ball* ball;
+    if (goingToGoal.size() > 0) {
+        ball = goingToGoal[0]; // Just get one
+        //TODO: Pick most important
+    }
+    else
+    {
+        ball = robot->ballManager->getClosestBall();
+    }
 
 	//if goal is not visible in back camera, drive to own goal
 	if (defendedGoal == NULL) {
@@ -279,7 +302,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		ballError = ball->location.y;
 	}
 
-    /*
+    
 	// pid-based
 	pidUpdateCounter++;
 	if (pidUpdateCounter % 10 == 0) pid.setInterval(dt);
@@ -298,7 +321,6 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	//std::cout << "Sidepower: " << sidePower << std::endl;
 	robot->setTargetDir(goalError * 2.0f, Math::max(sideSpeed * sidePower, alternativeSpeed));
 	robot->lookAtBehind(defendedGoal);
-    */
 
 }
 

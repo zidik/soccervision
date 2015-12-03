@@ -26,10 +26,16 @@ public:
     void getBallsGoingToBlueGoal(BallManager::BallList & balls) { getBallsGoingToGoal(balls, mBlueGoalLine); }
     void getBallsGoingToYellowGoal(BallManager::BallList & balls) { getBallsGoingToGoal(balls, mYellowGoalLine); }
 
+
+
 private:
-    void getBallsGoingToGoal(BallManager::BallList & balls, Geometry::LineSegment & goalLine) const
+    void getBallsGoingToGoal(BallManager::BallList & result, Geometry::LineSegment & goalLine) const
     {
-        auto predicate = [this, &goalLine](BallManager::Ball* ball) {
+        auto fastEnough = [this, &goalLine](BallManager::Ball* ball) -> bool {
+            return ball->velocity.getLength() > 0.5f;
+        };
+        
+        auto hasVelocityVectorTowardsGoal = [this, &goalLine](BallManager::Ball* ball) -> bool {
             auto robotPosition = this->pRobotLocalizer->getPosition();
             Math::Vector ballWorldLocation = ball->location.getRotated(robotPosition.orientation) + robotPosition.location;
             Math::Vector ballWorldVelocity = ball->velocity.getRotated(robotPosition.orientation);
@@ -38,7 +44,15 @@ private:
             bool intersects = ray.intersection(result, goalLine);
             return intersects;
         };
-        balls = pBallManager->getfilteredBalls(predicate);
+
+        BallManager::BallList ballsFastEnough;
+        filterBalls(ballsFastEnough, pBallManager->getBalls(), fastEnough);
+        filterBalls(result, ballsFastEnough, hasVelocityVectorTowardsGoal);
+
+    }
+
+    static void filterBalls(BallManager::BallList & filteredBalls, const BallManager::BallList & balls, std::function<bool(BallManager::Ball * ball)> predicate) {
+        std::copy_if(balls.begin(), balls.end(), std::back_inserter(filteredBalls), predicate);
     }
 
     Geometry::LineSegment mYellowGoalLine;

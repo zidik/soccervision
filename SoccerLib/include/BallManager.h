@@ -49,11 +49,7 @@ public:
     void update(const BallList& visibleBalls, const Math::Polygon& cameraFOV, float dt);
 
     const BallList& getBalls() const{ return balls; }
-    BallList getfilteredBalls(std::function<bool(Ball * ball)> predicate) const {
-        BallList filteredBalls;
-        std::copy_if(balls.begin(), balls.end(), std::back_inserter(filteredBalls), predicate);
-        return filteredBalls;
-    }
+
     const Ball* getClosestBall() const {
         auto closest = min_element(balls.begin(), balls.end(), [](Ball* b1, Ball* b2) { return b1->location < b2->location; });
         return closest == balls.end() ? nullptr : *closest;
@@ -65,9 +61,6 @@ private:
     Ball* getBallAround(Math::Vector & location);
     void purge(const BallList& visibleBalls, const Math::Polygon& cameraFOV);
     //bool isValid(Ball* ball, const BallList& visibleBalls, const Math::Polygon& cameraFOV);
-
-	 
-
 };
 
 #endif
