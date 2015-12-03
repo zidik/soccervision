@@ -801,6 +801,9 @@ void TeamController::AimKickState::onEnter(Robot* robot, Parameters parameters) 
 	avoidBallSide = TargetMode::UNDECIDED;
 	validKickFrames = 0;
 	avoidBallDuration = 0.0f;
+	searchGoalDir = 0.0f;
+	spinDuration = 0.0f;
+	reverseDuration = 0.0f;
 }
 
 void TeamController::AimKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -922,6 +925,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	}
 
 
+
 	Object* goal = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
 	Object* rearGoal = visionResults->getLargestGoal(Side::UNKNOWN, Dir::REAR);
 
@@ -932,7 +936,87 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	//float maxAimDuration = 6.0f;
 	int weakKickStrength = 2250; // kicks it a bit, but might stay on the field in new place
 
-	
+	if (goal == NULL) {
+		// no goal visible, start searching for it
+		if (searchGoalDir == 0.0f) {
+			if (ai->lastTargetGoalAngle > 0.0f) {
+				searchGoalDir = 1.0f;
+			}
+			else {
+				searchGoalDir = -1.0f;
+			}
+		}
+
+		// if aiming has taken too long, perform a weak kick and give up
+		if (combinedDuration > maxAimDuration) {
+			Side ownSide = ai->targetSide == Side::YELLOW ? Side::BLUE : Side::YELLOW;
+			Object* ownGoalFront = visionResults->getLargestGoal(ownSide, Dir::FRONT);
+
+			// only perform the give-up weak kick if not looking towards own goal
+			if (ownGoalFront == NULL) {
+				robot->kick(weakKickStrength);
+
+				ai->setState("fetch-ball-behind");
+
+				return;
+			}
+		}
+
+		spinDuration += dt;
+
+		if (ai->wasNearGoalLately(2.0f)) {
+			// give the ball some time to stabilize
+			if (robot->dribbler->getBallInDribblerTime() > robot->getDribblerStabilityDelay() * 2.0f) {
+				robot->setTargetOmega(searchGoalDir * Math::PI);
+			}
+		}
+		else {
+			// give the ball some time to stabilize
+			if (robot->dribbler->getBallInDribblerTime() > robot->getDribblerStabilityDelay()) {
+				robot->spinAroundDribbler(searchGoalDir == -1.0f, searchPeriod);
+			}
+		}
+
+		// start searching for own goal after almost full rotation
+		if (spinDuration > searchPeriod / 1.25f) {
+			float reverseTime = 1.5f;
+			float approachOwnGoalMinDistance = 1.5f;
+			float accelerationPeriod = 1.5f;
+			float reverseSpeed = 1.0f;
+
+			// jump back to the beginning of aim state after reversing for some time, performing the sping again
+			if (reverseDuration > reverseTime) {
+				ai->setState("aim-kick");
+
+				return;
+			}
+
+			// didn't find our goal in time, search for opponent goal and drive towards it instead
+			Side ownSide = ai->targetSide == Side::YELLOW ? Side::BLUE : Side::YELLOW;
+			Object* ownGoal = visionResults->getLargestGoal(ownSide, Dir::REAR);
+
+			// make sure we don't get too close to our own goal
+			if (ownGoal != NULL && ownGoal->distance > approachOwnGoalMinDistance) {
+				float accelerationMultiplier = Math::map(reverseDuration, 0, accelerationPeriod, 0.0f, 1.0f);
+				float acceleratedReverseSpeed = -reverseSpeed * accelerationMultiplier;
+
+				// reverse towards own goal, looking at it
+				robot->setTargetDir(
+					acceleratedReverseSpeed,
+					0.0f,
+					0.0f
+					);
+
+				robot->lookAtBehind(ownGoal);
+
+				reverseDuration += dt;
+
+			}
+		}
+
+		return;
+	}
+
 
 	// configuration
 	float avoidBallSpeed = 0.65f;
@@ -996,7 +1080,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		sideSpeed = (avoidBallSide == TargetMode::LEFT ? -1.0f : 1.0f) * Math::map(avoidBallDuration, 0.0f, 1.0f, 0.0f, avoidBallSpeed);
 
 		// not sure if this is good after all
-		forwardSpeed = Math::map(goal->distance, 0.5f, 1.0f, 0.0f, Math::abs(sideSpeed));
+		//forwardSpeed = Math::map(goal->distance, 0.5f, 1.0f, 0.0f, Math::abs(sideSpeed));
 	}
 
 	// check whether the aiming is precise enough

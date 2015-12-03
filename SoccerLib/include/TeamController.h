@@ -231,6 +231,9 @@ public:
 		double lastKickTime;
 		float avoidBallDuration;
 		int validKickFrames;
+		float searchGoalDir;
+		float spinDuration;
+		float reverseDuration;
 	};
 
 	//Pass the ball
