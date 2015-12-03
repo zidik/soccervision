@@ -1703,6 +1703,7 @@ void TeamController::PressOpponentState::step(float dt, Vision::Results* visionR
 		parameters["kick-type"] = "chip";
 		parameters["last-state"] = "press-opponent";
 		ai->setState("aim-kick", parameters);
+		return;
 	}
 
 	if (opponentLostCounter > 6 || (lastEnemyRobot == NULL && enemyRobot == NULL) ) {
@@ -1710,6 +1711,7 @@ void TeamController::PressOpponentState::step(float dt, Vision::Results* visionR
 		parameters["next-state"] = "press-opponent";
 		parameters["target-type"] = "enemy-robot";
 		ai->setState("find-object", parameters);
+		return;
 	}
 
 	if (enemyRobot == NULL) {
@@ -1720,14 +1722,15 @@ void TeamController::PressOpponentState::step(float dt, Vision::Results* visionR
 		opponentLostCounter = 0;
 	}
 
-	if (ball != NULL && ball->distance < 0.75f) {
+	if (ball != NULL && ball->distance < 0.35f) {
 		Parameters parameters;
 		parameters["fetch-style"] = "defensive";
 		ai->setState("fetch-ball-front", parameters);
+		return;
 	}
 
-	float pressingDistance = 0.30f;
-	float searchForGoalDistance = 0.45f;
+	float pressingDistance = 0.40f;
+	float searchForGoalDistance = 0.65f;
 	float ballMinDistance = 1.0f;
 
 	float maxSideSpeedRobotAngle = 15.0f;
@@ -1763,7 +1766,7 @@ void TeamController::PressOpponentState::step(float dt, Vision::Results* visionR
 		//turn toward ball slowly, so that its trajectory is more likely to be intercepted
 		robot->lookAt(lastEnemyRobot, Config::lookAtP / 8.0f);
 
-		if (enemyRobot->distance < searchForGoalDistance) {
+		if (lastEnemyRobot->distance < searchForGoalDistance) {
 
 			float forwardSpeed, sideSpeed;
 
