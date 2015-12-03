@@ -2241,7 +2241,7 @@ Pixel Vision::getCornerPixel(float startAngle, float endAngle, float r, int numb
 	if (transitionVec.size() < 3) throw CouldNotFindCorner();
 
 	int state = 0;
-	for (int i = 0; i+1 < transitionVec.size(); i++)
+	for (size_t i = 0; i+1 < transitionVec.size(); i++)
 	{
 		int oldState = state;
 		if (transitionVec.at(i).getLength() <= transitionVec.at(i+1).getLength())
