@@ -61,7 +61,7 @@ namespace Config {
 	const float robotMaxDistance = 5.5f;
 
 	//Maximum ratio for valid pixels to scanned pixels when searching for robot markers
-	const float robotScanMinMatchRatio = 0.3f;
+	const float robotScanMinMatchRatio = 0.225f;
 
 	// goals with area over this value are definately considered to be valid
 	const int goalCertainArea = 10000;

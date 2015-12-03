@@ -319,6 +319,8 @@ public:
 		std::string lastState;
 		std::string nextState;
 		int opponentSeenCounter;
+		int opponentLostCounter;
+		Object* lastEnemyRobot;
 	};
 
 	//Press an enemy robot
@@ -330,6 +332,8 @@ public:
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
 	private:
 		float maxSideSpeed;
+		int opponentLostCounter;
+		Object* lastEnemyRobot;
 
 		PID pid;
 		float kP;
