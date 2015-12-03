@@ -38,7 +38,7 @@ private:
             bool intersects = ray.intersection(result, goalLine);
             return intersects;
         };
-        pBallManager->getfilteredBalls(predicate);
+        balls = pBallManager->getfilteredBalls(predicate);
     }
 
     Geometry::LineSegment mYellowGoalLine;
