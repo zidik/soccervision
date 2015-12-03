@@ -211,6 +211,7 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 				Parameters parameters;
 				parameters["fetch-style"] = "defensive";
 				ai->setState(nextState, parameters);
+				return;
 			}
 		}
 	}
@@ -390,6 +391,7 @@ void TeamController::TakeKickoffState::step(float dt, Vision::Results* visionRes
 		Parameters parameters;
 		parameters["next-state"] = "take-kickoff";
 		ai->setState("find-ball", parameters);
+		return;
 	}
 	else {
 		Parameters parameters;
@@ -429,6 +431,7 @@ void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* vi
 		Parameters parameters;
 		parameters["next-state"] = "take-freekick-direct";
 		ai->setState("find-ball", parameters);
+		return;
 	}
 	else {
 		Parameters parameters;
@@ -467,6 +470,7 @@ void TeamController::TakeFreeKickIndirectState::step(float dt, Vision::Results* 
 		Parameters parameters;
 		parameters["next-state"] = "take-freekick-indirect";
 		ai->setState("find-ball", parameters);
+		return;
 	}
 	else {
 		Parameters parameters;
@@ -504,6 +508,7 @@ void TeamController::TakeGoalkickState::step(float dt, Vision::Results* visionRe
 		Parameters parameters;
 		parameters["next-state"] = "take-goalkick";
 		ai->setState("find-ball", parameters);
+		return;
 	}
 	else {
 		Parameters parameters;
@@ -541,6 +546,7 @@ void TeamController::TakeThrowInState::step(float dt, Vision::Results* visionRes
 		Parameters parameters;
 		parameters["next-state"] = "take-throwin";
 		ai->setState("find-ball", parameters);
+		return;
 	}
 	else {
 		Parameters parameters;
@@ -578,6 +584,7 @@ void TeamController::TakeCornerKickState::step(float dt, Vision::Results* vision
 		Parameters parameters;
 		parameters["next-state"] = "take-cornerkick";
 		ai->setState("find-ball", parameters);
+		return;
 	}
 	else {
 		Parameters parameters;
@@ -615,6 +622,7 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 		Parameters parameters;
 		parameters["next-state"] = "take-penalty";
 		ai->setState("find-ball", parameters);
+		return;
 	}
 	else {
 		Parameters parameters;
@@ -646,6 +654,7 @@ void TeamController::FindBallState::step(float dt, Vision::Results* visionResult
 		parameters["kick-type"] = "chip";
 		parameters["last-state"] = "find-ball";
 		ai->setState("aim-kick", parameters);
+		return;
 	}
 
 	//configuration parameters
@@ -656,11 +665,13 @@ void TeamController::FindBallState::step(float dt, Vision::Results* visionResult
 			Parameters parameters;
 
 			ai->setState(nextState);
+			return;
 		}
 		else {
 			Parameters parameters;
 
 			ai->setState(nextState);
+			return;
 		}
 	}
 	else {
@@ -699,6 +710,7 @@ void TeamController::FindObjectState::step(float dt, Vision::Results* visionResu
 		parameters["kick-type"] = "chip";
 		parameters["last-state"] = "find-object";
 		ai->setState("aim-kick", parameters);
+		return;
 	}
 
 	//configuration parameters
@@ -710,11 +722,13 @@ void TeamController::FindObjectState::step(float dt, Vision::Results* visionResu
 			Parameters parameters;
 
 			ai->setState(nextState);
+			return;
 		}
 		else {
 			Parameters parameters;
 
 			ai->setState(nextState);
+			return;
 		}
 	}
 	else {
@@ -767,12 +781,14 @@ void TeamController::FetchBallFrontState::step(float dt, Vision::Results* vision
 		parameters["kick-type"] = "chip";
 		parameters["last-state"] = "fetch-ball-front";
 		ai->setState("aim-kick", parameters);
+		return;
 	}
 
 	if (ball == NULL) {
 		Parameters parameters;
 		parameters["next-state"] = "fetch-ball-front";
 		ai->setState(lastState, parameters);
+		return;
 	}
 	else {
 		float ballMinDistance = 1.0f;
@@ -1093,6 +1109,7 @@ void TeamController::GetPassState::step(float dt, Vision::Results* visionResults
 		parameters["kick-type"] = "chip";
 		parameters["last-state"] = "get-pass";
 		ai->setState("aim-kick", parameters);
+		return;
 	}
 
 	float maxStateDuration = 4.0f;
@@ -1403,6 +1420,7 @@ void TeamController::GoToBallState::step(float dt, Vision::Results* visionResult
 		Parameters parameters;
 		parameters["next-state"] = lastState;
 		ai->setState("find-ball", parameters);
+		return;
 	}
 	else {
 		//configuration parameters
@@ -1433,6 +1451,7 @@ void TeamController::GoToBallState::step(float dt, Vision::Results* visionResult
 				parameters["target-type"] = targetType;
 				parameters["kick-immediately"] = kickImmediately ? "Y" : "N";
 				ai->setState("find-target", parameters);
+				return;
 			}
 		}
 		else {
@@ -1444,6 +1463,7 @@ void TeamController::GoToBallState::step(float dt, Vision::Results* visionResult
 				parameters["target-type"] = targetType;
 				parameters["kick-immediately"] = kickImmediately ? "Y" : "N";
 				ai->setState("find-target", parameters);
+				return;
 			}
 			else {
 
@@ -1518,6 +1538,7 @@ void TeamController::FindTargetState::step(float dt, Vision::Results* visionResu
 		Parameters parameters;
 		parameters["next-state"] = lastState;
 		ai->setState("find-ball", parameters);
+		return;
 	}
 	else {
 		float forwardSpeed = 0.0f;
@@ -1589,6 +1610,7 @@ void TeamController::FindTargetState::step(float dt, Vision::Results* visionResu
 				parameters["target-type"] = targetType;
 				parameters["kick-immediately"] = kickImmediately ? "Y" : "N";
 				ai->setState("go-to-ball", parameters);
+				return;
 			}
 
 			if (abs(ball->angle) > ballNotInMiddleThreshold) {
@@ -1652,6 +1674,7 @@ void TeamController::BackAroundOpponentState::step(float dt, Vision::Results* vi
 				parameters["kick-type"] = "chip";
 				parameters["target-type"] = "enemy-goal";
 				ai->setState("aim-kick", parameters);
+				return;
 			}
 		}
 	}
@@ -1675,6 +1698,7 @@ void TeamController::BackAroundOpponentState::step(float dt, Vision::Results* vi
 		parameters["kick-type"] = "chip";
 		parameters["target-type"] = "enemy-goal";
 		ai->setState("aim-kick", parameters);
+		return;
 	}
 }
 
