@@ -16,7 +16,7 @@
 
 typedef ParticleFilterLocalizer::Landmark::Type LandmarkType;
 
-Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : location(0.0f, 0.0f) , conf(conf), com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f), pidUpdateCounter(0) {
+Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : location(0.0f, 0.0f) , conf(conf), com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballManager(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f), pidUpdateCounter(0) {
     targetOmega = 0;
     targetDir = Math::Vector(0, 0);
    
@@ -52,7 +52,7 @@ Robot::~Robot() {
 	if (coilgun != NULL) delete coilgun; coilgun = NULL;
 	if (dribbler != NULL) delete dribbler; dribbler = NULL;
 	if (odometer != NULL) delete odometer; odometer = NULL;
-	if (ballLocalizer != NULL) delete ballLocalizer; ballLocalizer = NULL;
+	if (ballManager != NULL) delete ballManager; ballManager = NULL;
 	if (robotLocalizer != NULL) delete robotLocalizer; robotLocalizer = NULL;
 	if (odometerLocalizer != NULL) delete odometerLocalizer; odometerLocalizer = NULL;
 
@@ -66,7 +66,7 @@ Robot::~Robot() {
 void Robot::setup() {
 	setupCameraFOV();
 	setupRobotLocalizer();
-	setupBallLocalizer();
+	setupBallManager();
 	setupOdometerLocalizer();
     setupWheels();
 	setupCoilgun();
@@ -121,8 +121,8 @@ void Robot::setupRobotLocalizer() {
 	);
 }
 
-void Robot::setupBallLocalizer() {
-	ballLocalizer = new BallLocalizer();
+void Robot::setupBallManager() {
+	ballManager = new BallManager();
 }
 
 void Robot::setupOdometerLocalizer() {
@@ -209,8 +209,8 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	travelledRotation += omega * dt;
 
     Math::Vector locationChangeOdometer = velocityOdometer*dt;
-    ballLocalizer->transformLocations(locationChangeOdometer, movement.omega*dt);
-	updateBallLocalizer(visionResults, dt);
+    ballManager->transformLocations(locationChangeOdometer, movement.omega*dt);
+	updateBallManager(visionResults, dt);
 	
 
     //TODO: Shouldn't it be move& update, not update& move?
@@ -297,7 +297,7 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	stream << "},";
 
 	debugBallList("ballsRaw", stream, visibleBalls);
-	debugBallList("ballsFiltered", stream, ballLocalizer->getBalls());
+	debugBallList("ballsFiltered", stream, ballManager->getBalls());
 
     Math::Polygon currentCameraFOV = cameraFOV.getRotated(orientation).getTranslated(location.x,location.y) ;
 	stream << "\"cameraFOV\":" << currentCameraFOV.toJSON() << ",";
@@ -369,9 +369,9 @@ void Robot::updateMeasurements() {
 
 }
 
-void Robot::updateBallLocalizer(Vision::Results* visionResults, float dt) {
+void Robot::updateBallManager(Vision::Results* visionResults, float dt) {
 	// delete balls from previous frame
-	for (BallLocalizer::BallListIt it = visibleBalls.begin(); it != visibleBalls.end(); it++) {
+	for (BallManager::BallListIt it = visibleBalls.begin(); it != visibleBalls.end(); it++) {
 		delete (*it);
 	}
 
@@ -381,22 +381,22 @@ void Robot::updateBallLocalizer(Vision::Results* visionResults, float dt) {
 		return;
 	}
 
-	BallLocalizer::BallList frontBalls;
-	BallLocalizer::BallList rearBalls;
+	BallManager::BallList frontBalls;
+	BallManager::BallList rearBalls;
 	
 	if (visionResults->front != NULL) {
-		frontBalls = ballLocalizer->extractBalls(*visionResults->front->balls);
+		frontBalls = ballManager->extractBalls(*visionResults->front->balls);
 	}
 
 	if (visionResults->rear != NULL) {
-		rearBalls = ballLocalizer->extractBalls(*visionResults->rear->balls);
+		rearBalls = ballManager->extractBalls(*visionResults->rear->balls);
 	}
 	
 	visibleBalls.reserve(frontBalls.size() + rearBalls.size());
 	visibleBalls.insert(visibleBalls.end(), frontBalls.begin(), frontBalls.end());
 	visibleBalls.insert(visibleBalls.end(), rearBalls.begin(), rearBalls.end());
 
-	ballLocalizer->update(visibleBalls, cameraFOV, dt);
+	ballManager->update(visibleBalls, cameraFOV, dt);
 
 	//std::cout << "@ UP front: " << frontBalls.size() << ", rear: " << rearBalls.size() << ", merged: " << visibleBalls.size() << std::endl;
 }
@@ -757,13 +757,13 @@ bool Robot::handleCommand(const Command& cmd) {
 	return handled;
 }
 
-void Robot::debugBallList(std::string name, std::stringstream& stream, BallLocalizer::BallList balls) {
-	BallLocalizer::Ball* ball;
+void Robot::debugBallList(std::string name, std::stringstream& stream, BallManager::BallList balls) {
+	BallManager::Ball* ball;
 	bool first = true;
 
 	stream << "\"" << name << "\": [";
 
-	for (BallLocalizer::BallListIt it = balls.begin(); it != balls.end(); it++) {
+	for (BallManager::BallListIt it = balls.begin(); it != balls.end(); it++) {
 		ball = *it;
 
 		if (!first) {

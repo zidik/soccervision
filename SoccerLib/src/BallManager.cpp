@@ -1,4 +1,4 @@
-#include "BallLocalizer.h"
+#include "BallManager.h"
 #include "Config.h"
 #include "Util.h"
 
@@ -6,17 +6,17 @@
 #include <vector>
 #include <functional>
 
-BallLocalizer::BallLocalizer() {
+BallManager::BallManager() {
 
 }
 
-BallLocalizer::~BallLocalizer() {
+BallManager::~BallManager() {
 
 }
 
-int BallLocalizer::Ball::instances = 0;
+int BallManager::Ball::instances = 0;
 
-BallLocalizer::Ball::Ball(const Math::Vector & location) : location(location), velocity(0.0f, 0.0f), pastVelocities(15) {
+BallManager::Ball::Ball(const Math::Vector & location) : location(location), velocity(0.0f, 0.0f), pastVelocities(15) {
     id = instances++;
     createdTime = Util::millitime();
     updatedTime = createdTime;
@@ -25,7 +25,7 @@ BallLocalizer::Ball::Ball(const Math::Vector & location) : location(location), v
 	inFOV = true;
 }
 
-void BallLocalizer::Ball::updateVisible(const Math::Vector & new_location, float dt) {
+void BallManager::Ball::updateVisible(const Math::Vector & new_location, float dt) {
     double currentTime = Util::millitime();
     double timeSinceLastUpdate = currentTime - updatedTime;
 
@@ -73,21 +73,21 @@ void BallLocalizer::Ball::updateVisible(const Math::Vector & new_location, float
 	removeTime = -1;
 }
 
-void BallLocalizer::Ball::updateInvisible(float dt) {
+void BallManager::Ball::updateInvisible(float dt) {
 	location += velocity * dt;
     applyDrag(dt);
     visible = false;
 }
 
-void BallLocalizer::Ball::markForRemoval(double afterSeconds) {
+void BallManager::Ball::markForRemoval(double afterSeconds) {
     removeTime = Util::millitime() + afterSeconds;
 }
 
-bool BallLocalizer::Ball::shouldBeRemoved() const {
+bool BallManager::Ball::shouldBeRemoved() const {
     return removeTime != -1 && removeTime < Util::millitime();
 }
 
-void BallLocalizer::Ball::applyDrag(float dt) {
+void BallManager::Ball::applyDrag(float dt) {
 	Math::Vector drag_acceleration = -velocity.getScaledTo(Config::rollingDrag);
 	if (drag_acceleration > velocity) {
 		velocity = Math::Vector(0, 0);
@@ -97,7 +97,7 @@ void BallLocalizer::Ball::applyDrag(float dt) {
 	}
 }
 
-BallLocalizer::BallList BallLocalizer::extractBalls(const ObjectList& sourceBalls){
+BallManager::BallList BallManager::extractBalls(const ObjectList& sourceBalls){
 	BallList balls;
 
 	for (Object* ball: sourceBalls){
@@ -110,14 +110,14 @@ BallLocalizer::BallList BallLocalizer::extractBalls(const ObjectList& sourceBall
 	return balls;
 }
 
-void BallLocalizer::transformLocations(Math::Vector& dtLocation, float dtOrientation) {
+void BallManager::transformLocations(Math::Vector& dtLocation, float dtOrientation) {
     for (auto ball : balls) {
         ball->transformLocation(dtLocation, dtOrientation);
     }
 }
 
 
-void BallLocalizer::update(const BallList& visibleBalls, const Math::Polygon& cameraFOV, float dt) {
+void BallManager::update(const BallList& visibleBalls, const Math::Polygon& cameraFOV, float dt) {
     Ball* closestBall;
     std::vector<int> handledBalls;
 
@@ -149,7 +149,7 @@ void BallLocalizer::update(const BallList& visibleBalls, const Math::Polygon& ca
     purge(visibleBalls, cameraFOV);
 }
 
-BallLocalizer::Ball* BallLocalizer::getBallAround(Math::Vector & target) {
+BallManager::Ball* BallManager::getBallAround(Math::Vector & target) {
     float distance;
     float minDistance = -1;
     Ball* closestBall = nullptr;
@@ -172,7 +172,7 @@ BallLocalizer::Ball* BallLocalizer::getBallAround(Math::Vector & target) {
     return closestBall;
 }
 
-void BallLocalizer::purge(const BallList& visibleBalls, const Math::Polygon& cameraFOV) {
+void BallManager::purge(const BallList& visibleBalls, const Math::Polygon& cameraFOV) {
 	double currentTime = Util::millitime();
     BallList remainingBalls;
 	bool keep;

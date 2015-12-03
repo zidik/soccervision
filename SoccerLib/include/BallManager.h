@@ -1,10 +1,10 @@
-#ifndef BALLLOCALIZER_H
-#define BALLLOCALIZER_H
+#ifndef BALLMANAGER_H
+#define BALLMANAGER_H
 
 #include "Maths.h"
 #include "Object.h"
 
-class BallLocalizer {
+class BallManager {
 
 public:
 	class Ball {
@@ -40,8 +40,8 @@ public:
 	typedef std::vector<Ball*> BallList;
 	typedef std::vector<Ball*>::iterator BallListIt;
 
-    BallLocalizer();
-    ~BallLocalizer();
+    BallManager();
+    ~BallManager();
     
     static BallList extractBalls(const ObjectList& sourceBalls);
     void transformLocations(Math::Vector & dtLocation, float dtOrientation);
@@ -64,4 +64,4 @@ private:
 
 };
 
-#endif // BALLLOCALIZER_H
+#endif

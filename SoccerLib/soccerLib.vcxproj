@@ -147,7 +147,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\AbstractCommunication.h" />
-    <ClInclude Include="include\BallLocalizer.h" />
+    <ClInclude Include="include\BallManager.h" />
     <ClInclude Include="include\BaseAI.h" />
     <ClInclude Include="include\BaseCamera.h" />
     <ClInclude Include="include\Blobber.h" />
@@ -182,7 +182,9 @@
     <ClInclude Include="include\PID.h" />
     <ClInclude Include="include\Pixel.h" />
     <ClInclude Include="include\ProcessThread.h" />
+    <ClInclude Include="include\Ray.h" />
     <ClInclude Include="include\Robot.h" />
+    <ClInclude Include="include\LineSegment.h" />
     <ClInclude Include="include\Serial.h" />
     <ClInclude Include="include\SerialCommunication.h" />
     <ClInclude Include="include\Server.h" />
@@ -254,7 +256,7 @@
     <ClCompile Include="lib\libyuv\source\scale_argb.cc" />
     <ClCompile Include="lib\libyuv\source\scale_neon.cc" />
     <ClCompile Include="lib\libyuv\source\video_common.cc" />
-    <ClCompile Include="src\BallLocalizer.cpp" />
+    <ClCompile Include="src\BallManager.cpp" />
     <ClCompile Include="src\BaseAI.cpp" />
     <ClCompile Include="src\Blobber.cpp" />
     <ClCompile Include="src\CameraTranslator.cpp" />
@@ -282,6 +284,7 @@
     <ClCompile Include="src\ParticleFilterLocalizer.cpp" />
     <ClCompile Include="src\PID.cpp" />
     <ClCompile Include="src\ProcessThread.cpp" />
+    <ClCompile Include="src\Ray.cpp" />
     <ClCompile Include="src\Robot.cpp" />
     <ClCompile Include="src\Serial.cpp" />
     <ClCompile Include="src\SerialCommunication.cpp" />

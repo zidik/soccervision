@@ -298,6 +298,8 @@ public:
 	Vector getRotated(float angle) const;
     Vector getScaledTo(float length) const;
     Vector getNormalized() const { return getScaledTo(1.0f); };
+    float Vector::dot(Vector& rhs) const { return x * rhs.x + y * rhs.y; };
+    float Vector::cross(Vector& rhs) const { return x * rhs.y - y * rhs.x; };
 
 	Vector operator-() const { return Vector(-x, -y); };
 	Vector& operator-=(const Vector& other);

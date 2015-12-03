@@ -253,38 +253,33 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	}
     
 	Object* defendedGoal = visionResults->getLargestGoal(ai->getDefendSide(), Dir::REAR);
-	const BallLocalizer::Ball* ball = robot->ballLocalizer->getClosestBall();
+	const BallManager::Ball* ball = robot->ballManager->getClosestBall();
 
-	//if goal is not visible in back camera, switch to driving in front of goal state.
+	//if goal is not visible in back camera, drive to own goal
 	if (defendedGoal == NULL) {
 		robot->stop();
 		ai->setState("drive-to-own-goal");
 		return;
 	}
-	if (abs(defendedGoal->distance - goalDistanceTarget) > 0.30) {
+    //if goal is to close or far, drive to own goal
+    float goalError = goalDistanceTarget - defendedGoal->distance;
+	if (abs(goalError) > 0.30) {
 		robot->stop();
 		ai->setState("drive-to-own-goal");
 		return;
 	}
 
-	float goalError = goalDistanceTarget - defendedGoal->distance;
-
-	
+    if (abs(goalError) < 0.05) {
+        goalError = 0.0f;
+    }
+    goalError = Math::limit(goalError, 0.8f);
+    
 	float ballError = 0.0f;
 	if (ball != nullptr){
 		ballError = ball->location.y;
 	}
 
-	if (abs(goalError) < 0.05){
-		goalError = 0.0f;
-	}	
-	if (abs(ballError) < 0.05){
-		ballError = 0.0f;
-	}
-
-	goalError = Math::limit(goalError, 0.8f);
-	ballError = Math::limit(ballError, 0.8f);
-
+    /*
 	// pid-based
 	pidUpdateCounter++;
 	if (pidUpdateCounter % 10 == 0) pid.setInterval(dt);
@@ -303,7 +298,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	//std::cout << "Sidepower: " << sidePower << std::endl;
 	robot->setTargetDir(goalError * 2.0f, Math::max(sideSpeed * sidePower, alternativeSpeed));
 	robot->lookAtBehind(defendedGoal);
-
+    */
 
 }
 
