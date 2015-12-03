@@ -188,7 +188,7 @@ void ParticleFilterLocalizer::resample() {
 	if (lost) {
 		if (!wasLost) {
 			std::cout << "Particles had probability sum less than 0.1 - robot is lost" << std::endl;
-			lost = true;
+			wasLost = true;
 		}
 	    int randomCount = 0;//particleCount / 100;
 	    for (int i = 0; i < particleCount - randomCount; i++) {

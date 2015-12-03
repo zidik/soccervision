@@ -826,10 +826,10 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	int validCountThreshold = 3;
 	float aimAdjustRobotDistance = 1.2f;
 	float robotInMiddleThreshold = Math::PI / 180.0f;
-	float maxAimDuration = 3.5f;
+	float maxAimDuration = 6.0f;
 
 	// if aiming has taken too long, perform a weak kick and give up
-	if (combinedDuration > maxAimDuration) {
+	/*if (combinedDuration > maxAimDuration) {
 		Object* ownGoal = visionResults->getLargestGoal(ai->defendSide, Dir::ANY);
 
 		// only perform the give-up weak kick if not looking towards own goal
@@ -867,10 +867,10 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 				targetAngle = visionResults->getObjectPartAngle(target, Part::RIGHTSIDE);
 			}
 		}
-
+		
 
 		//average filtering
-		/*int numberOfSamples = 4;
+		int numberOfSamples = 4;
 		targetAngleBuffer.push_back(targetAngle);
 		while (targetAngleBuffer.size() > numberOfSamples) targetAngleBuffer.erase(targetAngleBuffer.begin());
 		float targetAngleSum = 0.0f;
@@ -921,8 +921,8 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		robot->setTargetDir(0.0f, 0.0f);
 		robot->lookAt(Math::Rad(targetAngle));
 		robot->dribbler->start();
-		*/
-	}
+		
+	}*/
 
 
 
@@ -937,6 +937,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	int weakKickStrength = 2250; // kicks it a bit, but might stay on the field in new place
 
 	if (goal == NULL) {
+		std::cout << "! lost goal" << std::endl;
 		// no goal visible, start searching for it
 		if (searchGoalDir == 0.0f) {
 			if (ai->lastTargetGoalAngle > 0.0f) {
@@ -1047,6 +1048,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 
 
 	if (isGoalPathObstructed) {
+		std::cout << "isObstructed!" << std::endl;
 		// check whether there's another ball close by
 		float anotherBallCloseDistance = 0.3f;
 		Object* nextClosestBall = visionResults->getNextClosestBall(Dir::FRONT);
@@ -1077,10 +1079,13 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 
 		avoidBallDuration += dt;
 
-		sideSpeed = (avoidBallSide == TargetMode::LEFT ? -1.0f : 1.0f) * Math::map(avoidBallDuration, 0.0f, 1.0f, 0.0f, avoidBallSpeed) / 3;
-
+		sideSpeed = (avoidBallSide == TargetMode::LEFT ? -1.0f : 1.0f) * Math::map(avoidBallDuration, 0.0f, 1.0f, 0.0f, avoidBallSpeed) ;
+		forwardSpeed = minForwardSpeed;
 		// not sure if this is good after all
 		//forwardSpeed = Math::map(goal->distance, 0.5f, 1.0f, 0.0f, Math::abs(sideSpeed));
+	} else {
+		//sideSpeed = 0;
+		forwardSpeed = 0;
 	}
 
 	// check whether the aiming is precise enough
@@ -1093,18 +1098,60 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		}
 	}
 
+	float targetAngle;
+	Object* closestRobot = visionResults->getRobotNearObject(ai->enemyColor, target, Dir::FRONT, aimAdjustRobotDistance);
+	if (areaLocked) {
+		targetAngle = visionResults->getObjectPartAngle(target, lockedArea);
+	}
+	else if (closestRobot == NULL) {
+		targetAngle = target->angle;
+	}
+	else {
+		if (abs(closestRobot->angle) < robotInMiddleThreshold) {
+			areaLocked = true;
+			if (closestRobot->angle > target->angle) lockedArea = Part::LEFTSIDE;
+			else lockedArea = Part::RIGHTSIDE;
+			targetAngle = visionResults->getObjectPartAngle(target, lockedArea);
+		}
+		else if (closestRobot->angle > target->angle) {
+			targetAngle = visionResults->getObjectPartAngle(target, Part::LEFTSIDE);
+		}
+		else {
+			targetAngle = visionResults->getObjectPartAngle(target, Part::RIGHTSIDE);
+		}
+	}
+
+	int numberOfSamples = 4;
+	targetAngleBuffer.push_back(targetAngle);
+	while (targetAngleBuffer.size() > numberOfSamples) targetAngleBuffer.erase(targetAngleBuffer.begin());
+	float targetAngleSum = 0.0f;
+	for (std::vector<float>::iterator it = targetAngleBuffer.begin(); it != targetAngleBuffer.end(); it++) targetAngleSum += *it;
+	targetAngle = targetAngleSum / targetAngleBuffer.size();
+
+	/*if (abs(targetAngle) < targetAngleError) {
+		validCount++;
+	}
+	else {
+		validCount = 0;
+	}*/
 	// always apply some forward speed (can think that has ball when really doesn't)
-	forwardSpeed = minForwardSpeed;
+	
 
 	bool isRobotOmegaLowEnough = Math::abs(robot->getOmega()) <= maxRobotKickOmega;
 	bool isFrameValid = validWindow
-		&& !isKickTooSoon
+		/*&& !isKickTooSoon*/
 		&& !isGoalPathObstructed
-		/*&& isRobotOmegaLowEnough*/
+		&& isRobotOmegaLowEnough
 		&& robot->dribbler->gotBall(true)
-		/*&& !shouldManeuverBallInWay*/;
+		/*&& (abs(targetAngle) < targetAngleError)*/;
 
-	//std::cout << "validWindow: " << validWindow << " !isGoalPathObstructed: " << !isGoalPathObstructed << " gotBall: " << robot->dribbler->gotBall(true) << " !isKickTooSoon: " << !isKickTooSoon << " isRobotOmegaLowEnough: " << isRobotOmegaLowEnough << std::endl;
+	std::cout << "validWindow: " << validWindow 
+				<< " !isGoalPathObstructed: " << !isGoalPathObstructed 
+				<< " gotBall: " << robot->dribbler->gotBall(true) 
+				<< " !isKickTooSoon: " << !isKickTooSoon 
+				<< " isRobotOmegaLowEnough: " << isRobotOmegaLowEnough 
+				<< " targetAngleError: " << (abs(targetAngle) < targetAngleError)
+				<< std::endl;
 
 	if (isFrameValid) {
 		validKickFrames++;
@@ -1123,6 +1170,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	// only perform the kick if valid view has been observed for a couple of frames
 	if (performKick) {
 		std::cout << "kicked!" << std::endl;
+		robot->stop();
 			// TODO restore normal kicking
 			robot->kick();
 			//robot->chipKick(Math::min(Math::max(goal->distance - 0.5f, 1.0f), 1.5f));
