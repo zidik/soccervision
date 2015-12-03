@@ -657,6 +657,19 @@ void TeamController::FindBallState::step(float dt, Vision::Results* visionResult
 		return;
 	}
 
+	float maxSearchDuration = 4.0f;
+
+	if (combinedDuration > maxSearchDuration) {
+		Object* enemyGoal = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
+		if (enemyGoal != NULL) {
+			Object* closestRobot = visionResults->getRobotNearObject(ai->enemyColor, enemyGoal, Dir::FRONT);
+			if (closestRobot != NULL) {
+				ai->setState("press-opponent");
+				return;
+			}
+		}
+	}
+
 	//configuration parameters
 	float ballSearchSpeed = 3.0f;
 
