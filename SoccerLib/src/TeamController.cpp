@@ -1077,7 +1077,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 
 		avoidBallDuration += dt;
 
-		sideSpeed = (avoidBallSide == TargetMode::LEFT ? -1.0f : 1.0f) * Math::map(avoidBallDuration, 0.0f, 1.0f, 0.0f, avoidBallSpeed);
+		sideSpeed = (avoidBallSide == TargetMode::LEFT ? -1.0f : 1.0f) * Math::map(avoidBallDuration, 0.0f, 1.0f, 0.0f, avoidBallSpeed) / 3;
 
 		// not sure if this is good after all
 		//forwardSpeed = Math::map(goal->distance, 0.5f, 1.0f, 0.0f, Math::abs(sideSpeed));
@@ -1094,18 +1094,21 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	}
 
 	// always apply some forward speed (can think that has ball when really doesn't)
-	forwardSpeed = Math::max(forwardSpeed, minForwardSpeed);
+	forwardSpeed = minForwardSpeed;
 
 	bool isRobotOmegaLowEnough = Math::abs(robot->getOmega()) <= maxRobotKickOmega;
 	bool isFrameValid = validWindow
 		&& !isKickTooSoon
 		&& !isGoalPathObstructed
-		&& isRobotOmegaLowEnough
+		/*&& isRobotOmegaLowEnough*/
 		&& robot->dribbler->gotBall(true)
-		&& !shouldManeuverBallInWay;
+		/*&& !shouldManeuverBallInWay*/;
+
+	//std::cout << "validWindow: " << validWindow << " !isGoalPathObstructed: " << !isGoalPathObstructed << " gotBall: " << robot->dribbler->gotBall(true) << " !isKickTooSoon: " << !isKickTooSoon << " isRobotOmegaLowEnough: " << isRobotOmegaLowEnough << std::endl;
 
 	if (isFrameValid) {
 		validKickFrames++;
+		//std::cout << "validKickFrame!" << std::endl;
 	}
 	else {
 		validKickFrames = 0;
@@ -1119,31 +1122,13 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 
 	// only perform the kick if valid view has been observed for a couple of frames
 	if (performKick) {
-		if (isBallInWay) {
-			useChipKick = robot->dribbler->getBallInDribblerTime() >= 0.2f;
-
-			if (useChipKick) {
-				// TODO closest ball may be too close to kick over
-				//float chipKickDistance = Math::max(goal->distance - 1.0f, 0.5f);
-
-				// try to kick 1m past the furhest ball but no further than 1m before the goal, also no less then 0.5m
-				/*chipKickDistance = ai->getChipKickDistance(ballInWayMetric, goal->distance);
-
-				if (robot->chipKick(chipKickDistance)) {
-					wasKicked = true;
-				}*/
-			}
-			else {
-				waitingBallToSettle = true;
-			}
-		}
-		else {
+		std::cout << "kicked!" << std::endl;
 			// TODO restore normal kicking
 			robot->kick();
 			//robot->chipKick(Math::min(Math::max(goal->distance - 0.5f, 1.0f), 1.5f));
 
 			wasKicked = true;
-		}
+		
 
 		if (wasKicked) {
 			ai->resetLastBall();
