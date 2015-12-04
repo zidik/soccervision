@@ -1127,6 +1127,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	else target = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
 
 	Object* enemyRobot = visionResults->getLargestRobot(ai->enemyColor, Dir::FRONT);
+	Object* ownGoal = visionResults->getLargestGoal(ai->defendSide, Dir::ANY);
 
 	if (!robot->dribbler->gotBall()) {
 		//robot->dribbler->stop();
@@ -1153,7 +1154,6 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	}
 
 	if (combinedDuration > maxAimDuration * 3) {
-		Object* ownGoal = visionResults->getLargestGoal(ai->defendSide, Dir::ANY);
 
 		if (ownGoal == NULL || ownGoal->behind || abs(ownGoal->angle) > Math::PI / 3.0f) {
 			robot->kick(ai->directKickStrength);
@@ -1188,7 +1188,12 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	}
 
 	if (target == NULL) {
-		robot->spinAroundDribbler();
+		if (ownGoal != NULL && ownGoal->distance > 2.5f) {
+			robot->setTargetDir(ownGoal->angle, 0.4, 2.0f);
+		}
+		else {
+			robot->spinAroundDribbler();
+		}
 		validCount = 0;
 	}
 	else {
