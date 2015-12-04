@@ -225,9 +225,16 @@ public:
 		bool areaLocked;
 		Part lockedArea;
 		bool chipRequested;
-
+		
 		std::vector<float> targetAngleBuffer;
 
+		TargetMode avoidBallSide;
+		double lastKickTime;
+		float avoidBallDuration;
+		int validKickFrames;
+		float searchGoalDir;
+		float spinDuration;
+		float reverseDuration;
 	};
 
 	//Pass the ball
