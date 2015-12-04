@@ -305,6 +305,7 @@ public:
 	bool handleServerMessage(Server::Message* message);
 	void handleTargetVectorCommand(const Command& cmd);
 	void handleDribblerCommand(const Command& cmd);
+	void handleToggleDribblerCommand(const Command& cmd);
 	void handleAdjustDribblerLimitsCommand(const Command& cmd);
 	void handleKickCommand(const Command& cmd);
 	void handleChipKickCommand(const Command& cmd);
