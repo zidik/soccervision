@@ -1852,7 +1852,7 @@ void TeamController::BackAroundOpponentState::step(float dt, Vision::Results* vi
 		return;
 	}
 
-	if (combinedDuration > 11.0f) {
+	if (combinedDuration > 5.0f) {
 		Parameters parameters;
 		parameters["kick-type"] = "chip";
 		parameters["target-type"] = "enemy-goal";
