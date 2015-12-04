@@ -1164,7 +1164,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	}
 
 	//if enemy robot is close in front, turn around and try to drive around him
-	if (canMoveWithBall && enemyRobot != NULL && enemyRobot->distance < 0.5f && target != NULL && target->distance > 2.0f) {
+	if (canMoveWithBall && enemyRobot != NULL && enemyRobot->distance < 0.5f && ((target != NULL && target->distance >= 2.0f) || target == NULL)) {
 		Parameters parameters;
 		if (enemyRobot->angle < 0.0f) parameters["rotate-dir"] = "clockwise";
 		if (robot->getPosition().location.y < 0.75f) {
@@ -1175,6 +1175,16 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		}
 		ai->setState("back-around-opponent", parameters);
 		return;
+	}
+	if (canMoveWithBall && enemyRobot != NULL && enemyRobot->distance < 0.5f && target != NULL && target->distance < 2.0f) {
+		float forwardSpeed = 0.05f;
+		float sideSpeed = 0.5f;
+
+		if (enemyRobot->angle > 0.0f) sideSpeed *= -1.0f;
+		robot->setTargetDir(forwardSpeed, sideSpeed);
+	}
+	else {
+		robot->setTargetDir(0.0f, 0.0f);
 	}
 
 	if (target == NULL) {
@@ -1264,7 +1274,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 
 		}
 		
-		robot->setTargetDir(0.0f, 0.0f);
+		//robot->setTargetDir(0.0f, 0.0f);
 		robot->lookAt(Math::Rad(targetAngle));
 		robot->dribbler->start();
 	}
