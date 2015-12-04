@@ -220,6 +220,7 @@ public:
 		std::string nextState;
 		std::string targetType;
 		std::string kickType;
+		bool canMoveWithBall;
 		int validCount;
 		bool areaLocked;
 		Part lockedArea;
@@ -321,6 +322,7 @@ public:
 		int opponentSeenCounter;
 		int opponentLostCounter;
 		Object* lastEnemyRobot;
+		bool rotateClockwise;
 	};
 
 	//Press an enemy robot
@@ -357,6 +359,9 @@ public:
 	void reset() override;
 	void handleRefereeCommand(const Command& cmd);
 	float getChipKickDistance(float targetDistance);
+	std::string getSituationName(GameSituation situation);
+	std::string getTeamPossessionName(TeamInPossession team);
+	std::string getJSON();
 
 private:
 	void setupStates();

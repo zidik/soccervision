@@ -186,7 +186,7 @@ void ParticleFilterLocalizer::resample() {
 	static bool wasLost;
 	if (lost) {
 		if (!wasLost) {
-			std::cout << "Particles had probability sum less than 0.1 - robot is lost" << std::endl;
+			//std::cout << "Particles had probability sum less than 0.1 - robot is lost" << std::endl;
 		}
 		wasLost = true;
 
@@ -198,7 +198,7 @@ void ParticleFilterLocalizer::resample() {
 	}
 	else {
 		if (wasLost){
-			std::cout << "Robot location recovering..." << std::endl;
+			//std::cout << "Robot location recovering..." << std::endl;
 		}
 		wasLost = false;
 

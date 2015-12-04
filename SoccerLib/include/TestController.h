@@ -336,7 +336,7 @@ public:
 	void dbg(std::string key, float value) { messages[key] = Util::toString(value); }
 	void dbg(std::string key, double value) { messages[key] = Util::toString(value); }
 	void dbg(std::string key, bool value) { messages[key] = value ? "true" : "false"; }
-	std::string getJSON();
+	virtual std::string getJSON();
 
 protected:
 	void updateVisionInfo(Vision::Results* visionResults);
