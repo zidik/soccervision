@@ -311,7 +311,7 @@ void TeamController::WaitForKickState::step(float dt, Vision::Results* visionRes
 	}
 
 	// configuration parameters
-	float kickDetectionDeltaPosition = 0.1f;
+	float kickDetectionDeltaPosition = 0.15f;
 	float kickDetectionMovingSpeed = 0.6f;
 
 	if (ball != NULL) {
@@ -782,6 +782,10 @@ void TeamController::FindBallState::step(float dt, Vision::Results* visionResult
 
 	if (combinedDuration > maxSearchDuration) {
 		Object* enemyGoal = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
+		if (!ai->isCaptain) {
+			ai->setState("defend-goal");
+			return;
+		}
 		if (enemyGoal != NULL) {
 			Object* closestRobot = visionResults->getRobotNearObject(ai->enemyColor, enemyGoal, Dir::FRONT);
 			if (closestRobot != NULL) {
@@ -845,6 +849,41 @@ void TeamController::FindObjectState::step(float dt, Vision::Results* visionResu
 		parameters["last-state"] = "find-object";
 		ai->setState("aim-kick", parameters);
 		return;
+	}
+
+	float maxSearchDuration = 4.0f;
+
+	if (combinedDuration > maxSearchDuration) {
+		Object* enemyGoal = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
+		if (!ai->isCaptain) {
+			ai->setState("defend-goal");
+			return;
+		}
+		if (targetType.compare("enemy-robot") == 0) {
+			ai->setState("fetch-ball-front");
+			return;
+		}
+		if (targetType.compare("team-robot") == 0) {
+			ai->setState("fetch-ball-front");
+			return;
+		}
+		if (targetType.compare("enemy-goal") == 0) {
+			ai->setState("fetch-ball-front");
+			return;
+		}
+		if (targetType.compare("team-goal") == 0) {
+			ai->setState("fetch-ball-front");
+			return;
+		}
+		if (targetType.compare("ball") == 0) {
+			if (enemyGoal != NULL) {
+				Object* closestRobot = visionResults->getRobotNearObject(ai->enemyColor, enemyGoal, Dir::FRONT);
+				if (closestRobot != NULL) {
+					ai->setState("press-opponent");
+					return;
+				}
+			}
+		}
 	}
 
 	//configuration parameters
@@ -1260,7 +1299,7 @@ void TeamController::GetPassState::step(float dt, Vision::Results* visionResults
 		return;
 	}
 
-	float maxStateDuration = 4.0f;
+	float maxStateDuration = 6.0f;
 
 	if (combinedDuration > maxStateDuration) {
 		if (ai->isCaptain) {
@@ -1683,6 +1722,13 @@ void TeamController::FindTargetState::step(float dt, Vision::Results* visionResu
 		return;
 	}
 
+	float maxStateDuration = 6.0f;
+
+	if (combinedDuration > maxStateDuration) {
+		ai->setState("fetch-ball-front");
+		return;
+	}
+
 	if (ball == NULL) {
 		Parameters parameters;
 		parameters["next-state"] = lastState;
@@ -1806,7 +1852,14 @@ void TeamController::BackAroundOpponentState::step(float dt, Vision::Results* vi
 		return;
 	}
 
-
+	if (combinedDuration > 11.0f) {
+		Parameters parameters;
+		parameters["kick-type"] = "chip";
+		parameters["target-type"] = "enemy-goal";
+		parameters["can-move"] = "yes";
+		ai->setState("aim-kick", parameters);
+		return;
+	}
 
 	//configuration parameters
 	float findRobotSpeed = 3.0f;
