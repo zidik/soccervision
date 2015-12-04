@@ -97,8 +97,14 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 				else if (command == "CORNERK-") { currentSituation = GameSituation::CORNERKICK; }
 				else if (command == "PENALTY-") { currentSituation = GameSituation::PENALTY; }
 				else if (command == "GOAL----") {
-					if (commandForOurTeam) friendlyGoalCounter++;
-					else enemyGoalCounter++;
+					if (commandForOurTeam) {
+						friendlyGoalCounter++;
+						std::cout << "- We scored a goal" << std::endl;
+					}
+					else {
+						enemyGoalCounter++;
+						std::cout << "- they scored a goal" << std::endl;
+					}
 				}
 			}
 			else {
@@ -139,7 +145,13 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 							return;
 						case GameSituation::PLACEDBALL:
 							setState("fetch-ball-front");
+							client->send("run-defend-goal");
 							std::cout << "- its a placed ball" << std::endl;
+							return;
+						case GameSituation::UNKNOWN:
+							setState("fetch-ball-front");
+							client->send("run-defend-goal");
+							std::cout << "- mystery state" << std::endl;
 							return;
 						}
 					}
@@ -531,6 +543,7 @@ void TeamController::TakeFreeKickDirectState::onEnter(Robot* robot, Parameters p
 	robot->dribbler->useNormalLimits();
 	robot->dribbler->stop();
 	ai->client->send("run-defend-goal");
+	ai->currentSituation = GameSituation::DIRECTFREEKICK;
 }
 
 void TeamController::TakeFreeKickDirectState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -722,6 +735,8 @@ void TeamController::TakeCornerKickState::step(float dt, Vision::Results* vision
 void TeamController::TakePenaltyState::onEnter(Robot* robot, Parameters parameters) {
 	robot->dribbler->useNormalLimits();
 	robot->dribbler->stop();
+	ai->client->send("run-defend-goal");
+	ai->currentSituation = GameSituation::PENALTY;
 }
 
 void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -734,8 +749,6 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 		parameters["kick-type"] = "direct";
 		parameters["target-type"] = "enemy-goal";
 		ai->setState("aim-kick", parameters);
-		//robot->dribbler->stop();
-		//robot->stop();
 		return;
 	}
 
@@ -754,7 +767,6 @@ void TeamController::TakePenaltyState::step(float dt, Vision::Results* visionRes
 		parameters["kick-immediately"] = "Y";
 		ai->setState("go-to-ball", parameters);
 		return;
-
 	}
 }
 
