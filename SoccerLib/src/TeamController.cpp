@@ -1164,7 +1164,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	}
 
 	//if enemy robot is close in front, turn around and try to drive around him
-	if (canMoveWithBall && enemyRobot != NULL && enemyRobot->distance < 0.75f && target != NULL && target->distance > 2.0f) {
+	if (canMoveWithBall && enemyRobot != NULL && enemyRobot->distance < 0.5f && target != NULL && target->distance > 2.0f) {
 		Parameters parameters;
 		if (enemyRobot->angle < 0.0f) parameters["rotate-dir"] = "clockwise";
 		if (robot->getPosition().location.y < 0.75f) {
