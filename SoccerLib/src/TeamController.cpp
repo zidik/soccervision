@@ -19,7 +19,7 @@ TeamController::TeamController(Robot* robot, AbstractCommunication* com, Client*
 
 	passStrength = 625;
 	directKickStrength = 3000;
-	chipKickAdjust = 0.5f;
+	chipKickAdjust = 0.15f;
 };
 
 TeamController::~TeamController() {
@@ -171,7 +171,7 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 
 float TeamController::getChipKickDistance(float targetDistance) {
 	float adjustedDistance = targetDistance - chipKickAdjust;
-	float kickDistance = Math::limit(adjustedDistance, 0.4f, 3.5f);
+	float kickDistance = Math::limit(adjustedDistance, 0.9f, 4.2f);
 	return kickDistance;
 }
 
@@ -1176,7 +1176,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 		ai->setState("back-around-opponent", parameters);
 		return;
 	}
-	if (canMoveWithBall && enemyRobot != NULL && enemyRobot->distance < 0.5f && target != NULL && target->distance < 2.0f) {
+	if (canMoveWithBall && enemyRobot != NULL && enemyRobot->distance < 0.75f && target != NULL && target->distance < 2.0f) {
 		float forwardSpeed = 0.05f;
 		float sideSpeed = 0.5f;
 
