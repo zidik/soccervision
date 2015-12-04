@@ -1079,13 +1079,6 @@ void TeamController::AimKickState::onEnter(Robot* robot, Parameters parameters) 
 	validCount = 0;
 	areaLocked = false;
 	lockedArea = Part::MIDDLE;
-
-	avoidBallSide = TargetMode::UNDECIDED;
-	validKickFrames = 0;
-	avoidBallDuration = 0.0f;
-	searchGoalDir = 0.0f;
-	spinDuration = 0.0f;
-	reverseDuration = 0.0f;
 }
 
 void TeamController::AimKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
@@ -1109,9 +1102,8 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	int validCountThreshold = 5;
 	float aimAdjustRobotDistance = 1.2f;
 	float robotInMiddleThreshold = Math::PI / 180.0f;
-	float maxAimDuration = 6.0f;
-	float searchPeriod = 2.0f;
-
+	float maxAimDuration = 2.0f;
+	
 	// if aiming has taken too long, perform a weak kick and give up
 	if (combinedDuration > maxAimDuration) {
 		if (kickType.compare("pass") == 0) {
@@ -1147,169 +1139,70 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	}
 
 	if (target == NULL) {
-		if (searchGoalDir == 0.0f) {
-			if (ai->lastTargetGoalAngle > 0.0f) {
-				searchGoalDir = 1.0f;
-			}
-			else {
-				searchGoalDir = -1.0f;
-			}
-		}
-
-		robot->spinAroundDribbler(searchGoalDir == -1.0f, searchPeriod);
-
+		robot->spinAroundDribbler();
 		validCount = 0;
-		return;
-	}
-
-	//Object* target = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
-	//Object* rearGoal = visionResults->getLargestGoal(Side::UNKNOWN, Dir::REAR);
-	// configuration
-	float avoidBallSpeed = 0.65f;
-	float minForwardSpeed = 0.1f;
-	float minBallAvoidSideSpeed = 0.25f;
-	float maxRobotKickOmega = Math::PI / 4.0f;
-	float maxBallAvoidTime = 1.5f;
-	double minKickInterval = 1.0;
-
-	// need to decide whether kicking is a good idea
-	int halfWidth = Config::cameraWidth / 2;
-	int leftEdge = target->x - target->width / 2;
-	int rightEdge = target->x + target->width / 2;
-	int goalWidth = target->width;
-	int goalHalfWidth = goalWidth / 2;
-	int goalKickThresholdPixels = (int)((float)goalHalfWidth * (1.0f - Config::goalKickThreshold));
-	double timeSinceLastKick = lastKickTime != 0.0 ? Util::duration(lastKickTime) : -1.0;
-	Vision::Obstruction goalPathObstruction = ai->getGoalPathObstruction();
-	bool isGoalPathObstructed = goalPathObstruction.left || goalPathObstruction.right;
-	float forwardSpeed = 0.0f;
-	float sideSpeed = 0.0f;
-	//Vision::BallInWayMetric ballInWayMetric = visionResults->getBallInWayMetric(*visionResults->front->balls, target->y + target->height / 2);
-	bool validWindow = false;
-	bool isKickTooSoon = lastKickTime != -1.0 && timeSinceLastKick < minKickInterval;
-	bool isLowVoltage = robot->coilgun->isLowVoltage();
-	//bool isBallInWay = ai->shouldAvoidBallInWay(ballInWayMetric, target->distance);
-	//bool shouldManeuverBallInWay = ai->shouldManeuverBallInWay(ballInWayMetric, target->distance, isLowVoltage);
-
-
-	if (isGoalPathObstructed) {
-		// decide which way to avoid the balls once
-		if (avoidBallSide == TargetMode::UNDECIDED) {
-			if (isGoalPathObstructed) {
-				if (goalPathObstruction.invalidCountLeft > goalPathObstruction.invalidCountRight) {
-					avoidBallSide = TargetMode::RIGHT;
-				}
-				else {
-					avoidBallSide = TargetMode::LEFT;
-				}
-			}
-			else {
-				// make sure to drive near the centerline of the field not out further
-				if (robot->getPosition().location.y < Config::fieldHeight / 2.0f) {
-					avoidBallSide = ai->targetSide == Side::BLUE ? TargetMode::RIGHT : TargetMode::LEFT;
-				}
-				else {
-					avoidBallSide = ai->targetSide == Side::BLUE ? TargetMode::LEFT : TargetMode::RIGHT;
-				}
-			}
-		}
-
-
-
-		avoidBallDuration += dt;
-
-		sideSpeed = (avoidBallSide == TargetMode::LEFT ? -1.0f : 1.0f) * Math::map(avoidBallDuration, 0.0f, 1.0f, 0.0f, avoidBallSpeed);
-		forwardSpeed = minForwardSpeed;
-		// not sure if this is good after all
-		//forwardSpeed = Math::map(goal->distance, 0.5f, 1.0f, 0.0f, Math::abs(sideSpeed));
-	}
-
-	// check whether the aiming is precise enough
-	if (!target->behind) {
-		if (
-			leftEdge + goalKickThresholdPixels < halfWidth
-			&& rightEdge - goalKickThresholdPixels > halfWidth
-			) {
-			validWindow = true;
-		}
-	}
-
-        
-	bool isRobotOmegaLowEnough = Math::abs(robot->getOmega()) <= maxRobotKickOmega;
-	bool isFrameValid = validWindow
-		/*&& !isKickTooSoon*/
-		&& !isGoalPathObstructed
-		&& isRobotOmegaLowEnough
-		&& robot->dribbler->gotBall(true)
-		/*&& (abs(targetAngle) < targetAngleError)*/;
-
-	std::cout << "validWindow: " << validWindow
-		<< " !isGoalPathObstructed: " << !isGoalPathObstructed
-		<< " gotBall: " << robot->dribbler->gotBall(true)
-		<< " !isKickTooSoon: " << !isKickTooSoon
-		<< " isRobotOmegaLowEnough: " << isRobotOmegaLowEnough
-		//<< " targetAngleError: " << (abs(targetAngle) < targetAngleError)
-		<< std::endl;
-
-	if (isFrameValid) {
-		validKickFrames++;
-		//std::cout << "validKickFrame!" << std::endl;
 	}
 	else {
-		validKickFrames = 0;
-	}
-
-	bool performKick = validKickFrames >= Config::goalKickValidFrames;
-	bool wasKicked = false;
-	bool waitingBallToSettle = false;
-	bool useChipKick = false;
-	float chipKickDistance = 0.0f;
-
-	// only perform the kick if valid view has been observed for a couple of frames
-	if (performKick) {
-		std::cout << "kicked!" << std::endl;
-		robot->stop();
-		// TODO restore normal kicking
-		robot->kick();
-		//robot->chipKick(Math::min(Math::max(goal->distance - 0.5f, 1.0f), 1.5f));
-
-		wasKicked = true;
-
-
-		if (wasKicked) {
-			ai->resetLastBall();
-
-			lastKickTime = Util::millitime();
-		}
-	}
-	else {
-		robot->setTargetDir(forwardSpeed, sideSpeed);
-		robot->lookAt(target, Config::lookAtP, true);
-	}
-
-
-	float targetAngle;
-	Object* closestRobot = visionResults->getRobotNearObject(ai->enemyColor, target, Dir::FRONT, aimAdjustRobotDistance);
-	if (areaLocked) {
-		targetAngle = visionResults->getObjectPartAngle(target, lockedArea);
-	}
-	else if (closestRobot == NULL) {
-		targetAngle = target->angle;
-	}
-	else {
-		if (abs(closestRobot->angle) < robotInMiddleThreshold) {
-			areaLocked = true;
-			if (closestRobot->angle > target->angle) lockedArea = Part::LEFTSIDE;
-			else lockedArea = Part::RIGHTSIDE;
+		float targetAngleError = Math::map(target->distance, 0.5f, 4.0f, Math::PI / 30.0f, Math::PI / 180.0f);
+		float targetAngle;
+		Object* closestRobot = visionResults->getRobotNearObject(ai->enemyColor, target, Dir::FRONT, aimAdjustRobotDistance);
+		if (areaLocked) {
 			targetAngle = visionResults->getObjectPartAngle(target, lockedArea);
 		}
-		else if (closestRobot->angle > target->angle) {
-			targetAngle = visionResults->getObjectPartAngle(target, Part::LEFTSIDE);
+		else if (closestRobot == NULL) {
+			targetAngle = target->angle;
 		}
 		else {
-			targetAngle = visionResults->getObjectPartAngle(target, Part::RIGHTSIDE);
+			if (abs(closestRobot->angle) < robotInMiddleThreshold) {
+				areaLocked = true;
+				if (closestRobot->angle > target->angle) lockedArea = Part::LEFTSIDE;
+				else lockedArea = Part::RIGHTSIDE;
+				targetAngle = visionResults->getObjectPartAngle(target, lockedArea);
+			}
+			else if (closestRobot->angle > target->angle) {
+				targetAngle = visionResults->getObjectPartAngle(target, Part::LEFTSIDE);
+			}
+			else {
+				targetAngle = visionResults->getObjectPartAngle(target, Part::RIGHTSIDE);
+			}
 		}
-	}
+
+		//average filtering
+		size_t numberOfSamples = 7;
+		targetAngleBuffer.push_back(targetAngle);
+		while (targetAngleBuffer.size() > numberOfSamples) targetAngleBuffer.erase(targetAngleBuffer.begin());
+		float targetAngleSum = 0.0f;
+		for (std::vector<float>::iterator it = targetAngleBuffer.begin(); it != targetAngleBuffer.end(); it++) targetAngleSum += *it;
+		targetAngle = targetAngleSum / targetAngleBuffer.size();
+
+		if (abs(targetAngle) < targetAngleError) {
+			validCount++;
+		}
+		else {
+			validCount = 0;
+		}
+		if (validCount > validCountThreshold) {
+			robot->stop();
+			//robot->dribbler->stop();
+			if (kickType.compare("pass") == 0) {
+				ai->client->send("run-fetch-ball-front");
+				if (ai->isCaptain) nextState = "press-opponent";
+				else nextState = "defend-goal";
+				robot->kick(ai->passStrength);
+				ai->setState(nextState);
+				robot->dribbler->useNormalLimits();
+				return;
+			}
+			else if (kickType.compare("direct") == 0) {
+				if (ai->isCaptain) nextState = "fetch-ball-front";
+				else nextState = "defend-goal";
+				robot->kick(ai->directKickStrength);
+				ai->setState(nextState);
+				robot->dribbler->useNormalLimits();
+				return;
+			}
+			else if (kickType.compare("chip") == 0) {
+				robot->dribbler->useChipKickLimits();
 
 				if (robot->dribbler->isRaised()) {
 					if (ai->isCaptain) nextState = "fetch-ball-front";
@@ -1330,59 +1223,12 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 				return;
 			}
 
-    if (abs(targetAngle) < targetAngleError) {
-        validCount++;
-    }
-    else {
-        validCount = 0;
-    }
-    if (validCount > validCountThreshold) {
-        robot->stop();
-        //robot->dribbler->stop();
-        if (kickType.compare("pass") == 0) {
-            ai->client->send("run-fetch-ball-front");
-            robot->kick(ai->passStrength);
-            ai->setState(nextState);
-            robot->dribbler->useNormalLimits();
-            return;
-        }
-        else if (kickType.compare("direct") == 0) {
-            robot->kick(ai->directKickStrength);
-            ai->setState(nextState);
-            robot->dribbler->useNormalLimits();
-            return;
-        }
-        else if (kickType.compare("chip") == 0) {
-            robot->dribbler->useChipKickLimits();
-
-            if (robot->dribbler->isRaised()) {
-                robot->coilgun->chipKick(ai->getChipKickDistance(target->distance));
-                ai->setState(nextState);
-                robot->dribbler->useNormalLimits();
-                return;
-            }
-        }
-        else {
-            ai->client->send("run-fetch-ball-front");
-            robot->kick(ai->passStrength);
-            ai->setState(nextState);
-            robot->dribbler->useNormalLimits();
-            return;
-        }
-
-	}
-	else {
+		}
 		
 		robot->setTargetDir(0.0f, 0.0f);
-		robot->lookAt(target);
+		robot->lookAt(Math::Rad(targetAngle));
 		robot->dribbler->start();
 	}
-
-	
-
-	
-
-
 
 }
 
