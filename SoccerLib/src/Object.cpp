@@ -22,8 +22,12 @@ bool movementVector::incrementLocationsAge() {
 	return true;
 }
 
-bool movementVector::removeOldLocations() {
-	for (ObjectLocationList::iterator it = locationBuffer.begin(); it != locationBuffer.end(); ) {
+void movementVector::removeOldLocations() {
+	locationBuffer.erase(
+		std::remove_if(locationBuffer.begin(), locationBuffer.end(), 
+				[] (ObjectLocation* currentLocation) { return currentLocation->age > Config::objectLocationMaxAge; }),
+		locationBuffer.end());
+	/*for (ObjectLocationList::iterator it = locationBuffer.begin(); it != locationBuffer.end(); ) {
 		ObjectLocation* currentLocation = *it;
 		if (currentLocation->age > Config::objectLocationMaxAge) {
 			locationBuffer.erase(it);
@@ -31,8 +35,8 @@ bool movementVector::removeOldLocations() {
 		else {
 			it++;
 		}
-	}
-	return true;
+	}*/
+
 }
 
 bool movementVector::updateSpeedAndAngle(float dt) {

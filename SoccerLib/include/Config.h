@@ -24,7 +24,7 @@ namespace Config {
 
 
 	// default startup controller name
-	const std::string defaultController = "test";
+	const std::string defaultController = "teamplay";
 
 	// how big of a buffer to allocate for generating jpeg images
 	const int jpegBufferSize = 5000 * 1024;
@@ -61,7 +61,7 @@ namespace Config {
 	const float robotMaxDistance = 5.5f;
 
 	//Maximum ratio for valid pixels to scanned pixels when searching for robot markers
-	const float robotScanMinMatchRatio = 0.3f;
+	const float robotScanMinMatchRatio = 0.225f;
 
 	// goals with area over this value are definately considered to be valid
 	const int goalCertainArea = 10000;
@@ -216,7 +216,7 @@ namespace Config {
 	const double objectPurgeLifetime = 10.0f;
 
 	// maximum velocity of an object to be considered valid
-	const float objectMaxVelocity = 8.0f;
+	const float objectMaxVelocity = 16.0f;
 
 	// how close to the field-of-view must the object be to be considered in view
 	const float objectFovCloseEnough = 0.5f;

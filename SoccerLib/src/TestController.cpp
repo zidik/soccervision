@@ -263,6 +263,8 @@ bool TestController::handleCommand(const Command& cmd) {
 		handleTargetVectorCommand(cmd);
 	} else if (cmd.name == "set-dribbler" && cmd.parameters.size() == 1) {
 		handleDribblerCommand(cmd);
+	} else if (cmd.name == "toggle-dribbler" && cmd.parameters.size() == 1) {
+		handleToggleDribblerCommand(cmd);
 	} else if (cmd.name == "adjust-dribbler-limits" && cmd.parameters.size() == 2) {
 		handleAdjustDribblerLimitsCommand(cmd);
 	} else if (cmd.name == "dribbler-normal-limits") {
@@ -332,6 +334,14 @@ void TestController::handleTargetVectorCommand(const Command& cmd) {
 
 void TestController::handleDribblerCommand(const Command& cmd) {
 	manualDribblerSpeed = Util::toInt(cmd.parameters[0]);
+
+	lastCommandTime = Util::millitime();
+}
+
+void TestController::handleToggleDribblerCommand(const Command& cmd) {
+	bool dribblerGo = Util::toInt(cmd.parameters[0]);
+	if (dribblerGo) robot->dribbler->start();
+	else robot->dribbler->stop();
 
 	lastCommandTime = Util::millitime();
 }

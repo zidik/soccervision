@@ -101,9 +101,9 @@ Dash.Robot.prototype.toggleDribbler = function() {
 		this.dribblerActive = !this.dribblerActive;
 		
 		if (this.dribblerActive) {
-			this.socket.send('<set-dribbler:2000>');
+			this.socket.send('<toggle-dribbler:1>');
 		} else {
-			this.socket.send('<set-dribbler:0>');
+			this.socket.send('<toggle-dribbler:0>');
 		}
 	}
 };

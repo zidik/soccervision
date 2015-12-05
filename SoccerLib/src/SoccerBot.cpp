@@ -437,7 +437,6 @@ void SoccerBot::loadConfiguration() {
 	}
 }
 
-
 void SoccerBot::setupVision() {
 	std::cout << "! Setting up vision.. " << std::endl;
 
@@ -1043,6 +1042,7 @@ void SoccerBot::handleClientMessage(std::string message) {
 		std::cout << "- Message '" << message << "' is not a valid client command" << std::endl;
 	}
 }
+
 void SoccerBot::handleServerToClientStateMessage(std::string message) {
 	// store server state
 	serverStateJSON = Command::getTrailingJSON(message);

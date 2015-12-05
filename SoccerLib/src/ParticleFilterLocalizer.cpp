@@ -181,10 +181,15 @@ void ParticleFilterLocalizer::resample() {
 	for (Particle* particle : particles) {
 		probability_sum += particle->probability;
 	}
-    lost = probability_sum < 0.1; 
+    lost = probability_sum < 0.1;
+
+	static bool wasLost;
 	if (lost) {
-	    std::cout << "Particles had probability sum less than 0.1 - robot is lost" << std::endl;
-	    lost = true;
+		if (!wasLost) {
+			//std::cout << "Particles had probability sum less than 0.1 - robot is lost" << std::endl;
+		}
+		wasLost = true;
+
 	    int randomCount = 0;//particleCount / 100;
 	    for (int i = 0; i < particleCount - randomCount; i++) {
 	        newParticles.push_back(new Particle(*particles[i]));
@@ -192,6 +197,11 @@ void ParticleFilterLocalizer::resample() {
 	    generateRandomParticles(newParticles, randomCount);
 	}
 	else {
+		if (wasLost){
+			//std::cout << "Robot location recovering..." << std::endl;
+		}
+		wasLost = false;
+
 	    int randomParticleCount = 0;//particleCount / 100;
 	    int resampledParticleCount = particleCount - randomParticleCount;
 	    generateRandomParticles(newParticles, randomParticleCount);

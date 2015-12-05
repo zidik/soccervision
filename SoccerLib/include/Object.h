@@ -28,7 +28,7 @@ struct movementVector {
 	movementVector(float dX = 0.0f, float dY = 0.0f, ObjectLocationList locationBuffer = ObjectLocationList());
 	bool addLocation(float posX, float posY);
 	bool incrementLocationsAge();
-	bool removeOldLocations();
+	void removeOldLocations();
 	bool updateSpeedAndAngle(float dt);
 	bool calculateVector(float currentX, float currentY, float dt);
 };
