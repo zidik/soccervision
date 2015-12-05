@@ -2240,20 +2240,14 @@ Pixel Vision::getCornerPixel(float startAngle, float endAngle, float r, int numb
 
 	if (transitionVec.size() < 3) throw CouldNotFindCorner();
 
-	int state = 0;
+    float lastSlope = 0;
 	for (int i = 0; i+1 < transitionVec.size(); i++)
 	{
-		int oldState = state;
-		if (transitionVec.at(i).getLength() <= transitionVec.at(i+1).getLength())
-		{
-			state = 1;			
-		}
-		else
-		{
-			state = -1;
-		}
+        Math::Vector diff = transitionVec.at(i + 1) - transitionVec.at(i);
+        float slope = diff.y / diff.x;
 
-		if (state == -1 && oldState == 1)
+        bool notFirst = i > 0;
+        if (notFirst && (abs(lastSlope - slope) > abs(lastSlope - (-1 / slope))))
 		{
 			Math::Vector corner(transitionVec.at(i).x, transitionVec.at(i).y);
 			Pixel cornerPixel = cameraTranslator->getCameraPosition(corner);
@@ -2273,8 +2267,11 @@ Pixel Vision::getCornerPixel(float startAngle, float endAngle, float r, int numb
 				return cornerPixel;
 			}		
 		}
+        lastSlope = slope;
 	}
+    
 	throw CouldNotFindCorner();
+
 }
 
 Vision::ColorList Vision::getViewColorOrder() {
