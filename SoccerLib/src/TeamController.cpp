@@ -1982,7 +1982,7 @@ void TeamController::PressOpponentState::step(float dt, Vision::Results* visionR
 		opponentLostCounter = 0;
 	}
 
-	if (ball != NULL && ball->distance < 0.35f) {
+	if (ball != NULL && ball->distance < 0.35f && combinedDuration > 8.0f) {
 		Parameters parameters;
 		parameters["fetch-style"] = "defensive";
 		ai->setState("fetch-ball-front", parameters);
