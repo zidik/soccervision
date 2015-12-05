@@ -239,6 +239,7 @@ void TestController::setupStates() {
 	states["return-field"] = new ReturnFieldState(this);
 	states["escape-corner"] = new EscapeCornerState(this);
 	states["drive-home"] = new DriveHomeState(this);
+	states["intercept-ball"] = new InterceptBallState(this);
 }
 
 void TestController::step(float dt, Vision::Results* visionResults) {
@@ -247,6 +248,7 @@ void TestController::step(float dt, Vision::Results* visionResults) {
 	this->visionResults = visionResults;
 
 	updateVisionInfo(visionResults);
+	updateBallsGoingToGoal();
 
 	currentStateDuration += dt;
 	combinedStateDuration += dt;
@@ -339,8 +341,8 @@ void TestController::handleDribblerCommand(const Command& cmd) {
 }
 
 void TestController::handleToggleDribblerCommand(const Command& cmd) {
-	bool dribblerGo = Util::toInt(cmd.parameters[0]);
-	if (dribblerGo) robot->dribbler->start();
+	int dribblerGo = Util::toInt(cmd.parameters[0]);
+	if (dribblerGo > 0) robot->dribbler->start();
 	else robot->dribbler->stop();
 
 	lastCommandTime = Util::millitime();
@@ -669,6 +671,56 @@ void TestController::updateVisionInfo(Vision::Results* visionResults) {
 		lastGoalObstructedTime = Util::millitime();
 		lastGoalPathObstruction = visionResults->goalPathObstruction;
 	}
+}
+
+void TestController::updateBallsGoingToGoal() {
+	switch (getDefendSide())
+	{
+	case Side::BLUE:
+		 robot->ballLocalizer->getBallsGoingToBlueGoal(ballsGoingToGoal);
+		 break;
+	case Side::YELLOW:
+		 robot->ballLocalizer->getBallsGoingToYellowGoal(ballsGoingToGoal);
+		 break;
+	default:
+		 std::cout << "Wrong Side!";
+		 break;
+	}
+	return;
+}
+
+bool TestController::shouldIntercept() {
+	const BallManager::Ball* ball;
+	if (ballsGoingToGoal.size() > 0) {
+		ball = ballsGoingToGoal[0]; // Just get one
+										//TODO: Pick most important
+	}
+	else {
+		return false;
+	}
+	Math::Vector interceptPoint;
+
+	//value interceptpoint here.
+
+	if (interceptPoint.getLength() > 0.75f) {
+		return false;
+	}
+
+	float ballTravelDistance = ball->location.distanceTo(interceptPoint);
+	float travelTime = ballTravelDistance / ball->velocity.getLength();
+	float interceptSpeed = 2.0f * interceptPoint.getLength() / (Math::limit(travelTime - 0.25f, 0.05f, 99.0f));
+
+	if (interceptSpeed > 2.0f) {
+		return false;
+	}
+
+	Math::Vector targetLocation = interceptPoint.getRotated(robot->getPosition().orientation) + robot->getPosition().location;
+
+	if (targetLocation.x < 0 || targetLocation.y < 0 || targetLocation.x > Config::fieldWidth || targetLocation.y > Config::fieldHeight) {
+		return false;
+	}
+
+	return true;
 }
 
 bool TestController::isRobotNearLine(Vision::Results* visionResults, bool ignoreCenterSample) {
@@ -1132,6 +1184,11 @@ void TestController::WatchBallState::step(float dt, Vision::Results* visionResul
 	if (goal == NULL || ball == NULL) {
 		robot->setTargetDir(ai->manualSpeedX, ai->manualSpeedY, ai->manualOmega);
 
+		return;
+	}
+
+	if (ai->shouldIntercept()) {
+		ai->setState("intecept-ball");
 		return;
 	}
 
@@ -3391,3 +3448,56 @@ void TestController::DriveHomeState::step(float dt, Vision::Results* visionResul
 	ai->dbg("reverseSpeed", reverseSpeed);
 	ai->dbg("maxWhiteDistance", visionResults->rear->whiteDistance.max);
 }
+
+void TestController::InterceptBallState::onEnter(Robot* robot, Parameters parameters) {
+	if (!ai->shouldIntercept()) {
+		ai->setState("find-ball");
+		return;
+	}
+
+	const BallManager::Ball* ball;
+	if (ai->ballsGoingToGoal.size() > 0) {
+		ball = ai->ballsGoingToGoal[0]; // Just get one
+										//TODO: Pick most important
+	}
+	else {
+		ai->setState("find-ball");
+		return;
+	}
+	Math::Vector interceptPoint;
+
+	//value interceptpoint here.
+
+	if (interceptPoint.getLength() > 0.75f) {
+		ai->setState("find-ball");
+		return;
+	}
+
+	float ballTravelDistance = ball->location.distanceTo(interceptPoint);
+	float travelTime = ballTravelDistance / ball->velocity.getLength();
+	float interceptSpeed = 2.0f * interceptPoint.getLength() / (Math::limit(travelTime - 0.25f, 0.05f, 99.0f));
+
+	if (interceptSpeed > 2.0f) {
+		ai->setState("find-ball");
+		return;
+	}
+
+	Math::Vector targetLocation = interceptPoint.getRotated(robot->getPosition().orientation) + robot->getPosition().location;
+
+	if (targetLocation.x < 0 || targetLocation.y < 0 || targetLocation.x > Config::fieldWidth || targetLocation.y > Config::fieldHeight) {
+		ai->setState("find-ball");
+		return;
+	}
+
+	robot->driveTo(targetLocation.x, targetLocation.y, Math::max(interceptSpeed, 0.5f));
+}
+
+void TestController::InterceptBallState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	while (robot->hasTasks()) return;
+
+	//temporary hack
+	//ai->setState("find-ball");
+	ai->setState("watch-ball");
+	return;
+}
+

@@ -290,6 +290,14 @@ public:
 
 	};
 
+	// For intercepting a moving ball
+	class InterceptBallState : public State {
+
+	public:
+		InterceptBallState(TestController* ai) : State(ai) {}
+		void onEnter(Robot* robot, Parameters parameters);
+		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	};
 	
 	TestController(Robot* robot, AbstractCommunication* com, Client* client);
 	~TestController();
@@ -341,6 +349,8 @@ public:
 
 protected:
 	void updateVisionInfo(Vision::Results* visionResults);
+	void updateBallsGoingToGoal();
+	bool shouldIntercept();
 	bool isRobotNearLine(Vision::Results* visionResults, bool ignoreCenterSample = false);
 	bool isRobotInCorner(Vision::Results* visionResults);
 	//bool isRobotNearGoal(float threshold = 0.8f);
@@ -406,6 +416,7 @@ protected:
 
 	Object* lastBall;
 	Vision::Obstruction lastGoalPathObstruction;
+	BallManager::BallList ballsGoingToGoal;
 
 	Params parameters;
 	Messages messages;
