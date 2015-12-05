@@ -1,5 +1,4 @@
-#include "LineSegment.h"
-#include "Ray.h"
+#include "Geometry.h"
 
 namespace Geometry
 {
