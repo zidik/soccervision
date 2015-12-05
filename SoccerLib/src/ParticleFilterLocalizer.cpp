@@ -100,10 +100,10 @@ void ParticleFilterLocalizer::update(const Measurements& measurements) {
         particle->probability = getMeasurementProbability(particle, measurements);
 
 		if (
-			particle->location.x - 3 > Config::fieldWidth ||
-			particle->location.y - 3 > Config::fieldHeight ||
-			particle->location.x + 3 < 0 ||
-			particle->location.y + 3 < 0
+			particle->location.x - 1.5 > Config::fieldWidth ||
+			particle->location.y - 1.5 > Config::fieldHeight ||
+			particle->location.x + 1.5 < 0 ||
+			particle->location.y + 1.5 < 0
 			) {
 			particle->probability = 0;
 		}

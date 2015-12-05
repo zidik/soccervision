@@ -5,6 +5,7 @@
 #include "Config.h"
 #include "Odometer.h"
 #include "ParticleFilterLocalizer.h"
+#include "BallManager.h"
 #include "BallLocalizer.h"
 #include "Vision.h"
 #include "Tasks.h"
@@ -90,7 +91,8 @@ public:
 	Dribbler* dribbler;
 	Coilgun* coilgun;
 	ParticleFilterLocalizer* robotLocalizer;
-	BallLocalizer* ballLocalizer;
+	BallManager* ballManager;
+    BallLocalizer* ballLocalizer;
 	OdometerLocalizer* odometerLocalizer;
 
 private:
@@ -100,14 +102,15 @@ private:
 	void setupOdometer();
 	void setupRobotLocalizer();
 	void setupOdometerLocalizer();
-	void setupBallLocalizer();
+	void setupBallManager();
+    void setupBallLocalizer();
 	void setupCameraFOV();
     void updateWheelSpeeds();
 	void updateMeasurements();
-	void updateBallLocalizer(Vision::Results* visionResults, float dt);
+	void updateBallManager(Vision::Results* visionResults, float dt);
 	void updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, float robotY, float robotOrientation, float dt);
 	void updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, float robotX, float robotY, float robotOrientation, float dt);
-	void debugBallList(std::string name, std::stringstream& stream, BallLocalizer::BallList balls);
+	void debugBallList(std::string name, std::stringstream& stream, BallManager::BallList balls);
 	void handleQueuedChipKickRequest();
 
     Math::Vector location;
@@ -142,7 +145,7 @@ private:
 	Odometer* odometer;
 	Odometer::Movement movement;
 	ParticleFilterLocalizer::Measurements measurements;
-	BallLocalizer::BallList visibleBalls;
+	BallManager::BallList visibleBalls;
 
 	PID lookAtPid;
 	char pidUpdateCounter;

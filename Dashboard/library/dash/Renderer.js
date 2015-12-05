@@ -367,6 +367,20 @@ Dash.Renderer.prototype.renderState = function(state) {
 	this.drawPolygon(state.robot.cameraFOV, 'rgba(255, 255, 255, 0.25)');
 
 	this.drawBalls(
+		state.robot.ballsGoingBlue,
+		'#00F',
+		dash.config.ball.radius * 3,
+		false
+	);
+
+	this.drawBalls(
+		state.robot.ballsGoingYellow,
+		'#DD0',
+		dash.config.ball.radius * 3,
+		false
+	);
+
+	this.drawBalls(
 		state.robot.ballsRaw,
 		'#006',
 		dash.config.ball.radius * 2,

@@ -1,67 +1,64 @@
-#ifndef BALLLOCALIZER_H
-#define BALLLOCALIZER_H
+#ifndef BALL_LOCALIZER_H
+#define BALL_LOCALIZER_H
 
-#include "Maths.h"
-#include "Object.h"
+#include "LineSegment.h"
+#include "BallManager.h"
+#include "Ray.h"
+#include "Localizer.h"
 
-class BallLocalizer {
-
+class BallLocalizer{
 public:
-	class Ball {
+    BallLocalizer(BallManager * pBallManager, Localizer * pRobotLocalizer): pBallManager(pBallManager), pRobotLocalizer(pRobotLocalizer) {
+        float fieldWidth = 4.5f;
+        float fieldHeight = 3.0f;
+        float goalWidth = 0.7f;
 
-    public:
-        Ball(const Math::Vector & location);
-        void updateVisible(const Math::Vector & location, float dt);
-        void updateInvisible(float dt);
-        void markForRemoval(double afterSeconds);
-        bool shouldBeRemoved() const;
-        float distanceTo(const Ball & other) const { return location.distanceTo(other.location); }
-        float distanceTo(const Ball * const other) const { return distanceTo(*other); }
-        void transformLocation(Math::Vector & dtLocation, float dtOrientation) { location = (location-dtLocation).getRotated(dtOrientation); }
+        Math::Vector yellowCorner1(0.0f - 0.05f, fieldHeight / 2.0f + goalWidth / 2.0f);
+        Math::Vector yellowCorner2(0.0f - 0.05f, fieldHeight / 2.0f - goalWidth / 2.0f);
+        Math::Vector blueCorner1(fieldWidth + 0.05f, fieldHeight / 2.0f - goalWidth / 2.0f);
+        Math::Vector blueCorner2(fieldWidth + 0.05f, fieldHeight / 2.0f + goalWidth / 2.0f);
 
-        int id;
-        double createdTime;
-        double updatedTime;
-        double removeTime;
-		Math::Vector location;
-		Math::Vector velocity;
-        bool visible;
-		bool inFOV;
-
-    private:
-        static int instances;
-        std::vector<Math::Vector> pastVelocities;
-        int next_pastVelocity = 0;
-
-        void applyDrag(float dt);
-
-	};
-
-	typedef std::vector<Ball*> BallList;
-	typedef std::vector<Ball*>::iterator BallListIt;
-
-    BallLocalizer();
-    ~BallLocalizer();
-    
-    static BallList extractBalls(const ObjectList& sourceBalls);
-    void transformLocations(Math::Vector & dtLocation, float dtOrientation);
-    void update(const BallList& visibleBalls, const Math::Polygon& cameraFOV, float dt);
-
-    const BallList& getBalls() const{ return balls; }
-    const Ball* getClosestBall() const {
-        auto closest = min_element(balls.begin(), balls.end(), [](Ball* b1, Ball* b2) { return b1->location < b2->location; });
-        return closest == balls.end() ? nullptr : *closest;
+        mYellowGoalLine = Geometry::LineSegment(yellowCorner1, yellowCorner2);
+        mBlueGoalLine = Geometry::LineSegment(blueCorner1, blueCorner2);
+        
     }
     
+    void getBallsGoingToBlueGoal(BallManager::BallList & balls) { getBallsGoingToGoal(balls, mBlueGoalLine); }
+    void getBallsGoingToYellowGoal(BallManager::BallList & balls) { getBallsGoingToGoal(balls, mYellowGoalLine); }
+
+
 
 private:
-    BallList balls; //TODO: Should be private
-    Ball* getBallAround(Math::Vector & location);
-    void purge(const BallList& visibleBalls, const Math::Polygon& cameraFOV);
-    //bool isValid(Ball* ball, const BallList& visibleBalls, const Math::Polygon& cameraFOV);
+    void getBallsGoingToGoal(BallManager::BallList & result, Geometry::LineSegment & goalLine) const
+    {
+        auto fastEnough = [this, &goalLine](BallManager::Ball* ball) -> bool {
+            return ball->velocity.getLength() > 0.5f;
+        };
+        
+        auto hasVelocityVectorTowardsGoal = [this, &goalLine](BallManager::Ball* ball) -> bool {
+            auto robotPosition = this->pRobotLocalizer->getPosition();
+            Math::Vector ballWorldLocation = ball->location.getRotated(robotPosition.orientation) + robotPosition.location;
+            Math::Vector ballWorldVelocity = ball->velocity.getRotated(robotPosition.orientation);
+            Geometry::Ray ray(ballWorldLocation, ballWorldVelocity);
+            Math::Vector result;
+            bool intersects = ray.intersection(result, goalLine);
+            return intersects;
+        };
 
-	 
+        BallManager::BallList ballsFastEnough;
+        filterBalls(ballsFastEnough, pBallManager->getBalls(), fastEnough);
+        filterBalls(result, ballsFastEnough, hasVelocityVectorTowardsGoal);
 
+    }
+
+    static void filterBalls(BallManager::BallList & filteredBalls, const BallManager::BallList & balls, std::function<bool(BallManager::Ball * ball)> predicate) {
+        std::copy_if(balls.begin(), balls.end(), std::back_inserter(filteredBalls), predicate);
+    }
+
+    Geometry::LineSegment mYellowGoalLine;
+    Geometry::LineSegment mBlueGoalLine;
+    BallManager * pBallManager;
+    Localizer * pRobotLocalizer;
+    
 };
-
-#endif // BALLLOCALIZER_H
+#endif

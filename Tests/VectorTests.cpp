@@ -102,3 +102,20 @@ BOOST_AUTO_TEST_CASE(VectorRotation)
 	BOOST_TEST(h.x == 0);
 	BOOST_TEST(h.y == -2*Math::sqrt(2.0f));
 }
+
+BOOST_AUTO_TEST_CASE(VectorScaleTo) {
+    Vector a(1.0f, -2.0f);
+    BOOST_TEST(a.getScaledTo(10.0f).getLength() == 10.0f);
+    BOOST_TEST(a.getScaledTo(35.1f).getLength() == 35.1f);
+
+    Vector scaled = a.getScaledTo(10.0f);
+    BOOST_TEST(scaled.x/a.x == scaled.y / a.y);
+}
+
+BOOST_AUTO_TEST_CASE(VectorNormalize, *boost::unit_test::tolerance(0.000001f)) {
+    Vector a(1.0f, -2.0f);
+    BOOST_TEST(a.getNormalized().getLength() == 1.0f);
+
+    Vector norm = a.getNormalized();
+    BOOST_TEST(norm.x / a.x == norm.y / a.y);
+}
