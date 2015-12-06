@@ -1662,8 +1662,11 @@ Vision::EdgeDistanceMetric Vision::getEdgeDistanceMetric(int x, int y, int width
 	return EdgeDistanceMetric(leftTopDistance, rightTopDistance, centerDistance, newX, newWidth);
 }
 
-Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
+Vision::Obstruction Vision::getGoalPathObstruction(Object* goal) {
+	Math::Vector goalBack = cameraTranslator->getWorldPosition(Pixel(goal->goal_x, goal->goal_y));
+
 	Obstruction obstruction;
+	float goalDistance = goal->distance;
 	//float corridorWidth = 0.1f;
 	float yStep = 0.05f;
 	float xStep = 0.05f;
@@ -1733,13 +1736,16 @@ Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
 					lastColorBall = false;
 				}
 
-				if (strcmp(color->name, "blue-goal") == 0 || strcmp(color->name, "yellow-goal") == 0) {
+				Math::Vector lineVector = Math::Vector(yDistance, xDistance);
+				
+				if ((strcmp(color->name, "blue-goal") == 0 || strcmp(color->name, "yellow-goal") == 0) && lineVector.getLength() > goalBack.getLength() ) {
+					
 					goalColorCount++;
 
 					// stop if found enough goal colors
 					if (goalColorCount >= stopGoalColorCount) {
 						if (debug) {
-							canvas.drawMarker(pos.x, pos.y, 255, 0, 0);
+							canvas.drawMarker(pos.x, pos.y, 255, 0, 128); //violet
 						}
 
 						//running = false;
@@ -1752,13 +1758,20 @@ Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
 					}
 
 					continue;
-				} else if (strcmp(color->name, "black") == 0) {
-					blackColorCount++;
+				} else if ((strcmp(color->name, "blue-goal") == 0 || strcmp(color->name, "yellow-goal") == 0) && lineVector.getLength() < goalDistance) {
+					if (isLeft) {
+						//sampleCountLeft++;
+						invalidCounterLeft++;
+					}
+					else {
+						//sampleCountRight++;
+						invalidCounterRight++;
+					}
 				}
 
 				if (find(goalObstructedValidColors.begin(), goalObstructedValidColors.end(), std::string(color->name)) != goalObstructedValidColors.end()) {
 					if (debug) {
-						canvas.drawMarker(pos.x, pos.y, 0, 255, 0);
+						canvas.drawMarker(pos.x, pos.y, 0, 255, 0); //green
 					}
 
 					if (isLeft) {
@@ -1773,7 +1786,9 @@ Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
 
 						invalidCounterRight = (int)Math::max((float)invalidCounterRight - 1.0f, 0.0f);
 					}
-				} else {
+				}
+				
+				else {
 					if (isLeft) {
 						sampleCountLeft++;
 					}
@@ -1782,7 +1797,7 @@ Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
 					}
 
 					if (debug) {
-						canvas.drawMarker(pos.x, pos.y, 128, 0, 0);
+						canvas.drawMarker(pos.x, pos.y, 255, 0, 255); //magenta
 					}
 				}
 			} else {
@@ -1813,7 +1828,7 @@ Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
 					}
 
 					if (debug) {
-						canvas.drawMarker(pos.x, pos.y, 128, 0, 0);
+						canvas.drawMarker(pos.x, pos.y, 0, 255, 255); //cyan
 					}
 				} else {
 					if (debug) {

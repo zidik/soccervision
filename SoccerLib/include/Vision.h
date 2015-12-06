@@ -186,7 +186,7 @@ public:
     float getAngle(int x, int y);
 	//int getPixelRowAt(float distance);
 	Pixel getPixelAt(float distanceX, float distanceY);
-	Obstruction getGoalPathObstruction(float goalDistance);
+	Obstruction getGoalPathObstruction(Object* goal);
 
 private:
 	std::pair<ObjectList, ObjectList> processGoalsAndRobots(Dir dir);

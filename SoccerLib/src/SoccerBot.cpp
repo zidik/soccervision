@@ -198,7 +198,7 @@ void SoccerBot::run() {
 		if (targetGoal != NULL) {
 			float goalDistance = targetGoal->distance;
 
-			visionResults->goalPathObstruction = frontProcessor->vision->getGoalPathObstruction(goalDistance);
+			visionResults->goalPathObstruction = frontProcessor->vision->getGoalPathObstruction(targetGoal);
 		} else {
 			visionResults->goalPathObstruction = Vision::Obstruction();
 		}

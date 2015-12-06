@@ -2252,8 +2252,8 @@ void TestController::FetchBallNearState::step(float dt, Vision::Results* visionR
 	}
 	
 	// goes to aim state when got ball is enabled, otherwise always uses chip kick limits and kicks as soon as dribbler senses ball
-	//bool aimMode = true;
-	bool aimMode = false;
+	bool aimMode = true;
+	//bool aimMode = false;
 
 	robot->stop();
 
@@ -3019,7 +3019,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 	// only perform the kick if valid view has been observed for a couple of frames
 	if (performKick) {
 		if (isBallInWay || forceChipKick) {
-			useChipKick = robot->dribbler->getBallInDribblerTime() >= 0.2f;
+			useChipKick = robot->dribbler->getBallInDribblerTime() >= 0.3f;
 
 			if (useChipKick) {
 				// TODO closest ball may be too close to kick over
