@@ -7,6 +7,7 @@
 #include "Util.h"
 #include "PID.h"
 #include "Config.h"
+#include "BallManager.h"
 
 #include <map>
 #include <string>
@@ -297,6 +298,8 @@ public:
 		InterceptBallState(TestController* ai) : State(ai) {}
 		void onEnter(Robot* robot, Parameters parameters);
 		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
+	private:
+		int timeoutCounter;
 	};
 	
 	TestController(Robot* robot, AbstractCommunication* com, Client* client);
@@ -425,6 +428,6 @@ protected:
 
 private:
 	void setupStates();
-	};
+};
 
 #endif // TESTCONTROLLER_H

@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClCompile Include="cameraTranslatorTests.cpp" />
     <ClCompile Include="ConfigurationTests.cpp" />
+    <ClCompile Include="GeometryTest.cpp" />
     <ClCompile Include="IntegrationTests.cpp" />
     <ClCompile Include="VectorTests.cpp" />
     <ClCompile Include="Tests.cpp" />

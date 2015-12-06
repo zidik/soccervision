@@ -261,16 +261,13 @@
     <ClInclude Include="include\ClientConnectionMetadata.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Ray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\LineSegment.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\BallManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\BallLocalizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Geometry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -479,10 +476,10 @@
     <ClCompile Include="src\ClientConnectionMetadata.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Ray.cpp">
+    <ClCompile Include="src\BallManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\BallManager.cpp">
+    <ClCompile Include="src\Geometry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

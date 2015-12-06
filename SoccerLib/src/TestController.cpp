@@ -701,6 +701,9 @@ bool TestController::shouldIntercept() {
 	Math::Vector interceptPoint;
 
 	//value interceptpoint here.
+	Geometry::Ray ballRay(ball->location, ball->velocity);
+	Geometry::Ray robotRay(robot->getPosition().location, ball->velocity.getRotated(Math::PI / 2));
+	interceptPoint = ballRay.intersection_point(robotRay);
 
 	if (interceptPoint.getLength() > 0.75f) {
 		return false;
@@ -3450,6 +3453,8 @@ void TestController::DriveHomeState::step(float dt, Vision::Results* visionResul
 }
 
 void TestController::InterceptBallState::onEnter(Robot* robot, Parameters parameters) {
+	timeoutCounter = 0;
+
 	if (!ai->shouldIntercept()) {
 		ai->setState("find-ball");
 		return;
@@ -3467,6 +3472,9 @@ void TestController::InterceptBallState::onEnter(Robot* robot, Parameters parame
 	Math::Vector interceptPoint;
 
 	//value interceptpoint here.
+	Geometry::Ray ballRay(ball->location, ball->velocity);
+	Geometry::Ray robotRay(robot->getPosition().location, ball->velocity.getRotated(Math::PI / 2));
+	interceptPoint = ballRay.intersection_point(robotRay);
 
 	if (interceptPoint.getLength() > 0.75f) {
 		ai->setState("find-ball");
@@ -3493,7 +3501,9 @@ void TestController::InterceptBallState::onEnter(Robot* robot, Parameters parame
 }
 
 void TestController::InterceptBallState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	while (robot->hasTasks()) return;
+	timeoutCounter++;
+	if (timeoutCounter > 45) robot->clearTasks();
+	if (robot->hasTasks()) return;
 
 	//temporary hack
 	//ai->setState("find-ball");

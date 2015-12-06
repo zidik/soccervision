@@ -1,9 +1,8 @@
 #ifndef BALL_LOCALIZER_H
 #define BALL_LOCALIZER_H
 
-#include "LineSegment.h"
+#include "Geometry.h"
 #include "BallManager.h"
-#include "Ray.h"
 #include "Localizer.h"
 
 class BallLocalizer{
@@ -25,6 +24,7 @@ public:
     
     void getBallsGoingToBlueGoal(BallManager::BallList & balls) { getBallsGoingToGoal(balls, mBlueGoalLine); }
     void getBallsGoingToYellowGoal(BallManager::BallList & balls) { getBallsGoingToGoal(balls, mYellowGoalLine); }
+
 
 
 

@@ -301,6 +301,9 @@ public:
     float Vector::dot(Vector& rhs) const { return x * rhs.x + y * rhs.y; };
     float Vector::cross(Vector& rhs) const { return x * rhs.y - y * rhs.x; };
 
+    bool operator==(const Vector &other) const {
+        return x == other.x && y == other.y;
+    }
 	Vector operator-() const { return Vector(-x, -y); };
 	Vector& operator-=(const Vector& other);
 	Vector& operator+=(const Vector& other);
