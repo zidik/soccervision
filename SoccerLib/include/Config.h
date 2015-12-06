@@ -24,7 +24,7 @@ namespace Config {
 
 
 	// default startup controller name
-	const std::string defaultController = "teamplay";
+	const std::string defaultController = "test";
 
 	// how big of a buffer to allocate for generating jpeg images
 	const int jpegBufferSize = 5000 * 1024;
