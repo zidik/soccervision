@@ -7,11 +7,11 @@
 #include <iostream>
 #include <fstream>
 
+/*
 void ImageProcessor::bayerRGGBToI420(unsigned char* input, unsigned char* outputY, unsigned char* outputU, unsigned char* outputV, int width, int height) {
 	int strideY = width;
 	int strideU = (width + 1) / 2;
 	int strideV = (width + 1) / 2;
-	
 	libyuv::BayerRGGBToI420(
 		input,
 		width,
@@ -25,6 +25,7 @@ void ImageProcessor::bayerRGGBToI420(unsigned char* input, unsigned char* output
 		height
 	);
 }
+*/
 
 void ImageProcessor::I420ToYUYV(unsigned char* inputY, unsigned char* inputU, unsigned char* inputV, unsigned char* output, int width, int height) {
 	int strideY = width;

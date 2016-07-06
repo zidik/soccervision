@@ -29,13 +29,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -212,19 +212,21 @@
     <ClInclude Include="lib\libyuv\include\libyuv.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\basic_types.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\compare.h" />
+    <ClInclude Include="lib\libyuv\include\libyuv\compare_row.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\convert.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\convert_argb.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\convert_from.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\convert_from_argb.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\cpu_id.h" />
-    <ClInclude Include="lib\libyuv\include\libyuv\format_conversion.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\mjpeg_decoder.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\planar_functions.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\rotate.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\rotate_argb.h" />
+    <ClInclude Include="lib\libyuv\include\libyuv\rotate_row.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\row.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\scale.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\scale_argb.h" />
+    <ClInclude Include="lib\libyuv\include\libyuv\scale_row.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\version.h" />
     <ClInclude Include="lib\libyuv\include\libyuv\video_common.h" />
     <ClInclude Include="lib\pthread\include\pthread.h" />
@@ -237,25 +239,47 @@
     <ClCompile Include="lib\enumser\StdAfx.cpp" />
     <ClCompile Include="lib\jpeg\jpge.cpp" />
     <ClCompile Include="lib\libyuv\source\compare.cc" />
+    <ClCompile Include="lib\libyuv\source\compare_common.cc" />
+    <ClCompile Include="lib\libyuv\source\compare_gcc.cc" />
     <ClCompile Include="lib\libyuv\source\compare_neon.cc" />
+    <ClCompile Include="lib\libyuv\source\compare_neon64.cc" />
+    <ClCompile Include="lib\libyuv\source\compare_win.cc" />
     <ClCompile Include="lib\libyuv\source\convert.cc" />
     <ClCompile Include="lib\libyuv\source\convert_argb.cc" />
     <ClCompile Include="lib\libyuv\source\convert_from.cc" />
     <ClCompile Include="lib\libyuv\source\convert_from_argb.cc" />
+    <ClCompile Include="lib\libyuv\source\convert_jpeg.cc" />
+    <ClCompile Include="lib\libyuv\source\convert_to_argb.cc" />
+    <ClCompile Include="lib\libyuv\source\convert_to_i420.cc" />
     <ClCompile Include="lib\libyuv\source\cpu_id.cc" />
-    <ClCompile Include="lib\libyuv\source\format_conversion.cc" />
     <ClCompile Include="lib\libyuv\source\mjpeg_decoder.cc" />
+    <ClCompile Include="lib\libyuv\source\mjpeg_validate.cc" />
     <ClCompile Include="lib\libyuv\source\planar_functions.cc" />
     <ClCompile Include="lib\libyuv\source\rotate.cc" />
+    <ClCompile Include="lib\libyuv\source\rotate_any.cc" />
     <ClCompile Include="lib\libyuv\source\rotate_argb.cc" />
+    <ClCompile Include="lib\libyuv\source\rotate_common.cc" />
+    <ClCompile Include="lib\libyuv\source\rotate_gcc.cc" />
+    <ClCompile Include="lib\libyuv\source\rotate_mips.cc" />
     <ClCompile Include="lib\libyuv\source\rotate_neon.cc" />
+    <ClCompile Include="lib\libyuv\source\rotate_neon64.cc" />
+    <ClCompile Include="lib\libyuv\source\rotate_win.cc" />
+    <ClCompile Include="lib\libyuv\source\row_any.cc" />
     <ClCompile Include="lib\libyuv\source\row_common.cc" />
+    <ClCompile Include="lib\libyuv\source\row_gcc.cc" />
+    <ClCompile Include="lib\libyuv\source\row_mips.cc" />
     <ClCompile Include="lib\libyuv\source\row_neon.cc" />
-    <ClCompile Include="lib\libyuv\source\row_posix.cc" />
+    <ClCompile Include="lib\libyuv\source\row_neon64.cc" />
     <ClCompile Include="lib\libyuv\source\row_win.cc" />
     <ClCompile Include="lib\libyuv\source\scale.cc" />
+    <ClCompile Include="lib\libyuv\source\scale_any.cc" />
     <ClCompile Include="lib\libyuv\source\scale_argb.cc" />
+    <ClCompile Include="lib\libyuv\source\scale_common.cc" />
+    <ClCompile Include="lib\libyuv\source\scale_gcc.cc" />
+    <ClCompile Include="lib\libyuv\source\scale_mips.cc" />
     <ClCompile Include="lib\libyuv\source\scale_neon.cc" />
+    <ClCompile Include="lib\libyuv\source\scale_neon64.cc" />
+    <ClCompile Include="lib\libyuv\source\scale_win.cc" />
     <ClCompile Include="lib\libyuv\source\video_common.cc" />
     <ClCompile Include="src\BallManager.cpp" />
     <ClCompile Include="src\BaseAI.cpp" />

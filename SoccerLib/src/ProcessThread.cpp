@@ -70,11 +70,13 @@ void* ProcessThread::run() {
 	done = false;
 	
 	//Util::timerStart();
+	/*
 	ImageProcessor::bayerRGGBToI420(
 		frame,
 		dataY, dataU, dataV,
 		width, height
 	);
+	*/
 	//std::cout << "  - RGGB > I420: " << Util::timerEnd() << std::endl;
 
 	//Util::timerStart();
