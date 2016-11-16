@@ -43,6 +43,7 @@ namespace Config {
 	// minimum areas of blobs for objects
 	const int ballBlobMinArea = 4;
 	const int goalBlobMinArea = 16;
+	const int robotBlobMinArea = 16;
 
 	// minimum area for objects to be considered valid
 	const int ballMinArea = 4;
@@ -238,9 +239,11 @@ enum Side {
 };
 
 enum RobotColor {
-	YELLOWHIGH = 4,
-	BLUEHIGH = 5,
-	WHATEVER = 6
+	PURPLE = 4,
+	PINK = 5,
+	WHATEVER = 6,
+	YELLOWHIGH = 7,
+	BLUEHIGH = 8
 };
 
 enum Dir {

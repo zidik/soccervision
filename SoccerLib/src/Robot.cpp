@@ -397,11 +397,11 @@ void Robot::updateBallManager(Vision::Results* visionResults, float dt) {
 	BallManager::BallList rearBalls;
 	
 	if (visionResults->front != NULL) {
-		frontBalls = ballManager->extractBalls(*visionResults->front->balls);
+		frontBalls = ballManager->extractBalls(visionResults->front->balls);
 	}
 
 	if (visionResults->rear != NULL) {
-		rearBalls = ballManager->extractBalls(*visionResults->rear->balls);
+		rearBalls = ballManager->extractBalls(visionResults->rear->balls);
 	}
 	
 	visibleBalls.reserve(frontBalls.size() + rearBalls.size());
@@ -447,17 +447,17 @@ void Robot::updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, 
 }
 
 void Robot::updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, float robotX, float robotY, float robotOrientation, float dt) {
-	ObjectList* frontBalls = visionResults->front->balls;
-	ObjectList* rearBalls = visionResults->rear->balls;
-	ObjectList* frontRobots = visionResults->front->robots;
-	ObjectList* rearRobots = visionResults->rear->robots;
+	//ObjectList* frontBalls = visionResults->front->balls;
+	//ObjectList* rearBalls = visionResults->rear->balls;
+	//ObjectList* frontRobots = visionResults->front->robots;
+	//ObjectList* rearRobots = visionResults->rear->robots;
 
 	//std::cout << "Robot coordinates - x: " << robotX << "m y: " << robotY << "m, orientation" << robotOrientation << "rad" << std::endl;
 
-	updateObjectsAbsoluteMovement(frontBalls, robotX, robotY, robotOrientation, dt);
-	updateObjectsAbsoluteMovement(rearBalls, robotX, robotY, robotOrientation, dt);
-	updateObjectsAbsoluteMovement(frontRobots, robotX, robotY, robotOrientation, dt);
-	updateObjectsAbsoluteMovement(rearRobots, robotX, robotY, robotOrientation, dt);
+	//updateObjectsAbsoluteMovement(frontBalls, robotX, robotY, robotOrientation, dt);
+	//updateObjectsAbsoluteMovement(rearBalls, robotX, robotY, robotOrientation, dt);
+	//updateObjectsAbsoluteMovement(frontRobots, robotX, robotY, robotOrientation, dt);
+	//updateObjectsAbsoluteMovement(rearRobots, robotX, robotY, robotOrientation, dt);
 }
 
 void Robot::setTargetDir(float x, float y, float omega) {
