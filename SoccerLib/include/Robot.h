@@ -12,6 +12,7 @@
 #include "AbstractCommunication.h"
 #include "Command.h"
 #include "PID.h"
+#include "RobotManager.h"
 
 #include <string>
 
@@ -91,6 +92,7 @@ public:
 	Dribbler* dribbler;
 	Coilgun* coilgun;
 	ParticleFilterLocalizer* robotLocalizer;
+	RobotManager* robotManager;
 	BallManager* ballManager;
     BallLocalizer* ballLocalizer;
 	OdometerLocalizer* odometerLocalizer;
@@ -102,15 +104,18 @@ private:
 	void setupOdometer();
 	void setupRobotLocalizer();
 	void setupOdometerLocalizer();
+	void setupRobotManager();
 	void setupBallManager();
     void setupBallLocalizer();
 	void setupCameraFOV();
     void updateWheelSpeeds();
 	void updateMeasurements();
+	void updateRobotManager(Vision::Results* visionResults, float dt);
 	void updateBallManager(Vision::Results* visionResults, float dt);
 	void updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, float robotY, float robotOrientation, float dt);
 	void updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, float robotX, float robotY, float robotOrientation, float dt);
 	void debugBallList(std::string name, std::stringstream& stream, BallManager::LocalizerObjectList balls);
+	void debugRobotList(std::string name, std::stringstream& stream, RobotManager::LocalizerObjectList robots);
 	void handleQueuedChipKickRequest();
 
     Math::Vector location;
@@ -146,6 +151,7 @@ private:
 	Odometer::Movement movement;
 	ParticleFilterLocalizer::Measurements measurements;
 	BallManager::LocalizerObjectList visibleBalls;
+	RobotManager::LocalizerObjectList visibleRobots;
 
 	PID lookAtPid;
 	char pidUpdateCounter;

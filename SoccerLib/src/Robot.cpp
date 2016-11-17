@@ -67,6 +67,7 @@ Robot::~Robot() {
 void Robot::setup() {
 	setupCameraFOV();
 	setupRobotLocalizer();
+	setupRobotManager();
 	setupBallManager();
     setupBallLocalizer();
 	setupOdometerLocalizer();
@@ -121,6 +122,11 @@ void Robot::setupRobotLocalizer() {
 		LandmarkType::FieldCorner,
 		locations
 	);
+}
+
+void Robot::setupRobotManager()
+{
+	robotManager = new RobotManager();
 }
 
 void Robot::setupBallManager() {
@@ -379,6 +385,36 @@ void Robot::updateMeasurements() {
 		measurements.push_back(measurement);
 	}
 
+}
+
+void Robot::updateRobotManager(Vision::Results* visionResults, float dt) {
+	// delete robots from previous frame
+	for (RobotManager::LocalizerObjectListIt it = visibleRobots.begin(); it != visibleRobots.end(); it++) {
+		delete (*it);
+	}
+
+	visibleRobots.clear();
+
+	if (visionResults == NULL) {
+		return;
+	}
+
+	RobotManager::LocalizerObjectList frontRobots;
+	RobotManager::LocalizerObjectList rearRobots;
+
+	if (visionResults->front != NULL) {
+		frontRobots = robotManager->extractRobots(visionResults->front->robots);
+	}
+
+	if (visionResults->rear != NULL) {
+		rearRobots = robotManager->extractRobots(visionResults->rear->robots);
+	}
+
+	visibleRobots.reserve(frontRobots.size() + rearRobots.size());
+	visibleRobots.insert(visibleRobots.end(), frontRobots.begin(), frontRobots.end());
+	visibleRobots.insert(visibleRobots.end(), rearRobots.begin(), rearRobots.end());
+
+	robotManager->update(visibleRobots, cameraFOV, dt);
 }
 
 void Robot::updateBallManager(Vision::Results* visionResults, float dt) {
@@ -802,6 +838,42 @@ void Robot::debugBallList(std::string name, std::stringstream& stream, BallManag
 	}
 
     stream << "],";
+}
+
+void Robot::debugRobotList(std::string name, std::stringstream& stream, RobotManager::LocalizerObjectList robots) {
+	RobotManager::LocalizerObject* robot;
+	bool first = true;
+
+	stream << "\"" << name << "\": [";
+
+	for (RobotManager::LocalizerObjectListIt it = robots.begin(); it != robots.end(); it++) {
+		robot = *it;
+
+		if (!first) {
+			stream << ",";
+		}
+		else {
+			first = false;
+		}
+
+		Math::Vector robotWorldLocation = robot->location.getRotated(orientation) + location;
+		Math::Vector robotWorldVelocity = robot->velocity.getRotated(orientation);
+
+		stream << "{";
+
+		stream << "\"x\": " << robotWorldLocation.x << ",";
+		stream << "\"y\": " << robotWorldLocation.y << ",";
+		stream << "\"velocityX\": " << robotWorldVelocity.x << ",";
+		stream << "\"velocityY\": " << robotWorldVelocity.y << ",";
+		stream << "\"createdTime\": " << robot->createdTime << ",";
+		stream << "\"updatedTime\": " << robot->updatedTime << ",";
+		stream << "\"shouldBeRemoved\": " << (robot->shouldBeRemoved() ? "true" : "false") << ",";
+		stream << "\"visible\": " << (robot->visible ? "true" : "false") << ",";
+		stream << "\"inFOV\": " << (robot->inFOV ? "true" : "false");
+		stream << "}";
+	}
+
+	stream << "],";
 }
 
 float Robot::getDribblerStabilityDelay() { 
