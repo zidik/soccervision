@@ -389,7 +389,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	Object* defendedGoal = visionResults->getLargestGoal(ai->getDefendSide(), Dir::REAR);
 
 
-    BallManager::BallList goingToGoal;
+    BallManager::LocalizerObjectList goingToGoal;
     switch (ai->getDefendSide())
     {
     case BLUE:
@@ -402,7 +402,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
         std::cout << "Wrong Side!";
     }
     
-    const BallManager::Ball* ball;
+    const BallManager::LocalizerObject* ball;
     if (goingToGoal.size() > 0) {
         ball = goingToGoal[0]; // Just get one
         //TODO: Pick most important

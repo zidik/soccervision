@@ -304,8 +304,8 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	debugBallList("ballsRaw", stream, visibleBalls);
 	debugBallList("ballsFiltered", stream, ballManager->getBalls());
 
-    BallManager::BallList goingToBlue;
-    BallManager::BallList goingToYellow;
+    BallManager::LocalizerObjectList goingToBlue;
+    BallManager::LocalizerObjectList goingToYellow;
     ballLocalizer->getBallsGoingToBlueGoal(goingToBlue);
     ballLocalizer->getBallsGoingToYellowGoal(goingToYellow);
     debugBallList("ballsGoingBlue", stream, goingToBlue);
@@ -383,7 +383,7 @@ void Robot::updateMeasurements() {
 
 void Robot::updateBallManager(Vision::Results* visionResults, float dt) {
 	// delete balls from previous frame
-	for (BallManager::BallListIt it = visibleBalls.begin(); it != visibleBalls.end(); it++) {
+	for (BallManager::LocalizerObjectListIt it = visibleBalls.begin(); it != visibleBalls.end(); it++) {
 		delete (*it);
 	}
 
@@ -393,8 +393,8 @@ void Robot::updateBallManager(Vision::Results* visionResults, float dt) {
 		return;
 	}
 
-	BallManager::BallList frontBalls;
-	BallManager::BallList rearBalls;
+	BallManager::LocalizerObjectList frontBalls;
+	BallManager::LocalizerObjectList rearBalls;
 	
 	if (visionResults->front != NULL) {
 		frontBalls = ballManager->extractBalls(visionResults->front->balls);
@@ -769,13 +769,13 @@ bool Robot::handleCommand(const Command& cmd) {
 	return handled;
 }
 
-void Robot::debugBallList(std::string name, std::stringstream& stream, BallManager::BallList balls) {
-	BallManager::Ball* ball;
+void Robot::debugBallList(std::string name, std::stringstream& stream, BallManager::LocalizerObjectList balls) {
+	BallManager::LocalizerObject* ball;
 	bool first = true;
 
 	stream << "\"" << name << "\": [";
 
-	for (BallManager::BallListIt it = balls.begin(); it != balls.end(); it++) {
+	for (BallManager::LocalizerObjectListIt it = balls.begin(); it != balls.end(); it++) {
 		ball = *it;
 
 		if (!first) {

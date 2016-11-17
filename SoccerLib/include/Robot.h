@@ -110,7 +110,7 @@ private:
 	void updateBallManager(Vision::Results* visionResults, float dt);
 	void updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, float robotY, float robotOrientation, float dt);
 	void updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, float robotX, float robotY, float robotOrientation, float dt);
-	void debugBallList(std::string name, std::stringstream& stream, BallManager::BallList balls);
+	void debugBallList(std::string name, std::stringstream& stream, BallManager::LocalizerObjectList balls);
 	void handleQueuedChipKickRequest();
 
     Math::Vector location;
@@ -145,7 +145,7 @@ private:
 	Odometer* odometer;
 	Odometer::Movement movement;
 	ParticleFilterLocalizer::Measurements measurements;
-	BallManager::BallList visibleBalls;
+	BallManager::LocalizerObjectList visibleBalls;
 
 	PID lookAtPid;
 	char pidUpdateCounter;

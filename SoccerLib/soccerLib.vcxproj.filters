@@ -279,6 +279,12 @@
     <ClInclude Include="lib\pthread\include\semaphore.h">
       <Filter>libs</Filter>
     </ClInclude>
+    <ClInclude Include="include\LocalizerObjectManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RobotManager.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\BaseAI.cpp">
@@ -556,6 +562,12 @@
     </ClCompile>
     <ClCompile Include="lib\libyuv\source\video_common.cc">
       <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LocalizerObjectManager.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RobotManager.cpp">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
