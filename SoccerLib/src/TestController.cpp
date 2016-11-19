@@ -176,6 +176,7 @@ TestController::TestController(Robot* robot, AbstractCommunication* com, Client*
 	setupStates();
 
 	speedMultiplier = 1.0f;
+	robot->setRefereeCommandShort(false);
 };
 
 TestController::~TestController() {
@@ -195,6 +196,7 @@ void TestController::reset() {
 
 	setState("manual-control");
 	handleToggleSideCommand();
+	robot->setRefereeCommandShort(false);
 }
 
 void TestController::setState(std::string state) {

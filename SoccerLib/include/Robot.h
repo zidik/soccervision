@@ -59,6 +59,7 @@ public:
 	bool chipKick(float distance = 1.0f, bool lowerDribblerAfterwards = true);
 	void clearTasks() { tasks.clear(); }
     void handleTasks(float dt);
+	void setRefereeCommandShort(bool isShort);
 
 	void lookAt(Object* object, float lookAtP = Config::lookAtP, bool stare = true);
 	void lookAt(const Math::Angle& angle, float lookAtP = Config::lookAtP);

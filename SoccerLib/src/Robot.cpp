@@ -879,3 +879,7 @@ void Robot::debugRobotList(std::string name, std::stringstream& stream, RobotMan
 float Robot::getDribblerStabilityDelay() { 
 	return conf->robot.dribblerStabilityDelay;
 }
+
+void Robot::setRefereeCommandShort(bool isShort) {
+	com->send("refshort:" + Util::toString(isShort ? "1" : "0"));
+}
