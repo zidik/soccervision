@@ -4,7 +4,7 @@
 #include <libyuv.h>
 
 #include <string>
-
+struct Configuration;
 class ImageProcessor {
 
 public:
