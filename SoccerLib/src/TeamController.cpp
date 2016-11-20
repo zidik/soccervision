@@ -20,6 +20,8 @@ TeamController::TeamController(Robot* robot, AbstractCommunication* com, Client*
 	passStrength = 625;
 	directKickStrength = 3000;
 	chipKickAdjust = 0.15f;
+		
+	crcCalc.init();
 };
 
 TeamController::~TeamController() {
@@ -76,11 +78,22 @@ void TeamController::setupStates() {
 
 void TeamController::handleRefereeCommand(const Command& cmd)
 {
+	std::string command = cmd.parameters[0].substr(0, 4);
+	CRC::crc crcValue = crcCalc.calculateCRC(reinterpret_cast<uint8_t*>(const_cast<char*>(command.c_str())), 4);
+	if (cmd.parameters[0][1] == fieldID)
+	{
+		//Command from referee
+		if (cmd.parameters[0][2] == 'X')
+		{
+			
+		}
+	}
+	/*
 	if (cmd.parameters[0][1] == fieldID) {
 		if (cmd.parameters[0][2] == robotID || cmd.parameters[0][2] == 'X') {
 			if (cmd.parameters[0][3] == 'A' || cmd.parameters[0][3] == 'B') {
 				bool commandForOurTeam = cmd.parameters[0][3] == teamID;
-				std::string command = cmd.parameters[0].substr(4);
+				std::string command = cmd.parametestdrs[0].substr(4);
 
 				if (commandForOurTeam) {
 					whoHasBall = TeamInPossession::FRIENDLY;
@@ -178,7 +191,7 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 				}
 			}
 		}
-	}
+	}*/
 }
 
 float TeamController::getChipKickDistance(float targetDistance) {

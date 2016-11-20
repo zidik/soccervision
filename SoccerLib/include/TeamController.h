@@ -2,6 +2,7 @@
 #define TEAMCONTROLLER_H
 
 #include "TestController.h"
+#include "../CRC.h"
 
 class TeamController : public TestController {
 
@@ -374,6 +375,8 @@ private:
 	int passStrength;
 	int directKickStrength;
 	float chipKickAdjust;
+	CRC crcCalc;
+
 };
 
 #endif // TEAMCONTROLLER_H

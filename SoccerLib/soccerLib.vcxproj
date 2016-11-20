@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CRC.h" />
     <ClInclude Include="include\AbstractCommunication.h" />
     <ClInclude Include="include\BallLocalizer.h" />
     <ClInclude Include="include\BallManager.h" />
@@ -235,6 +236,7 @@
     <ClInclude Include="src\MouseListener.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CRC.cpp" />
     <ClCompile Include="lib\enumser\enumser.cpp" />
     <ClCompile Include="lib\enumser\StdAfx.cpp" />
     <ClCompile Include="lib\jpeg\jpge.cpp" />

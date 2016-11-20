@@ -279,6 +279,9 @@
     <ClInclude Include="lib\pthread\include\semaphore.h">
       <Filter>libs</Filter>
     </ClInclude>
+    <ClInclude Include="CRC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\BaseAI.cpp">
@@ -556,6 +559,9 @@
     </ClCompile>
     <ClCompile Include="lib\libyuv\source\video_common.cc">
       <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="CRC.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
