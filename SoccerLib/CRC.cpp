@@ -45,3 +45,14 @@ CRC::crc CRC::calculateCRC(uint8_t message[], int nBytes)
 	//The final remainder is the CRC.
 	return (remainder);
 }
+
+unsigned int CRC::calclulateCRC(std::string message)
+{
+	uint8_t* mes = reinterpret_cast<uint8_t*>(const_cast<char*>(message.c_str()));
+	//Returns length in bytes, but will work in current application
+	int nBytes = message.length();
+
+	CRC::crc crcValue = calculateCRC(mes, nBytes);
+	return static_cast<unsigned int>(crcValue);
+}
+

@@ -20,7 +20,7 @@ TeamController::TeamController(Robot* robot, AbstractCommunication* com, Client*
 	passStrength = 625;
 	directKickStrength = 3000;
 	chipKickAdjust = 0.15f;
-		
+
 	crcCalc.init();
 };
 
@@ -79,15 +79,18 @@ void TeamController::setupStates() {
 void TeamController::handleRefereeCommand(const Command& cmd)
 {
 	std::string command = cmd.parameters[0].substr(0, 4);
-	CRC::crc crcValue = crcCalc.calculateCRC(reinterpret_cast<uint8_t*>(const_cast<char*>(command.c_str())), 4);
-	if (cmd.parameters[0][1] == fieldID)
+	unsigned int crcValue = crcCalc.calclulateCRC(command);
+
+	//CRC value correct and correct field
+	if (crcValue == static_cast<unsigned int>(command[4]) && cmd.parameters[0][1] == fieldID)
 	{
 		//Command from referee
 		if (cmd.parameters[0][2] == 'X')
 		{
-			
+
 		}
 	}
+
 	/*
 	if (cmd.parameters[0][1] == fieldID) {
 		if (cmd.parameters[0][2] == robotID || cmd.parameters[0][2] == 'X') {
@@ -218,7 +221,7 @@ std::string TeamController::getSituationName(GameSituation situation) {
 
 std::string TeamController::getTeamPossessionName(TeamInPossession team) {
 	switch (team) {
-	case TeamInPossession::NOONE : return "NOONE";
+	case TeamInPossession::NOONE: return "NOONE";
 	case TeamInPossession::FRIENDLY: return "FRIENDLY";
 	case TeamInPossession::ENEMY: return "ENEMY";
 	}
@@ -319,7 +322,7 @@ void TeamController::WaitForKickState::onEnter(Robot* robot, Parameters paramete
 	if (parameters.find("next-state") != parameters.end()) {
 		nextState = parameters["next-state"];
 	}
-	
+
 	//reset starting ball position
 	startingBallPos.x = -1000.0f;
 	startingBallPos.y = -1000.0f;
@@ -398,32 +401,32 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		}*/
 		return;
 	}
-    
+
 	Object* defendedGoal = visionResults->getLargestGoal(ai->getDefendSide(), Dir::REAR);
 
 
-    BallManager::BallList goingToGoal;
-    switch (ai->getDefendSide())
-    {
-    case BLUE:
-        robot->ballLocalizer->getBallsGoingToBlueGoal(goingToGoal);
-        break;
-    case YELLOW:
-        robot->ballLocalizer->getBallsGoingToYellowGoal(goingToGoal);
-        break;
-    default:
-        std::cout << "Wrong Side!";
-    }
-    
-    const BallManager::Ball* ball;
-    if (goingToGoal.size() > 0) {
-        ball = goingToGoal[0]; // Just get one
-        //TODO: Pick most important
-    }
-    else
-    {
-        ball = robot->ballManager->getClosestBall();
-    }
+	BallManager::BallList goingToGoal;
+	switch (ai->getDefendSide())
+	{
+	case BLUE:
+		robot->ballLocalizer->getBallsGoingToBlueGoal(goingToGoal);
+		break;
+	case YELLOW:
+		robot->ballLocalizer->getBallsGoingToYellowGoal(goingToGoal);
+		break;
+	default:
+		std::cout << "Wrong Side!";
+	}
+
+	const BallManager::Ball* ball;
+	if (goingToGoal.size() > 0) {
+		ball = goingToGoal[0]; // Just get one
+		//TODO: Pick most important
+	}
+	else
+	{
+		ball = robot->ballManager->getClosestBall();
+	}
 
 	//if goal is not visible in back camera, drive to own goal
 	if (defendedGoal == NULL) {
@@ -431,25 +434,25 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		ai->setState("drive-to-own-goal");
 		return;
 	}
-    //if goal is to close or far, drive to own goal
-    float goalError = defendedGoal->distance - goalDistanceTarget;
+	//if goal is to close or far, drive to own goal
+	float goalError = defendedGoal->distance - goalDistanceTarget;
 	if (goalError > 0.30) {
 		robot->stop();
 		ai->setState("drive-to-own-goal");
 		return;
 	}
 
-    if (abs(goalError) < 0.05) {
-        goalError = 0.0f;
-    }
-    goalError = Math::limit(goalError, 0.8f);
-    
+	if (abs(goalError) < 0.05) {
+		goalError = 0.0f;
+	}
+	goalError = Math::limit(goalError, 0.8f);
+
 	float ballError = 0.0f;
-	if (ball != nullptr){
+	if (ball != nullptr) {
 		ballError = ball->location.y;
 	}
 
-    
+
 	// pid-based
 	pidUpdateCounter++;
 	if (pidUpdateCounter % 10 == 0) pid.setInterval(dt);
@@ -966,7 +969,7 @@ void TeamController::FetchBallFrontState::onEnter(Robot* robot, Parameters param
 		if (parameters["fetch-style"] == "defensive") fetchStyle = FetchStyle::DEFENSIVE;
 		else if (parameters["fetch-style"] == "offensive") fetchStyle = FetchStyle::OFFENSIVE;
 	}
-	if(parameters.find("next-state") != parameters.end()) {
+	if (parameters.find("next-state") != parameters.end()) {
 		nextState = parameters["next-state"];
 	}
 	if (parameters.find("last-state") != parameters.end()) {
@@ -1110,7 +1113,7 @@ void TeamController::DriveToOwnGoalState::onEnter(Robot* robot, Parameters param
 	if (parameters.find("reverse-first") != parameters.end()) {
 		robot->setTargetDirFor(-2.0f, 0.0f, 0.0f, 0.5f);
 	}
-	
+
 
 	if (ai->defendSide == Side::YELLOW) {
 		robot->driveTo(0.6f, 1.5f, 0.0f, driveSpeed);
@@ -1120,12 +1123,12 @@ void TeamController::DriveToOwnGoalState::onEnter(Robot* robot, Parameters param
 		robot->driveTo(Config::fieldWidth - 0.6f, 1.5f, Math::PI, driveSpeed);
 		robot->driveTo(Config::fieldWidth - 0.35f, 1.5f, Math::PI, driveSpeed);
 	}
-	
+
 }
 
 void TeamController::DriveToOwnGoalState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
 
-	if (robot->hasTasks()){
+	if (robot->hasTasks()) {
 		return;
 	}
 	ai->setState("defend-goal");
@@ -1183,7 +1186,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 	float aimAdjustRobotDistance = 1.2f;
 	float robotInMiddleThreshold = Math::PI / 180.0f;
 	float maxAimDuration = 2.0f;
-	
+
 	// if aiming has taken too long, perform a weak kick and give up
 	if (combinedDuration > maxAimDuration) {
 		if (kickType.compare("pass") == 0) {
@@ -1318,7 +1321,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 			}
 
 		}
-		
+
 		//robot->setTargetDir(0.0f, 0.0f);
 		robot->lookAt(Math::Rad(targetAngle));
 		robot->dribbler->start();
@@ -1433,7 +1436,7 @@ void TeamController::ApproachBallState::step(float dt, Vision::Results* visionRe
 		if (kickType.compare("pass") == 0) {
 			ai->client->send("run-fetch-ball-front");
 			if (ai->isCaptain) nextState = "press-opponent";
-			else nextState = "defend-goal";	
+			else nextState = "defend-goal";
 		}
 		else {
 			if (ai->isCaptain) nextState = "fetch-ball-front";
@@ -1994,7 +1997,7 @@ void TeamController::PressOpponentState::step(float dt, Vision::Results* visionR
 		return;
 	}
 
-	if (opponentLostCounter > 6 || (lastEnemyRobot == NULL && enemyRobot == NULL) ) {
+	if (opponentLostCounter > 6 || (lastEnemyRobot == NULL && enemyRobot == NULL)) {
 		Parameters parameters;
 		parameters["next-state"] = "press-opponent";
 		parameters["target-type"] = "enemy-robot";
