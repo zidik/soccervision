@@ -16,7 +16,7 @@
 
 typedef ParticleFilterLocalizer::Landmark::Type LandmarkType;
 
-Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : location(0.0f, 0.0f) , conf(conf), com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), ballManager(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f), pidUpdateCounter(0) {
+Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* frontCameraTranslator, CameraTranslator* rearCameraTranslator) : location(0.0f, 0.0f) , conf(conf), com(com), frontCameraTranslator(frontCameraTranslator), rearCameraTranslator(rearCameraTranslator), wheelFL(NULL), wheelFR(NULL), wheelRL(NULL), wheelRR(NULL), coilgun(NULL), robotLocalizer(NULL), odometerLocalizer(NULL), robotManager(NULL), ballManager(NULL), ballLocalizer(NULL), odometer(NULL), visionResults(NULL), chipKickRequested(false), requestedChipKickLowerDribbler(false), requestedChipKickDistance(0.0f), lookAtPid(0.35f, 0.0f, 0.0012f, 0.016f), pidUpdateCounter(0) {
     targetOmega = 0;
     targetDir = Math::Vector(0, 0);
    
@@ -52,6 +52,7 @@ Robot::~Robot() {
 	if (coilgun != NULL) delete coilgun; coilgun = NULL;
 	if (dribbler != NULL) delete dribbler; dribbler = NULL;
 	if (odometer != NULL) delete odometer; odometer = NULL;
+	if (robotManager != NULL) delete robotManager; robotManager = NULL;
 	if (ballManager != NULL) delete ballManager; ballManager = NULL;
     if (ballLocalizer != NULL) delete ballLocalizer; ballLocalizer = NULL;
 	if (robotLocalizer != NULL) delete robotLocalizer; robotLocalizer = NULL;
@@ -222,7 +223,9 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 
     Math::Vector locationChangeOdometer = velocityOdometer*dt;
     ballManager->transformLocations(locationChangeOdometer, movement.omega*dt);
+	robotManager->transformLocations(locationChangeOdometer, movement.omega*dt);
 	updateBallManager(visionResults, dt);
+	updateRobotManager(visionResults, dt);
 
     //TODO: Shouldn't it be move& update, not update& move?
     updateMeasurements();
@@ -316,6 +319,9 @@ void Robot::step(float dt, Vision::Results* visionResults) {
     ballLocalizer->getBallsGoingToYellowGoal(goingToYellow);
     debugBallList("ballsGoingBlue", stream, goingToBlue);
     debugBallList("ballsGoingYellow", stream, goingToYellow);
+
+	debugRobotList("robotsRaw", stream, visibleRobots);
+	debugRobotList("robotsFiltered", stream, robotManager->getRobots());
 
     Math::Polygon currentCameraFOV = cameraFOV.getRotated(orientation).getTranslated(location.x,location.y) ;
 	stream << "\"cameraFOV\":" << currentCameraFOV.toJSON() << ",";

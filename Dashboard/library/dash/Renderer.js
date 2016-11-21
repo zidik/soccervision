@@ -91,6 +91,16 @@ Dash.Renderer.prototype.showDriveTo = function() {
 	this.driveToOrientation = 0.0;
 };
 
+Dash.Renderer.prototype.drawRobots = function(robots, color, radius) {
+	for (var i = 0; i < robots.length; i++) {
+		this.drawOtherRobot(robots[i], color, radius);
+	}
+}
+
+Dash.Renderer.prototype.drawOtherRobot = function(robot, color, radius) {
+	this.drawRobot(radius, color, robot.x, robot.y, 0, false);
+}
+
 Dash.Renderer.prototype.drawRobot = function(radius, color, x, y, orientation, gotBall) {
 	this.c.save();
 	
@@ -366,6 +376,18 @@ Dash.Renderer.prototype.renderState = function(state) {
 
 	this.drawPolygon(state.robot.cameraFOV, 'rgba(255, 255, 255, 0.25)');
 
+	this.drawRobots(
+		state.robot.robotsRaw,
+		'#40175A',
+		dash.config.robot.radius
+	);
+	
+	this.drawRobots(
+		state.robot.robotsFiltered,
+		'#E411BE',
+		dash.config.robot.radius / 2
+	);
+	
 	this.drawBalls(
 		state.robot.ballsGoingBlue,
 		'#00F',
