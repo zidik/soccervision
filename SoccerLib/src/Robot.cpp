@@ -876,7 +876,7 @@ void Robot::debugRobotList(std::string name, std::stringstream& stream, RobotMan
 		stream << "\"shouldBeRemoved\": " << (robot->shouldBeRemoved() ? "true" : "false") << ",";
 		stream << "\"visible\": " << (robot->visible ? "true" : "false") << ",";
 		stream << "\"inFOV\": " << (robot->inFOV ? "true" : "false") << ",";
-		stream << "\"color\": " << (robot->type == RobotColor::PINK ? "pink" : robot->type == RobotColor::PURPLE ? "purple" : "unknown");
+		stream << "\"color\": " << (robot->type == RobotColor::PINK ? "\"pink\"" : robot->type == RobotColor::PURPLE ? "\"purple\"" : "\"unknown\"");
 		stream << "}";
 	}
 
