@@ -144,7 +144,7 @@ ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
             distance.angle,
 			movementVector(0.0f, 0.0f),
 			movementVector(0.0f, 0.0f),
-			3,
+			RobotColor::ORANGE,
 			dir == Dir::FRONT ? false : true
         );
 		

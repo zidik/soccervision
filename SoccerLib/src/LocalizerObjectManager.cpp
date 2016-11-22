@@ -21,7 +21,7 @@ LocalizerObjectManager::LocalizerObjectList LocalizerObjectManager::extractObjec
 
 	for (Object* object : sourceObjects) {
 		Math::Vector location = Math::Vector::fromPolar(object->angle, object->distance);
-		LocalizerObject* worldObject = new LocalizerObject(location);
+		LocalizerObject* worldObject = new LocalizerObject(location, object->type);
 
 		objects.push_back(worldObject);
 	}
@@ -42,7 +42,7 @@ void LocalizerObjectManager::update(const LocalizerObjectList& visibleObjects, c
 
 	for (auto visibleObject : visibleObjects) {
 
-		closestObject = getObjectAround(visibleObject->location);
+		closestObject = getObjectAround(visibleObject->location, visibleObject->type);
 
 		if (closestObject != nullptr) {
 			closestObject->updateVisible(visibleObject->location, dt);
@@ -50,7 +50,7 @@ void LocalizerObjectManager::update(const LocalizerObjectList& visibleObjects, c
 			handledObjects.push_back(closestObject->id);
 		}
 		else {
-			LocalizerObject* newObject = new LocalizerObject(visibleObject->location);
+			LocalizerObject* newObject = new LocalizerObject(visibleObject->location, visibleObject->type);
 
 			objects.push_back(newObject);
 
@@ -69,7 +69,7 @@ void LocalizerObjectManager::update(const LocalizerObjectList& visibleObjects, c
 	purge(visibleObjects, cameraFOV);
 }
 
-LocalizerObject* LocalizerObjectManager::getObjectAround(Math::Vector & target) {
+LocalizerObject* LocalizerObjectManager::getObjectAround(Math::Vector & target, int type) {
 	float distance;
 	float minDistance = -1;
 	LocalizerObject* closestObject = nullptr;
@@ -83,6 +83,7 @@ LocalizerObject* LocalizerObjectManager::getObjectAround(Math::Vector & target) 
 				minDistance == -1
 				|| distance < minDistance
 				)
+			&& object->type == type
 			) {
 			minDistance = distance;
 			closestObject = object;

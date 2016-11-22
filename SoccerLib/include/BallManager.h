@@ -12,7 +12,8 @@ public:
 	class Ball : public LocalizerObject
 	{
 	public:
-		Ball(const Math::Vector & location);
+		Ball(const Math::Vector& location) : LocalizerObject(location, RobotColor::ORANGE){}
+
 		void updateVisible(const Math::Vector & location, float dt);
 		void updateInvisible(float dt);
 	private:

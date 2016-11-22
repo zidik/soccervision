@@ -243,7 +243,8 @@ enum RobotColor {
 	PINK = 5,
 	WHATEVER = 6,
 	YELLOWHIGH = 7,
-	BLUEHIGH = 8
+	BLUEHIGH = 8,
+	ORANGE = 9
 };
 
 enum Dir {

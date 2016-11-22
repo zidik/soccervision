@@ -5,7 +5,7 @@
 
 int LocalizerObject::instances = 0;
 
-LocalizerObject::LocalizerObject(const Math::Vector & location) : location(location), velocity(0.0f, 0.0f), pastVelocities(15) {
+LocalizerObject::LocalizerObject(const Math::Vector & location, int type) : location(location), type(type), velocity(0.0f, 0.0f), pastVelocities(15) {
 	id = instances++;
 	createdTime = Util::millitime();
 	updatedTime = createdTime;

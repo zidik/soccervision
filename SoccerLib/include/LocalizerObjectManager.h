@@ -27,7 +27,7 @@ public:
 
 protected:
 	LocalizerObjectList objects;
-	LocalizerObject* getObjectAround(Math::Vector & location);
+	LocalizerObject* getObjectAround(Math::Vector & location, int type);
 	void purge(const LocalizerObjectList& visibleObjects, const Math::Polygon& cameraFOV);
 };
 

@@ -5,7 +5,7 @@
 class LocalizerObject
 {
 public:
-	LocalizerObject(const Math::Vector & location);
+	LocalizerObject(const Math::Vector & location, int type);
 	void updateVisible(const Math::Vector & location, float dt);
 	void updateInvisible(float dt);
 	void markForRemoval(double afterSeconds);
@@ -22,6 +22,7 @@ public:
 	Math::Vector velocity;
 	bool visible;
 	bool inFOV;
+	int type;
 
 protected:
 	static int instances;
