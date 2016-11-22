@@ -173,6 +173,7 @@
     <ClInclude Include="include\Gui.h" />
     <ClInclude Include="include\ImageProcessor.h" />
     <ClInclude Include="include\Localizer.h" />
+    <ClInclude Include="include\LocalizerObjectManager.h" />
     <ClInclude Include="include\LookupTable.h" />
     <ClInclude Include="include\ManualController.h" />
     <ClInclude Include="include\Maths.h" />
@@ -187,6 +188,7 @@
     <ClInclude Include="include\Ray.h" />
     <ClInclude Include="include\Robot.h" />
     <ClInclude Include="include\LineSegment.h" />
+    <ClInclude Include="include\RobotManager.h" />
     <ClInclude Include="include\Serial.h" />
     <ClInclude Include="include\SerialCommunication.h" />
     <ClInclude Include="include\Server.h" />
@@ -301,6 +303,7 @@
     <ClCompile Include="src\FpsCounter.cpp" />
     <ClCompile Include="src\Gui.cpp" />
     <ClCompile Include="src\ImageProcessor.cpp" />
+    <ClCompile Include="src\LocalizerObjectManager.cpp" />
     <ClCompile Include="src\LookupTable.cpp" />
     <ClCompile Include="src\ManualController.cpp" />
     <ClCompile Include="src\Maths.cpp" />
@@ -313,6 +316,7 @@
     <ClCompile Include="src\ProcessThread.cpp" />
     <ClCompile Include="src\Ray.cpp" />
     <ClCompile Include="src\Robot.cpp" />
+    <ClCompile Include="src\RobotManager.cpp" />
     <ClCompile Include="src\Serial.cpp" />
     <ClCompile Include="src\SerialCommunication.cpp" />
     <ClCompile Include="src\Server.cpp" />

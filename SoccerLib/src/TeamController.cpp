@@ -20,7 +20,7 @@ TeamController::TeamController(Robot* robot, AbstractCommunication* com, Client*
 	passStrength = 625;
 	directKickStrength = 3000;
 	chipKickAdjust = 0.15f;
-
+	robot->setRefereeCommandShort(true);
 	crcCalc.init();
 };
 
@@ -43,6 +43,7 @@ void TeamController::reset() {
 
 	setState("manual-control");
 	handleToggleSideCommand();
+	robot->setRefereeCommandShort(true);
 }
 
 void TeamController::setupStates() {
@@ -55,9 +56,6 @@ void TeamController::setupStates() {
 	states["take-kickoff"] = new TakeKickoffState(this);
 	states["take-freekick-direct"] = new TakeFreeKickDirectState(this);
 	states["take-freekick-indirect"] = new TakeFreeKickIndirectState(this);
-	states["take-goalkick"] = new TakeGoalkickState(this);
-	states["take-throwin"] = new TakeThrowInState(this);
-	states["take-cornerkick"] = new TakeCornerKickState(this);
 	states["take-penalty"] = new TakePenaltyState(this);
 	states["find-ball"] = new FindBallState(this);
 	states["find-object"] = new FindObjectState(this);
@@ -94,104 +92,94 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 	/*
 	if (cmd.parameters[0][1] == fieldID) {
 		if (cmd.parameters[0][2] == robotID || cmd.parameters[0][2] == 'X') {
-			if (cmd.parameters[0][3] == 'A' || cmd.parameters[0][3] == 'B') {
-				bool commandForOurTeam = cmd.parameters[0][3] == teamID;
-				std::string command = cmd.parametestdrs[0].substr(4);
 
-				if (commandForOurTeam) {
-					whoHasBall = TeamInPossession::FRIENDLY;
-				}
-				else {
-					whoHasBall = TeamInPossession::ENEMY;
-				}
+			bool isUpperLetter = isupper(cmd.parameters[0][3]);
+			bool commandForOurTeam = (isUpperLetter && teamID == 'A') || (!isUpperLetter && teamID == 'B');
 
-				if (command == "KICKOFF-") { currentSituation = GameSituation::KICKOFF; }
-				else if (command == "IFREEK--") { currentSituation = GameSituation::INDIRECTFREEKICK; }
-				else if (command == "DFREEK--") { currentSituation = GameSituation::DIRECTFREEKICK; }
-				else if (command == "GOALK---") { currentSituation = GameSituation::GOALKICK; }
-				else if (command == "THROWIN-") { currentSituation = GameSituation::THROWIN; }
-				else if (command == "CORNERK-") { currentSituation = GameSituation::CORNERKICK; }
-				else if (command == "PENALTY-") { currentSituation = GameSituation::PENALTY; }
-				else if (command == "GOAL----") {
-					if (commandForOurTeam) {
-						friendlyGoalCounter++;
-						std::cout << "- We scored a goal" << std::endl;
-					}
-					else {
-						enemyGoalCounter++;
-						std::cout << "- they scored a goal" << std::endl;
-					}
-				}
+			char command = toupper(cmd.parameters[0][3]);
+
+			if (commandForOurTeam) {
+				whoHasBall = TeamInPossession::FRIENDLY;
 			}
 			else {
-				std::string command = cmd.parameters[0].substr(3);
+				whoHasBall = TeamInPossession::ENEMY;
+			}
 
-				if (command == "START----" && isCaptain) {
-					std::cout << "Teamcontroller start" << std::endl;
-					if (whoHasBall == TeamInPossession::FRIENDLY) {
-						switch (currentSituation) {
-						case GameSituation::KICKOFF:
-							setState("take-kickoff");
-							std::cout << "- taking kickoff" << std::endl;
-							return;
-						case GameSituation::INDIRECTFREEKICK:
-							setState("take-freekick-indirect");
-							std::cout << "- taking indirect free kick" << std::endl;
-							return;
-						case GameSituation::DIRECTFREEKICK:
-							setState("take-freekick-direct");
-							std::cout << "- taking direct free kick" << std::endl;
-							return;
-						case GameSituation::GOALKICK:
-							client->send("run-take-goalkick");
-							setState("get-pass");
-							std::cout << "- waiting for goal kick" << std::endl;
-							return;
-						case GameSituation::THROWIN:
-							setState("take-throwin");
-							std::cout << "- taking throw-in" << std::endl;
-							return;
-						case GameSituation::CORNERKICK:
-							setState("take-cornerkick");
-							std::cout << "- taking corner kick" << std::endl;
-							return;
-						case GameSituation::PENALTY:
-							setState("take-penalty");
-							std::cout << "- taking penalty" << std::endl;
-							return;
-						case GameSituation::PLACEDBALL:
-							setState("fetch-ball-front");
-							client->send("run-defend-goal");
-							std::cout << "- its a placed ball" << std::endl;
-							return;
-						case GameSituation::UNKNOWN:
-							setState("fetch-ball-front");
-							client->send("run-defend-goal");
-							std::cout << "- mystery state" << std::endl;
-							return;
-						}
-					}
-					else {
-						Parameters parameters;
-						parameters["next-state"] = "fetch-ball-front";
-						setState("wait-for-kick", parameters);
+
+
+			if (command == 'K') { currentSituation = GameSituation::KICKOFF; }
+			else if (command == 'I') { currentSituation = GameSituation::INDIRECTFREEKICK; }
+			else if (command == 'D') { currentSituation = GameSituation::DIRECTFREEKICK; }
+			//else if (command == "CORNERK-") { currentSituation = GameSituation::CORNERKICK; } //replaced by indirect freekick
+			else if (command == 'P') { currentSituation = GameSituation::PENALTY; }
+			else if (command == 'G') {
+				if (commandForOurTeam) {
+					friendlyGoalCounter++;
+					std::cout << "- We scored a goal" << std::endl;
+				}
+				else {
+					enemyGoalCounter++;
+					std::cout << "- they scored a goal" << std::endl;
+				}
+			}
+
+
+			else if (command == 'S' && isCaptain) {
+				std::cout << "Teamcontroller start" << std::endl;
+				if (whoHasBall == TeamInPossession::FRIENDLY) {
+					switch (currentSituation) {
+					case GameSituation::KICKOFF:
+						setState("take-kickoff");
+						std::cout << "- taking kickoff" << std::endl;
+						return;
+					case GameSituation::INDIRECTFREEKICK:
+						setState("take-freekick-indirect");
+						std::cout << "- taking indirect free kick" << std::endl;
+						return;
+					case GameSituation::DIRECTFREEKICK:
+						setState("take-freekick-direct");
+						std::cout << "- taking direct free kick" << std::endl;
+						return;
+					case GameSituation::PENALTY:
+						setState("take-penalty");
+						std::cout << "- taking penalty" << std::endl;
+						return;
+					case GameSituation::PLACEDBALL:
+						setState("fetch-ball-front");
 						client->send("run-defend-goal");
+						std::cout << "- its a placed ball" << std::endl;
+						return;
+					case GameSituation::UNKNOWN:
+						setState("fetch-ball-front");
+						client->send("run-defend-goal");
+						std::cout << "- mystery state" << std::endl;
 						return;
 					}
 				}
-				else if (command == "STOP-----") {
-					setState("manual-control");
+				else {
+					Parameters parameters;
+					parameters["next-state"] = "fetch-ball-front";
+					setState("wait-for-kick", parameters);
+					client->send("run-defend-goal");
 					return;
 				}
-				else if (command == "PLACEDBAL") {
-					currentSituation = GameSituation::PLACEDBALL;
-					whoHasBall = TeamInPossession::FRIENDLY;
-				}
-				else if (command == "ENDHALF--") {
-					std::cout << "- half ended - ROADKILL " << friendlyGoalCounter << ":" << enemyGoalCounter << " OTHERS" << std::endl;
-					setState("manual-control");
-					return;
-				}
+			}
+			else if (command == 'H') {
+				setState("manual-control");
+				return;
+			}
+			else if (command == 'B') {
+				currentSituation = GameSituation::PLACEDBALL;
+				whoHasBall = TeamInPossession::FRIENDLY;
+			}
+			else if (command == 'E') {
+				std::cout << "- half ended - ROADKILL " << friendlyGoalCounter << ":" << enemyGoalCounter << " OTHERS" << std::endl;
+				setState("manual-control");
+				return;
+			}
+			else if (command == 'A') {
+				std::cout << "ping command recieved" << std::endl;
+				return;
 			}
 		}
 	}*/
@@ -209,9 +197,6 @@ std::string TeamController::getSituationName(GameSituation situation) {
 	case GameSituation::KICKOFF: return "KICKOFF";
 	case GameSituation::INDIRECTFREEKICK: return "INDIRECTFREEKICK";
 	case GameSituation::DIRECTFREEKICK: return "DIRECTFREEKICK";
-	case GameSituation::GOALKICK: return "GOALKICK";
-	case GameSituation::THROWIN: return "THROWIN";
-	case GameSituation::CORNERKICK: return "CORNERKICK";
 	case GameSituation::PENALTY: return "PENALTY";
 	case GameSituation::PLACEDBALL: return "PLACEDBALL";
 	case GameSituation::ENDHALF: return "ENDHALF";
@@ -405,7 +390,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	Object* defendedGoal = visionResults->getLargestGoal(ai->getDefendSide(), Dir::REAR);
 
 
-	BallManager::BallList goingToGoal;
+	BallManager::LocalizerObjectList goingToGoal;
 	switch (ai->getDefendSide())
 	{
 	case BLUE:
@@ -418,7 +403,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		std::cout << "Wrong Side!";
 	}
 
-	const BallManager::Ball* ball;
+	const BallManager::LocalizerObject* ball;
 	if (goingToGoal.size() > 0) {
 		ball = goingToGoal[0]; // Just get one
 		//TODO: Pick most important
@@ -641,120 +626,6 @@ void TeamController::TakeFreeKickIndirectState::step(float dt, Vision::Results* 
 		Parameters parameters;
 		parameters["next-state"] = "drive-to-own-goal";
 		parameters["last-state"] = "take-freekick-indirect";
-		parameters["kick-type"] = "pass";
-		parameters["target-type"] = "team-robot";
-		parameters["kick-immediately"] = "Y";
-		ai->setState("go-to-ball", parameters);
-		return;
-	}
-}
-
-void TeamController::TakeGoalkickState::onEnter(Robot* robot, Parameters parameters) {
-	ai->passNeeded = true;
-	robot->dribbler->useNormalLimits();
-	ai->client->send("run-get-pass");
-	ai->currentSituation = GameSituation::GOALKICK;
-}
-
-void TeamController::TakeGoalkickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	Object* ball = visionResults->getClosestBall(Dir::FRONT);
-
-	if (robot->dribbler->gotBall()) {
-		Parameters parameters;
-		parameters["next-state"] = "drive-to-own-goal";
-		parameters["last-state"] = "take-goalkick";
-		parameters["kick-type"] = "pass";
-		parameters["target-type"] = "team-robot";
-		ai->setState("aim-kick", parameters);
-		return;
-	}
-
-	if (ball == NULL) {
-		Parameters parameters;
-		parameters["next-state"] = "take-goalkick";
-		ai->setState("find-ball", parameters);
-		return;
-	}
-	else {
-		Parameters parameters;
-		parameters["next-state"] = "drive-to-own-goal";
-		parameters["last-state"] = "take-goalkick";
-		parameters["kick-type"] = "pass";
-		parameters["target-type"] = "team-robot";
-		parameters["kick-immediately"] = "Y";
-		ai->setState("go-to-ball", parameters);
-		return;
-	}
-}
-
-void TeamController::TakeThrowInState::onEnter(Robot* robot, Parameters parameters) {
-	ai->passNeeded = true;
-	robot->dribbler->useNormalLimits();
-	ai->client->send("run-get-pass");
-	ai->currentSituation = GameSituation::THROWIN;
-}
-
-void TeamController::TakeThrowInState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	Object* ball = visionResults->getClosestBall(Dir::FRONT);
-
-	if (robot->dribbler->gotBall()) {
-		Parameters parameters;
-		parameters["next-state"] = "drive-to-own-goal";
-		parameters["last-state"] = "take-throwin";
-		parameters["kick-type"] = "pass";
-		parameters["target-type"] = "team-robot";
-		ai->setState("aim-kick", parameters);
-		return;
-	}
-
-	if (ball == NULL) {
-		Parameters parameters;
-		parameters["next-state"] = "take-throwin";
-		ai->setState("find-ball", parameters);
-		return;
-	}
-	else {
-		Parameters parameters;
-		parameters["next-state"] = "drive-to-own-goal";
-		parameters["last-state"] = "take-throwin";
-		parameters["kick-type"] = "pass";
-		parameters["target-type"] = "team-robot";
-		parameters["kick-immediately"] = "Y";
-		ai->setState("go-to-ball", parameters);
-		return;
-	}
-}
-
-void TeamController::TakeCornerKickState::onEnter(Robot* robot, Parameters parameters) {
-	ai->passNeeded = true;
-	robot->dribbler->useNormalLimits();
-	ai->client->send("run-get-pass");
-	ai->currentSituation = GameSituation::CORNERKICK;
-}
-
-void TeamController::TakeCornerKickState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
-	Object* ball = visionResults->getClosestBall(Dir::FRONT);
-
-	if (robot->dribbler->gotBall()) {
-		Parameters parameters;
-		parameters["next-state"] = "drive-to-own-goal";
-		parameters["last-state"] = "take-cornerkick";
-		parameters["kick-type"] = "pass";
-		parameters["target-type"] = "team-robot";
-		ai->setState("aim-kick", parameters);
-		return;
-	}
-
-	if (ball == NULL) {
-		Parameters parameters;
-		parameters["next-state"] = "take-cornerkick";
-		ai->setState("find-ball", parameters);
-		return;
-	}
-	else {
-		Parameters parameters;
-		parameters["next-state"] = "drive-to-own-goal";
-		parameters["last-state"] = "take-cornerkick";
 		parameters["kick-type"] = "pass";
 		parameters["target-type"] = "team-robot";
 		parameters["kick-immediately"] = "Y";

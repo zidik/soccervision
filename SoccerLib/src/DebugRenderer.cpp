@@ -163,6 +163,18 @@ void DebugRenderer::renderRobots(unsigned char* image, Vision* vision, const Obj
 			b = 200;
 			sprintf(buf, "blueHigh");
 		}
+		else if (robot->type == RobotColor::PURPLE) {
+			r = 200;
+			g = 0;
+			b = 200;
+			sprintf(buf, "purpleRobot");
+		}
+		else if (robot->type == RobotColor::PINK) {
+			r = 200;
+			g = 100;
+			b = 100;
+			sprintf(buf, "pinkRobot");
+		}
 		else {
 			r = 255;
 			g = 0;

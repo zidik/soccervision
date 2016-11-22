@@ -79,12 +79,12 @@ public:
 
 	struct Result {
 		Result() : vision(NULL) {
-			balls = new ObjectList();
-			robots = new ObjectList();
+			//balls = new ObjectList();
+			//robots = new ObjectList();
 		}
 
-		ObjectList* balls;
-		ObjectList* robots;
+		ObjectList balls;
+		ObjectList robots;
 		ObjectList goals;
 		std::vector<Pixel> fieldCorners;
 		ColorList colorOrder;
@@ -191,7 +191,9 @@ public:
 private:
 	std::pair<ObjectList, ObjectList> processGoalsAndRobots(Dir dir);
 	ObjectList processGoalsUpdateRobots(Dir dir);
+	ObjectList processGoals(Dir dir);
 	ObjectList processBalls(Dir dir, ObjectList& goals);
+	ObjectList processRobots(Dir dir);
 	bool updateBalls(Dir dir, ObjectList& goals);
 	bool updatePersistentObjects(ObjectList* persistentObjects, ObjectList newObjects);
 	float getSurroundMetric(int x, int y, int radius, std::vector<std::string> validColors, std::string requiredColor = "", int side = 0, bool allowNone = false);

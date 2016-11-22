@@ -162,9 +162,6 @@
     <ClInclude Include="include\XimeaCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\MouseListener.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\Pixel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -280,6 +277,15 @@
       <Filter>libs</Filter>
     </ClInclude>
     <ClInclude Include="CRC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\RobotManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\LocalizerObjectManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MouseListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -561,6 +567,12 @@
       <Filter>libs</Filter>
     </ClCompile>
     <ClCompile Include="CRC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RobotManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LocalizerObjectManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

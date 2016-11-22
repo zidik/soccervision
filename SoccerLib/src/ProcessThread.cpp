@@ -123,8 +123,8 @@ void* ProcessThread::run() {
 
 	if (debug) {
 		DebugRenderer::renderBlobs(classification, blobber);
-		DebugRenderer::renderBalls(rgb, vision, *visionResult->balls);
-		DebugRenderer::renderRobots(rgb, vision, *visionResult->robots);
+		DebugRenderer::renderBalls(rgb, vision, visionResult->balls);
+		DebugRenderer::renderRobots(rgb, vision, visionResult->robots);
 		DebugRenderer::renderGoals(rgb, visionResult->goals);
 		//DebugRenderer::renderObstructions(rgb, visionResult->goalPathObstruction);
 		

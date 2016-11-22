@@ -114,6 +114,9 @@ public:
 			height{ pt.get<int>("resolution.height") },
 			gain{ pt.get<int>("settings.gain") },
 			exposure{ pt.get<int>("settings.exposure") },
+			redShift{ pt.get<int>("settings.balance_red") },
+			greenShift{ pt.get<int>("settings.balance_green") },
+			blueShift{ pt.get<int>("settings.balance_blue") },
 			frontA{pt.get<float>("translation.front.A")},
 			frontB{ pt.get<float>("translation.front.B") },
 			frontC{ pt.get<float>("translation.front.C") },
@@ -136,6 +139,9 @@ public:
 		const int height;
 		const int gain;
 		const int exposure;
+		const int redShift;
+		const int greenShift;
+		const int blueShift;
 
 		const float frontA;
 		const float frontB;

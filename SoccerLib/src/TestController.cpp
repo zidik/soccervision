@@ -176,6 +176,7 @@ TestController::TestController(Robot* robot, AbstractCommunication* com, Client*
 	setupStates();
 
 	speedMultiplier = 1.0f;
+	robot->setRefereeCommandShort(false);
 };
 
 TestController::~TestController() {
@@ -195,6 +196,7 @@ void TestController::reset() {
 
 	setState("manual-control");
 	handleToggleSideCommand();
+	robot->setRefereeCommandShort(false);
 }
 
 void TestController::setState(std::string state) {
@@ -617,7 +619,7 @@ void TestController::updateVisionInfo(Vision::Results* visionResults) {
 	isInCorner = isRobotInCorner(visionResults);
 
 	if (targetGoal != NULL) {
-		Vision::BallInWayMetric ballInWayMetric = visionResults->getBallInWayMetric(*visionResults->front->balls, targetGoal->y + targetGoal->height / 2);
+		Vision::BallInWayMetric ballInWayMetric = visionResults->getBallInWayMetric(visionResults->front->balls, targetGoal->y + targetGoal->height / 2);
 
 		isBallInWay = ballInWayMetric.isBallInWay;
 		isAvoidingBallInWay = shouldAvoidBallInWay(ballInWayMetric, targetGoal->distance);
@@ -2441,7 +2443,7 @@ void TestController::FetchBallNearState::step(float dt, Vision::Results* visionR
 	if (ballDistance < ballNearDistance) {
 		// don't choose to chip kick too soon after last kick
 		if (robot->coilgun->getTimeSinceLastKicked() > 0.2f) {
-			ballInWayMetric = visionResults->getBallInWayMetric(*visionResults->front->balls, goal->y + goal->height / 2, ball);
+			ballInWayMetric = visionResults->getBallInWayMetric(visionResults->front->balls, goal->y + goal->height / 2, ball);
 
 			isBallInWay = ballInWayMetric.isBallInWay;
 			shouldAvoidBallInWay = isBallInWay && ai->shouldAvoidBallInWay(ballInWayMetric, goal->distance);
@@ -2922,7 +2924,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 	bool isGoalPathObstructed = goalPathObstruction.left || goalPathObstruction.right;
 	float forwardSpeed = 0.0f;
 	float sideSpeed = 0.0f;
-	Vision::BallInWayMetric ballInWayMetric = visionResults->getBallInWayMetric(*visionResults->front->balls, goal->y + goal->height / 2);
+	Vision::BallInWayMetric ballInWayMetric = visionResults->getBallInWayMetric(visionResults->front->balls, goal->y + goal->height / 2);
 	bool validWindow = false;
 	bool isKickTooSoon = lastKickTime != -1.0 && timeSinceLastKick < minKickInterval;
 	bool isLowVoltage = robot->coilgun->isLowVoltage();
@@ -2953,6 +2955,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 		// decide which way to avoid the balls once
 		if (avoidBallSide == TargetMode::UNDECIDED) {
 			if (isGoalPathObstructed) {
+				std::cout << goalPathObstruction.invalidCountLeft << " - " << goalPathObstruction.invalidCountRight << std::endl;
 				if (goalPathObstruction.invalidCountLeft > goalPathObstruction.invalidCountRight) {
 					avoidBallSide = TargetMode::RIGHT;
 				} else {
@@ -2975,7 +2978,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 
 		avoidBallDuration += dt;
 
-		sideSpeed = (avoidBallSide == TargetMode::LEFT ? -1.0f : 1.0f) * Math::map(avoidBallDuration, 0.0f, 1.0f, 0.0f, avoidBallSpeed);
+		sideSpeed = (avoidBallSide == TargetMode::LEFT ? 1.0f : -1.0f) * Math::map(avoidBallDuration, 0.0f, 1.0f, 0.0f, avoidBallSpeed);
 
 		// not sure if this is good after all
 		forwardSpeed = Math::map(goal->distance, 0.5f, 1.0f, 0.0f, Math::abs(sideSpeed));

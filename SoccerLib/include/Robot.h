@@ -12,6 +12,7 @@
 #include "AbstractCommunication.h"
 #include "Command.h"
 #include "PID.h"
+#include "RobotManager.h"
 
 #include <string>
 
@@ -58,6 +59,7 @@ public:
 	bool chipKick(float distance = 1.0f, bool lowerDribblerAfterwards = true);
 	void clearTasks() { tasks.clear(); }
     void handleTasks(float dt);
+	void setRefereeCommandShort(bool isShort);
 
 	void lookAt(Object* object, float lookAtP = Config::lookAtP, bool stare = true);
 	void lookAt(const Math::Angle& angle, float lookAtP = Config::lookAtP);
@@ -91,6 +93,7 @@ public:
 	Dribbler* dribbler;
 	Coilgun* coilgun;
 	ParticleFilterLocalizer* robotLocalizer;
+	RobotManager* robotManager;
 	BallManager* ballManager;
     BallLocalizer* ballLocalizer;
 	OdometerLocalizer* odometerLocalizer;
@@ -102,15 +105,18 @@ private:
 	void setupOdometer();
 	void setupRobotLocalizer();
 	void setupOdometerLocalizer();
+	void setupRobotManager();
 	void setupBallManager();
     void setupBallLocalizer();
 	void setupCameraFOV();
     void updateWheelSpeeds();
 	void updateMeasurements();
+	void updateRobotManager(Vision::Results* visionResults, float dt);
 	void updateBallManager(Vision::Results* visionResults, float dt);
 	void updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, float robotY, float robotOrientation, float dt);
 	void updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, float robotX, float robotY, float robotOrientation, float dt);
-	void debugBallList(std::string name, std::stringstream& stream, BallManager::BallList balls);
+	void debugBallList(std::string name, std::stringstream& stream, BallManager::LocalizerObjectList balls);
+	void debugRobotList(std::string name, std::stringstream& stream, RobotManager::LocalizerObjectList robots);
 	void handleQueuedChipKickRequest();
 
     Math::Vector location;
@@ -145,7 +151,8 @@ private:
 	Odometer* odometer;
 	Odometer::Movement movement;
 	ParticleFilterLocalizer::Measurements measurements;
-	BallManager::BallList visibleBalls;
+	BallManager::LocalizerObjectList visibleBalls;
+	RobotManager::LocalizerObjectList visibleRobots;
 
 	PID lookAtPid;
 	char pidUpdateCounter;

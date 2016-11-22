@@ -64,35 +64,6 @@ public:
 
 	};
 
-	//take goalkick
-	class TakeGoalkickState : public State {
-
-	public:
-		TakeGoalkickState(TeamController* ai) : State(ai) {}
-		void onEnter(Robot* robot, Parameters parameters);
-		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
-
-	};
-
-	//take throwin
-	class TakeThrowInState : public State {
-
-	public:
-		TakeThrowInState(TeamController* ai) : State(ai) {}
-		void onEnter(Robot* robot, Parameters parameters);
-		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
-
-	};
-
-	//take cornerkick
-	class TakeCornerKickState : public State {
-
-	public:
-		TakeCornerKickState(TeamController* ai) : State(ai) {}
-		void onEnter(Robot* robot, Parameters parameters);
-		void step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration);
-	};
-
 	//take penalty
 	class TakePenaltyState : public State {
 

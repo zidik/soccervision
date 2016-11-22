@@ -23,19 +23,19 @@ public:
         
     }
     
-    void getBallsGoingToBlueGoal(BallManager::BallList & balls) { getBallsGoingToGoal(balls, mBlueGoalLine); }
-    void getBallsGoingToYellowGoal(BallManager::BallList & balls) { getBallsGoingToGoal(balls, mYellowGoalLine); }
+    void getBallsGoingToBlueGoal(BallManager::LocalizerObjectList & balls) { getBallsGoingToGoal(balls, mBlueGoalLine); }
+    void getBallsGoingToYellowGoal(BallManager::LocalizerObjectList & balls) { getBallsGoingToGoal(balls, mYellowGoalLine); }
 
 
 
 private:
-    void getBallsGoingToGoal(BallManager::BallList & result, Geometry::LineSegment & goalLine) const
+    void getBallsGoingToGoal(BallManager::LocalizerObjectList & result, Geometry::LineSegment & goalLine) const
     {
-        auto fastEnough = [this, &goalLine](BallManager::Ball* ball) -> bool {
+        auto fastEnough = [this, &goalLine](BallManager::LocalizerObject* ball) -> bool {
             return ball->velocity.getLength() > 0.5f;
         };
         
-        auto hasVelocityVectorTowardsGoal = [this, &goalLine](BallManager::Ball* ball) -> bool {
+        auto hasVelocityVectorTowardsGoal = [this, &goalLine](BallManager::LocalizerObject* ball) -> bool {
             auto robotPosition = this->pRobotLocalizer->getPosition();
             Math::Vector ballWorldLocation = ball->location.getRotated(robotPosition.orientation) + robotPosition.location;
             Math::Vector ballWorldVelocity = ball->velocity.getRotated(robotPosition.orientation);
@@ -45,13 +45,13 @@ private:
             return intersects;
         };
 
-        BallManager::BallList ballsFastEnough;
+        BallManager::LocalizerObjectList ballsFastEnough;
         filterBalls(ballsFastEnough, pBallManager->getBalls(), fastEnough);
         filterBalls(result, ballsFastEnough, hasVelocityVectorTowardsGoal);
 
     }
 
-    static void filterBalls(BallManager::BallList & filteredBalls, const BallManager::BallList & balls, std::function<bool(BallManager::Ball * ball)> predicate) {
+    static void filterBalls(BallManager::LocalizerObjectList & filteredBalls, const BallManager::LocalizerObjectList & balls, std::function<bool(BallManager::LocalizerObject * ball)> predicate) {
         std::copy_if(balls.begin(), balls.end(), std::back_inserter(filteredBalls), predicate);
     }
 
