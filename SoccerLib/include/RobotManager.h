@@ -5,6 +5,7 @@
 //TODO
 //Remove drag from robotmanager
 //Add Robot color to robot objects
+//Add functions for getting closest teammate/enemy robot
 //Think about what else has to be changed
 
 class RobotManager : public LocalizerObjectManager

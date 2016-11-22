@@ -2955,6 +2955,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 		// decide which way to avoid the balls once
 		if (avoidBallSide == TargetMode::UNDECIDED) {
 			if (isGoalPathObstructed) {
+				std::cout << goalPathObstruction.invalidCountLeft << " - " << goalPathObstruction.invalidCountRight << std::endl;
 				if (goalPathObstruction.invalidCountLeft > goalPathObstruction.invalidCountRight) {
 					avoidBallSide = TargetMode::RIGHT;
 				} else {
@@ -2977,7 +2978,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 
 		avoidBallDuration += dt;
 
-		sideSpeed = (avoidBallSide == TargetMode::LEFT ? -1.0f : 1.0f) * Math::map(avoidBallDuration, 0.0f, 1.0f, 0.0f, avoidBallSpeed);
+		sideSpeed = (avoidBallSide == TargetMode::LEFT ? 1.0f : -1.0f) * Math::map(avoidBallDuration, 0.0f, 1.0f, 0.0f, avoidBallSpeed);
 
 		// not sure if this is good after all
 		forwardSpeed = Math::map(goal->distance, 0.5f, 1.0f, 0.0f, Math::abs(sideSpeed));
