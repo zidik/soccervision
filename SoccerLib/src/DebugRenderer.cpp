@@ -245,7 +245,7 @@ void DebugRenderer::renderGoals(unsigned char* image, const ObjectList& goals, i
 			b = 0;
 		} else {
 			r = 0;
-			g = 0;
+			g = 100;
 			b = 200;
 		}
 
