@@ -79,7 +79,7 @@ void* ProcessThread::run() {
 	
 	//std::cout << "  - RGGB > I420: " << Util::timerEnd() << std::endl;
 
-	//Util::timerStart();
+	Util::timerStart();
 	ImageProcessor::I420ToYUYV(
 		dataY, dataU, dataV,
 		dataYUYV,

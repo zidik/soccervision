@@ -588,6 +588,7 @@ void Robot::kick(int microseconds) {
 
 bool Robot::chipKick(float distance, bool lowerDribblerAfterwards) {
 	if (dribbler->isRaised()) {
+		std::cout << "raised" << std::endl;
 		//std::cout << "! Dribbler is raised, chip-kicking immediately targeting " << distance << " meters" << std::endl;
 
 		coilgun->chipKick(distance);
@@ -600,11 +601,16 @@ bool Robot::chipKick(float distance, bool lowerDribblerAfterwards) {
 	}
 
 	if (chipKickRequested) {
+		std::cout << "chipkickrequested" << std::endl;
 		requestedChipKickLowerDribbler = lowerDribblerAfterwards;
 		requestedChipKickDistance = distance;
 
+		dribbler->useChipKickLimits();
+
 		return false;
 	}
+
+	std::cout << "chip end" << std::endl;
 
 	//std::cout << "! Dribbler is not raised, queuing chip-kicking targeting " << distance << " meters" << std::endl;
 
