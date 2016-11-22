@@ -900,18 +900,23 @@ void Robot::sendToRF(std::string command)
 void Robot::sendAcknowledgement(bool shortCmd, char field, char robot)
 {
 	std::string command;
-	if (!shortCmd)
+	if (shortCmd)
 	{
-		command = "a" + field + robot + 'A';
+		command += "a";
+		command += field;
+		command += robot;
+		command += "A";
 		char crcValue = crcCalc.calclulateCRC(command);
 		command += crcValue;
 	}
 	else
 	{
-		command = "a" + field + robot;
-		command += "ACK------";		
+		command += "a";
+		command += field;
+		command += robot;
+		command += "ACK-----";		
 	}
-
+	std::cout << "sendACK: " << command << std::endl;
 	sendToRF(command);
 }
 

@@ -77,10 +77,10 @@ void TeamController::setupStates() {
 void TeamController::handleRefereeCommand(const Command& cmd)
 {
 	std::string commandSub = cmd.parameters[0].substr(0, 4);
-	unsigned int crcValue = crcCalc.calclulateCRC(commandSub);
-
+	char crcValue = crcCalc.calclulateCRC(commandSub);
+	
 	//CRC value correct and correct field
-	if (crcValue == static_cast<unsigned int>(commandSub[4]) && cmd.parameters[0][1] == fieldID)
+	if (crcValue == cmd.parameters[0][4] && cmd.parameters[0][1] == fieldID)
 	{
 		//Command from referee
 		if (cmd.parameters[0][2] == 'X')
@@ -95,6 +95,7 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 			else {
 				whoHasBall = TeamInPossession::ENEMY;
 			}
+
 			if (command == 'K')
 			{
 				currentSituation = GameSituation::KICKOFF;
@@ -188,7 +189,7 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 				std::cout << "ping command recieved" << std::endl;								
 			}
 			//Got command from referee, send aknowledgement
-			robot->sendAknowledgement(true, fieldID, robotID);
+			robot->sendAcknowledgement(true, fieldID, robotID);
 		}
 	}	
 }
