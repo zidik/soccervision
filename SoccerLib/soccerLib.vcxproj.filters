@@ -285,6 +285,9 @@
     <ClInclude Include="src\MouseListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\LocalizerObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\BaseAI.cpp">
@@ -567,6 +570,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\LocalizerObjectManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LocalizerObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

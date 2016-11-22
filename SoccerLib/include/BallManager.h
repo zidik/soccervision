@@ -9,9 +9,18 @@
 class BallManager : public LocalizerObjectManager {
 
 public:
+	class Ball : public LocalizerObject
+	{
+	public:
+		Ball(const Math::Vector & location);
+		void updateVisible(const Math::Vector & location, float dt);
+		void updateInvisible(float dt);
+	private:
+		void applyDrag(float dt);
+	};
 
-	//typedef std::vector<Ball*> BallList;
-	//typedef std::vector<Ball*>::iterator BallListIt;
+	typedef std::vector<LocalizerObject*> BallList;
+	typedef std::vector<LocalizerObject*>::iterator BallListIt;
     
 	static LocalizerObjectList extractBalls(const ObjectList& sourceObjects) { return extractObjects(sourceObjects); }
 

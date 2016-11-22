@@ -313,8 +313,8 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	debugBallList("ballsRaw", stream, visibleBalls);
 	debugBallList("ballsFiltered", stream, ballManager->getBalls());
 
-    BallManager::LocalizerObjectList goingToBlue;
-    BallManager::LocalizerObjectList goingToYellow;
+    BallManager::BallList goingToBlue;
+    BallManager::BallList goingToYellow;
     ballLocalizer->getBallsGoingToBlueGoal(goingToBlue);
     ballLocalizer->getBallsGoingToYellowGoal(goingToYellow);
     debugBallList("ballsGoingBlue", stream, goingToBlue);
@@ -811,13 +811,13 @@ bool Robot::handleCommand(const Command& cmd) {
 	return handled;
 }
 
-void Robot::debugBallList(std::string name, std::stringstream& stream, BallManager::LocalizerObjectList balls) {
-	BallManager::LocalizerObject* ball;
+void Robot::debugBallList(std::string name, std::stringstream& stream, BallManager::BallList balls) {
+	LocalizerObject* ball;
 	bool first = true;
 
 	stream << "\"" << name << "\": [";
 
-	for (BallManager::LocalizerObjectListIt it = balls.begin(); it != balls.end(); it++) {
+	for (BallManager::BallListIt it = balls.begin(); it != balls.end(); it++) {
 		ball = *it;
 
 		if (!first) {
@@ -847,7 +847,7 @@ void Robot::debugBallList(std::string name, std::stringstream& stream, BallManag
 }
 
 void Robot::debugRobotList(std::string name, std::stringstream& stream, RobotManager::LocalizerObjectList robots) {
-	RobotManager::LocalizerObject* robot;
+	LocalizerObject* robot;
 	bool first = true;
 
 	stream << "\"" << name << "\": [";

@@ -3,8 +3,8 @@
 #include "LocalizerObjectManager.h"
 
 //TODO
-//Remove drag from robotmanager
-//Add Robot color to robot objects
+//Remove drag from robotmanager - DONE
+//Add Robot color/team to robot objects
 //Add functions for getting closest teammate/enemy robot
 //Think about what else has to be changed
 

@@ -389,7 +389,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		std::cout << "Wrong Side!";
 	}
 
-	const BallManager::LocalizerObject* ball;
+	const LocalizerObject* ball;
 	if (goingToGoal.size() > 0) {
 		ball = goingToGoal[0]; // Just get one
 		//TODO: Pick most important
@@ -1089,7 +1089,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 
 	if (target == NULL) {
 		if (ownGoal != NULL && ownGoal->distance > 2.5f) {
-			robot->setTargetDir(ownGoal->angle, 0.4, 2.0f);
+			robot->setTargetDir(ownGoal->angle, 0.4f, 2.0f);
 		}
 		else {
 			robot->spinAroundDribbler();
