@@ -76,26 +76,17 @@ void TeamController::setupStates() {
 
 void TeamController::handleRefereeCommand(const Command& cmd)
 {
-	std::string command = cmd.parameters[0].substr(0, 4);
-	unsigned int crcValue = crcCalc.calclulateCRC(command);
+	std::string commandSub = cmd.parameters[0].substr(0, 4);
+	unsigned int crcValue = crcCalc.calclulateCRC(commandSub);
 
 	//CRC value correct and correct field
-	if (crcValue == static_cast<unsigned int>(command[4]) && cmd.parameters[0][1] == fieldID)
+	if (crcValue == static_cast<unsigned int>(commandSub[4]) && cmd.parameters[0][1] == fieldID)
 	{
 		//Command from referee
 		if (cmd.parameters[0][2] == 'X')
-		{
-
-		}
-	}
-
-	/*
-	if (cmd.parameters[0][1] == fieldID) {
-		if (cmd.parameters[0][2] == robotID || cmd.parameters[0][2] == 'X') {
-
+		{			
 			bool isUpperLetter = isupper(cmd.parameters[0][3]);
 			bool commandForOurTeam = (isUpperLetter && teamID == 'A') || (!isUpperLetter && teamID == 'B');
-
 			char command = toupper(cmd.parameters[0][3]);
 
 			if (commandForOurTeam) {
@@ -104,85 +95,102 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 			else {
 				whoHasBall = TeamInPossession::ENEMY;
 			}
-
-
-
-			if (command == 'K') { currentSituation = GameSituation::KICKOFF; }
-			else if (command == 'I') { currentSituation = GameSituation::INDIRECTFREEKICK; }
-			else if (command == 'D') { currentSituation = GameSituation::DIRECTFREEKICK; }
-			//else if (command == "CORNERK-") { currentSituation = GameSituation::CORNERKICK; } //replaced by indirect freekick
-			else if (command == 'P') { currentSituation = GameSituation::PENALTY; }
-			else if (command == 'G') {
-				if (commandForOurTeam) {
+			if (command == 'K')
+			{
+				currentSituation = GameSituation::KICKOFF;
+			}
+			else if (command == 'I')
+			{
+				currentSituation = GameSituation::INDIRECTFREEKICK;
+			}
+			else if (command == 'D')
+			{
+				currentSituation = GameSituation::DIRECTFREEKICK;
+			}
+			else if (command == 'P')
+			{
+				currentSituation = GameSituation::PENALTY;
+			}
+			else if (command == 'G')
+			{
+				if (commandForOurTeam)
+				{
 					friendlyGoalCounter++;
 					std::cout << "- We scored a goal" << std::endl;
 				}
-				else {
+				else
+				{
 					enemyGoalCounter++;
 					std::cout << "- they scored a goal" << std::endl;
 				}
 			}
-
-
-			else if (command == 'S' && isCaptain) {
+			else if (command == 'S' && isCaptain) 
+			{
 				std::cout << "Teamcontroller start" << std::endl;
-				if (whoHasBall == TeamInPossession::FRIENDLY) {
-					switch (currentSituation) {
+				if (whoHasBall == TeamInPossession::FRIENDLY) 
+				{
+					switch (currentSituation) 
+					{
 					case GameSituation::KICKOFF:
 						setState("take-kickoff");
 						std::cout << "- taking kickoff" << std::endl;
-						return;
+						break;
 					case GameSituation::INDIRECTFREEKICK:
 						setState("take-freekick-indirect");
 						std::cout << "- taking indirect free kick" << std::endl;
-						return;
+						break;
 					case GameSituation::DIRECTFREEKICK:
 						setState("take-freekick-direct");
 						std::cout << "- taking direct free kick" << std::endl;
-						return;
+						break;
 					case GameSituation::PENALTY:
 						setState("take-penalty");
 						std::cout << "- taking penalty" << std::endl;
-						return;
+						break;
 					case GameSituation::PLACEDBALL:
 						setState("fetch-ball-front");
 						client->send("run-defend-goal");
 						std::cout << "- its a placed ball" << std::endl;
-						return;
+						break;
 					case GameSituation::UNKNOWN:
 						setState("fetch-ball-front");
 						client->send("run-defend-goal");
 						std::cout << "- mystery state" << std::endl;
-						return;
+						break;
+					default:
+						throw "Not implemented";
 					}
 				}
-				else {
+				else 
+				{
 					Parameters parameters;
 					parameters["next-state"] = "fetch-ball-front";
 					setState("wait-for-kick", parameters);
-					client->send("run-defend-goal");
-					return;
+					client->send("run-defend-goal");					
 				}
 			}
-			else if (command == 'H') {
-				setState("manual-control");
-				return;
+			else if (command == 'H') 
+			{
+				setState("manual-control");				
 			}
-			else if (command == 'B') {
+			else if (command == 'B') 
+			{
 				currentSituation = GameSituation::PLACEDBALL;
 				whoHasBall = TeamInPossession::FRIENDLY;
 			}
-			else if (command == 'E') {
+			else if (command == 'E')
+			{
 				std::cout << "- half ended - ROADKILL " << friendlyGoalCounter << ":" << enemyGoalCounter << " OTHERS" << std::endl;
-				setState("manual-control");
-				return;
+				setState("manual-control");				
 			}
-			else if (command == 'A') {
-				std::cout << "ping command recieved" << std::endl;
-				return;
+			else if (command == 'A')
+			{
+				std::cout << "ping command recieved" << std::endl;								
 			}
+			//Got command from referee, send aknowledgement
+			robot->sendAknowledgement(true, fieldID, robotID);
 		}
-	}*/
+	}	
 }
 
 float TeamController::getChipKickDistance(float targetDistance) {

@@ -42,6 +42,8 @@ Robot::Robot(Configuration* conf, AbstractCommunication* com, CameraTranslator* 
 	lookAtPid.setMode(AUTO_MODE);
 	lookAtPid.setBias(0.0f);
 	lookAtPid.reset();
+
+	crcCalc.init();
 }
 
 Robot::~Robot() {
@@ -889,3 +891,27 @@ float Robot::getDribblerStabilityDelay() {
 void Robot::setRefereeCommandShort(bool isShort) {
 	com->send("refshort:" + Util::toString(isShort ? "1" : "0"));
 }
+
+void Robot::sendToRF(std::string command)
+{
+	com->send("rf:" + command);
+}
+
+void Robot::sendAcknowledgement(bool shortCmd, char field, char robot)
+{
+	std::string command;
+	if (!shortCmd)
+	{
+		command = "a" + field + robot + 'A';
+		char crcValue = crcCalc.calclulateCRC(command);
+		command += crcValue;
+	}
+	else
+	{
+		command = "a" + field + robot;
+		command += "ACK------";		
+	}
+
+	sendToRF(command);
+}
+

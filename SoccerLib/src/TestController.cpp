@@ -506,6 +506,9 @@ void TestController::handleRefereeCommand(const Command& cmd)
 	//std::cout << "testcontroller Ref command: " << cmd.parameters[0];
 	if (cmd.parameters[0][1] == fieldID) {
 		if (cmd.parameters[0][2] == robotID || cmd.parameters[0][2] == 'X') {
+			//Check whether command is only for our robot
+			bool needsAck = cmd.parameters[0][2] == robotID;
+
 			std::string command = cmd.parameters[0].substr(3);
 			//std::cout << command << std::endl;
 
@@ -514,6 +517,14 @@ void TestController::handleRefereeCommand(const Command& cmd)
 			}
 			else if (command == "STOP-----") {
 				setState("manual-control");
+			}
+			else if (command == "PING-----")
+			{				
+			}
+
+			if (needsAck)
+			{
+				robot->sendAcknowledgement(false, fieldID, robotID);
 			}
 		}
 	}	

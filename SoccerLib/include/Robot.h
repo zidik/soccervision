@@ -15,6 +15,7 @@
 #include "RobotManager.h"
 
 #include <string>
+#include "../CRC.h"
 
 struct Configuration;
 class Wheel;
@@ -60,6 +61,8 @@ public:
 	void clearTasks() { tasks.clear(); }
     void handleTasks(float dt);
 	void setRefereeCommandShort(bool isShort);
+	void sendToRF(std::string command);
+	void sendAcknowledgement(bool shortCmd, char field, char robot);
 
 	void lookAt(Object* object, float lookAtP = Config::lookAtP, bool stare = true);
 	void lookAt(const Math::Angle& angle, float lookAtP = Config::lookAtP);
@@ -158,6 +161,8 @@ private:
 	char pidUpdateCounter;
 
 	std::string json;
+
+	CRC crcCalc;
 };
 
 #endif // ROBOT_H
