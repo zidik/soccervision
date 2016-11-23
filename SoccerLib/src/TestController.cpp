@@ -606,7 +606,7 @@ void TestController::updateVisionInfo(Vision::Results* visionResults) {
 		if (visionResults->isRobotOut(Dir::REAR)) {
 			framesRobotOutRear = (int)Math::min((float)(framesRobotOutRear + 1), (float)robotOutFramesThreshold);
 		} else {
-			framesRobotOutRear = (int)Math::max((float)(framesRobotOutRear - 1), 0);
+			framesRobotOutRear = (int)Math::max((float)(framesRobotOutRear - 1), 0.0f);
 		}
 	}
 
@@ -634,7 +634,7 @@ void TestController::updateVisionInfo(Vision::Results* visionResults) {
 	if (isNearLine) {
 		nearLineFrames = (int)Math::min((float)(nearLineFrames + 1), (float)robotNearLineFramesThreshold);
 	} else {
-		nearLineFrames = (int)Math::max((float)(nearLineFrames - 1), 0);
+		nearLineFrames = (int)Math::max((float)(nearLineFrames - 1), 0.0f);
 	}
 
 	if (nearLineFrames >= 3) {
@@ -647,7 +647,7 @@ void TestController::updateVisionInfo(Vision::Results* visionResults) {
 	if (isNearGoal) {
 		nearGoalFrames = (int)Math::min((float)(nearGoalFrames + 1), (float)robotNearGoalFramesThreshold);
 	} else {
-		nearGoalFrames = (int)Math::max((float)(nearGoalFrames - 1), 0);
+		nearGoalFrames = (int)Math::max((float)(nearGoalFrames - 1), 0.0f);
 	}
 
 	if (nearGoalFrames >= 3) {
@@ -660,7 +660,7 @@ void TestController::updateVisionInfo(Vision::Results* visionResults) {
 	if (isInCorner) {
 		inCornerFrames = (int)Math::min((float)(inCornerFrames + 1), (float)robotInCornerFramesThreshold);
 	} else {
-		inCornerFrames = (int)Math::max((float)(inCornerFrames - 1), 0);
+		inCornerFrames = (int)Math::max((float)(inCornerFrames - 1), 0.0f);
 	}
 
 	if (inCornerFrames >= 3) {

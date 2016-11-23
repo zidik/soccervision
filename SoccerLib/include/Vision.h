@@ -143,35 +143,6 @@ public:
 		int newWidth;
 	};
 
-	struct PersistenceMatchPair {
-		PersistenceMatchPair(size_t persistentIndex, size_t newIndex, float distance) : persistentIndex(persistentIndex), newIndex(newIndex), distance(distance) {}
-
-		size_t persistentIndex;
-		size_t newIndex;
-		float distance;
-
-		enum property {
-			PERSISTENTINDEX = 1,
-			NEWINDEX = 2,
-			DISTANCE = 3
-		};
-
-		struct EntityComp {
-			int property;
-			EntityComp(int property) : property(property) {}
-			bool operator()(PersistenceMatchPair* s1, PersistenceMatchPair* s2) const {
-				if (property == PERSISTENTINDEX)
-					return s1->persistentIndex < s2->persistentIndex;
-				else if (property == NEWINDEX)
-					return s1->newIndex < s2->newIndex;
-				else if (property == DISTANCE)
-					return s1->distance < s2->distance;
-				else
-					return s1->distance < s2->distance;
-			}
-		};
-	};
-
     Vision(Blobber* blobber, CameraTranslator* cameraTranslator, Dir dir, int width, int height);
     ~Vision();
 
@@ -189,13 +160,9 @@ public:
 	Obstruction getGoalPathObstruction(Object* goal);
 
 private:
-	std::pair<ObjectList, ObjectList> processGoalsAndRobots(Dir dir);
-	ObjectList processGoalsUpdateRobots(Dir dir);
 	ObjectList processGoals(Dir dir);
 	ObjectList processBalls(Dir dir, ObjectList& goals);
 	ObjectList processRobots(Dir dir);
-	bool updateBalls(Dir dir, ObjectList& goals);
-	bool updatePersistentObjects(ObjectList* persistentObjects, ObjectList newObjects);
 	float getSurroundMetric(int x, int y, int radius, std::vector<std::string> validColors, std::string requiredColor = "", int side = 0, bool allowNone = false);
     PathMetric getPathMetric(int x1, int y1, int x2, int y2, std::vector<std::string> validColors, std::string requiredColor = "");
 	EdgeDistanceMetric getEdgeDistanceMetric(int x, int y, int width, int height, std::string color1, std::string color2);
@@ -209,7 +176,6 @@ private:
 	Pixel getCornerPixel(float startAngle, float endAngle, float r, int numberOfPoints);
 	ColorList getViewColorOrder();
 	Object* mergeGoals(Object* goal1, Object* goal2);
-	bool findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots);
 	ObjectList mergeRobotBlobs(Dir dir, ObjectList blobs);
 	float getColorMatchRatio(std::vector<std::pair<int, int>>* scanPoints, std::string colorName);
 	Distance getRobotDistance(int x, int y, int iterations, Dir dir);
@@ -241,9 +207,6 @@ private:
 	ColorList colorOrder;
 	ColorDistance whiteDistance;
 	ColorDistance blackDistance;
-	ObjectList persistentBalls;
-	ObjectList persistentRobots;
-
 };
 
 #endif // VISION_H

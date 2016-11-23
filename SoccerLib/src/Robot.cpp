@@ -252,13 +252,6 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	y = odometerPosition.location.y;
 	orientation = odometerPosition.orientation;*/
 
-	//update objects location in absolute coordinate system
-	//using localizer
-	updateAllObjectsAbsoluteMovement(visionResults, localizerPosition.location.x, localizerPosition.location.y, localizerPosition.orientation, dt);
-
-	//using odometer
-	//updateAllObjectsAbsoluteMovement(visionResults, odometerLocalizer->x, odometerLocalizer->y, odometerLocalizer->orientation, dt);
-
     handleQueuedChipKickRequest();
 
 	std::stringstream stream;
@@ -453,53 +446,6 @@ void Robot::updateBallManager(Vision::Results* visionResults, float dt) {
 	ballManager->update(visibleBalls, cameraFOV, dt);
 
 	//std::cout << "@ UP front: " << frontBalls.size() << ", rear: " << rearBalls.size() << ", merged: " << visibleBalls.size() << std::endl;
-}
-
-void Robot::updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, float robotY, float robotOrientation, float dt) {
-	float objectGlobalX;
-	float objectGlobalY;
-	float objectGlobalAngle;
-
-	for (ObjectListItc it = objectList->begin(); it != objectList->end(); it++) {
-		Object* object = *it;
-
-		//check if object had new location added recently
-		if (object->notSeenFrames == 0) {
-			objectGlobalAngle = Math::floatModulus(robotOrientation + object->angle, Math::TWO_PI);
-			objectGlobalX = robotX + Math::cos(objectGlobalAngle) * object->distance;
-			objectGlobalY = robotY + Math::sin(objectGlobalAngle) * object->distance;
-
-			object->absoluteMovement.addLocation(objectGlobalX, objectGlobalY);
-
-			//std::cout << "Object Absolute location : " << objectGlobalX << ", " << objectGlobalY << std::endl;
-		}
-
-		object->absoluteMovement.incrementLocationsAge();
-		object->absoluteMovement.removeOldLocations();
-
-		if (object->notSeenFrames == 0) {
-			object->updateMovement(objectGlobalX, objectGlobalY, dt);
-
-			//std::cout << "Object Absolute location dx: " << object->absoluteMovement.dX << ", dy:" << object->absoluteMovement.dY << std::endl;
-
-			//std::cout << "Object absolute movement speed : " << object->absoluteMovement.speed << "m/s, angle" << object->absoluteMovement.angle << "rad" << std::endl;
-			//std::cout << "Relative movement speed : " << object->relativeMovement.speed << "m/s" << std::endl;
-		}
-	}
-}
-
-void Robot::updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, float robotX, float robotY, float robotOrientation, float dt) {
-	//ObjectList* frontBalls = visionResults->front->balls;
-	//ObjectList* rearBalls = visionResults->rear->balls;
-	//ObjectList* frontRobots = visionResults->front->robots;
-	//ObjectList* rearRobots = visionResults->rear->robots;
-
-	//std::cout << "Robot coordinates - x: " << robotX << "m y: " << robotY << "m, orientation" << robotOrientation << "rad" << std::endl;
-
-	//updateObjectsAbsoluteMovement(frontBalls, robotX, robotY, robotOrientation, dt);
-	//updateObjectsAbsoluteMovement(rearBalls, robotX, robotY, robotOrientation, dt);
-	//updateObjectsAbsoluteMovement(frontRobots, robotX, robotY, robotOrientation, dt);
-	//updateObjectsAbsoluteMovement(rearRobots, robotX, robotY, robotOrientation, dt);
 }
 
 void Robot::setTargetDir(float x, float y, float omega) {

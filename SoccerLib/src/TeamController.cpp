@@ -5,6 +5,9 @@
 #include "Coilgun.h"
 #include "Command.h"
 
+
+// TODO see todo in Interceptballstate
+
 TeamController::TeamController(Robot* robot, AbstractCommunication* com, Client* client) : TestController(robot, com, client) {
 	setupStates();
 
@@ -492,7 +495,10 @@ void TeamController::InterceptBallState::step(float dt, Vision::Results* visionR
 			float forwardSpeed = 0.0f;
 			float sidewaysSpeed = 0.0f;
 
-			sidewaysSpeed = ball->distanceX * sidewaysSpeedMultiplier + ball->relativeMovement.dX * ballMovingSpeedMultiplier;
+			//TODO use actual ball moving speed from BallManager, should be relative movement in the sideways direction
+			float ballSideMovingSpeed = 1.0f;
+			
+			sidewaysSpeed = ball->distanceX * sidewaysSpeedMultiplier + ballSideMovingSpeed * ballMovingSpeedMultiplier;
 
 			robot->setTargetDir(forwardSpeed, sidewaysSpeed);
 		}
