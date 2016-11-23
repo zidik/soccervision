@@ -890,6 +890,7 @@ float Robot::getDribblerStabilityDelay() {
 
 void Robot::setRefereeCommandShort(bool isShort) {
 	com->send("refshort:" + Util::toString(isShort ? "1" : "0"));
+	//std::cout << "refshort:" << isShort << std::endl;
 }
 
 void Robot::sendToRF(std::string command)

@@ -20,7 +20,7 @@ TeamController::TeamController(Robot* robot, AbstractCommunication* com, Client*
 	passStrength = 625;
 	directKickStrength = 3000;
 	chipKickAdjust = 0.15f;
-	robot->setRefereeCommandShort(true);
+	//robot->setRefereeCommandShort(true);
 	crcCalc.init();
 };
 

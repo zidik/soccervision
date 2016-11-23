@@ -176,7 +176,7 @@ TestController::TestController(Robot* robot, AbstractCommunication* com, Client*
 	setupStates();
 
 	speedMultiplier = 1.0f;
-	robot->setRefereeCommandShort(false);
+	//robot->setRefereeCommandShort(false);
 };
 
 TestController::~TestController() {
@@ -503,7 +503,7 @@ void TestController::handleTurnByCommand(const Command& cmd) {
 
 void TestController::handleRefereeCommand(const Command& cmd)
 {
-	//std::cout << "testcontroller Ref command: " << cmd.parameters[0];
+	//std::cout << "testcontroller Ref command: " << cmd.parameters[0] << std::endl;
 	if (cmd.parameters[0][1] == fieldID) {
 		if (cmd.parameters[0][2] == robotID || cmd.parameters[0][2] == 'X') {
 			//Check whether command is only for our robot
