@@ -5,6 +5,9 @@
 #include "Coilgun.h"
 #include "Command.h"
 
+
+// TODO see todo in Interceptballstate
+
 TeamController::TeamController(Robot* robot, AbstractCommunication* com, Client* client) : TestController(robot, com, client) {
 	setupStates();
 
@@ -412,7 +415,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		std::cout << "Wrong Side!";
 	}
 
-	const BallManager::LocalizerObject* ball;
+	const LocalizerObject* ball;
 	if (goingToGoal.size() > 0) {
 		ball = goingToGoal[0]; // Just get one
 		//TODO: Pick most important
@@ -515,7 +518,10 @@ void TeamController::InterceptBallState::step(float dt, Vision::Results* visionR
 			float forwardSpeed = 0.0f;
 			float sidewaysSpeed = 0.0f;
 
-			sidewaysSpeed = ball->distanceX * sidewaysSpeedMultiplier + ball->relativeMovement.dX * ballMovingSpeedMultiplier;
+			//TODO use actual ball moving speed from BallManager, should be relative movement in the sideways direction
+			float ballSideMovingSpeed = 1.0f;
+			
+			sidewaysSpeed = ball->distanceX * sidewaysSpeedMultiplier + ballSideMovingSpeed * ballMovingSpeedMultiplier;
 
 			robot->setTargetDir(forwardSpeed, sidewaysSpeed);
 		}
@@ -1112,7 +1118,7 @@ void TeamController::AimKickState::step(float dt, Vision::Results* visionResults
 
 	if (target == NULL) {
 		if (ownGoal != NULL && ownGoal->distance > 2.5f) {
-			robot->setTargetDir(ownGoal->angle, 0.4, 2.0f);
+			robot->setTargetDir(ownGoal->angle, 0.4f, 2.0f);
 		}
 		else {
 			robot->spinAroundDribbler();

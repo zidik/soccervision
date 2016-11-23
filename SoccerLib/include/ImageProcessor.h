@@ -19,7 +19,7 @@ public:
 		int minU, maxU;
 		int minV, maxV;
 	};
-
+	
 	static void bayerRGGBToI420(unsigned char* input, unsigned char* outputY, unsigned char* outputU, unsigned char* outputV, int width, int height);
 	static void I420ToYUYV(unsigned char* inputY, unsigned char* inputU, unsigned char* inputV, unsigned char* output, int width, int height);
 	static void YUYVToARGB(unsigned char* input, unsigned char* output, int width, int height);
