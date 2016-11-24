@@ -84,9 +84,9 @@ float Object::getMergeDensity(Object * other)
 	int mHeight = maxY - minY;
 
 	float mArea = area + other->area;
-	int mBoundaryArea = mWidth * mHeight;
+	float mBoundaryArea = mWidth * mHeight;
 
-	return mArea = mBoundaryArea;
+	return mArea / mBoundaryArea;
 }
 
 std::vector<Object*> Object::mergeOverlapping(const std::vector<Object*>& set, int margin, bool requireSameType) {
