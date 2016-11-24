@@ -717,6 +717,14 @@ bool Vision::isValidRobot(Object* robot) {
 	//check if robot distance is normal
 	if (robot->distance >= Config::robotMaxDistance) return false;
 
+	//check if ball is right above "robot"
+	int ballColorCount = getBallColorCountAbove(robot);
+	//if (ballColorCount != 0) std::cout << ballColorCount << std::endl;
+	if (ballColorCount > 5) {
+		//std::cout << "ballColorCount too high: " << ballColorCount << std::endl;
+		return false;
+	}
+
 	/*
 	// don't calculate path metric if senseY is too low
 	if (Config::robotPathSenseStartY - pathMetricSenseY > 50) {
@@ -894,6 +902,39 @@ bool Vision::isBallInGoal(Object* ball, Dir dir, ObjectList& goals) {
 	}
 
 	return false;
+}
+
+int Vision::getBallColorCountAbove(Object* robot)
+{
+	bool debug = canvas.data != NULL;
+	Blobber::Color* currentColor;
+	int count = 0;
+	int checkedPixels = 0;
+	int xModifier = robot->width / 8;
+	int baseY = robot->y - robot->height / 2;
+
+	int getX, getY;
+	for (int i = -3; i < 4; i++) {
+		getX = robot->x + xModifier*i;
+		if (getX < 0) continue;
+		if (getX > Config::cameraWidth - 1) continue;
+		for (int j = 0; j < 10; j++) {
+			getY = baseY - j;
+			if (getY < 0) continue;
+			if (getY > Config::cameraHeight - 1) continue;
+
+			checkedPixels++;
+			currentColor = getColorAt(getX, getY);
+			if (currentColor != NULL) if (strcmp(currentColor->name, "ball") == 0) {
+				count++;
+				if (debug) canvas.drawMarker(getX, getY);
+			}
+
+			
+		}
+	}
+	//std::cout << "BallColorCount checked pixel count: " << checkedPixels << std::endl;
+	return count;
 }
 
 /*int Vision::getBallMaxInvalidSpree(int y) {
