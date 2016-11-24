@@ -617,7 +617,7 @@ void TestController::updateVisionInfo(Vision::Results* visionResults) {
 		if (visionResults->isRobotOut(Dir::REAR)) {
 			framesRobotOutRear = (int)Math::min((float)(framesRobotOutRear + 1), (float)robotOutFramesThreshold);
 		} else {
-			framesRobotOutRear = (int)Math::max((float)(framesRobotOutRear - 1), 0);
+			framesRobotOutRear = (int)Math::max((float)(framesRobotOutRear - 1), 0.0f);
 		}
 	}
 
@@ -645,7 +645,7 @@ void TestController::updateVisionInfo(Vision::Results* visionResults) {
 	if (isNearLine) {
 		nearLineFrames = (int)Math::min((float)(nearLineFrames + 1), (float)robotNearLineFramesThreshold);
 	} else {
-		nearLineFrames = (int)Math::max((float)(nearLineFrames - 1), 0);
+		nearLineFrames = (int)Math::max((float)(nearLineFrames - 1), 0.0f);
 	}
 
 	if (nearLineFrames >= 3) {
@@ -658,7 +658,7 @@ void TestController::updateVisionInfo(Vision::Results* visionResults) {
 	if (isNearGoal) {
 		nearGoalFrames = (int)Math::min((float)(nearGoalFrames + 1), (float)robotNearGoalFramesThreshold);
 	} else {
-		nearGoalFrames = (int)Math::max((float)(nearGoalFrames - 1), 0);
+		nearGoalFrames = (int)Math::max((float)(nearGoalFrames - 1), 0.0f);
 	}
 
 	if (nearGoalFrames >= 3) {
@@ -671,7 +671,7 @@ void TestController::updateVisionInfo(Vision::Results* visionResults) {
 	if (isInCorner) {
 		inCornerFrames = (int)Math::min((float)(inCornerFrames + 1), (float)robotInCornerFramesThreshold);
 	} else {
-		inCornerFrames = (int)Math::max((float)(inCornerFrames - 1), 0);
+		inCornerFrames = (int)Math::max((float)(inCornerFrames - 1), 0.0f);
 	}
 
 	if (inCornerFrames >= 3) {
@@ -2999,6 +2999,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 
 	// check whether the aiming is precise enough
 	if (!goal->behind) {
+		
 		if (
 			leftEdge + goalKickThresholdPixels < halfWidth
 			&& rightEdge - goalKickThresholdPixels > halfWidth
@@ -3034,7 +3035,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 	if (performKick) {
 		if (isBallInWay || forceChipKick) {
 			useChipKick = robot->dribbler->getBallInDribblerTime() >= 0.3f;
-
+			
 			if (useChipKick) {
 				validKickFrames++;
 				// TODO closest ball may be too close to kick over
@@ -3042,7 +3043,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 
 				// try to kick 1m past the furhest ball but no further than 1m before the goal, also no less then 0.5m
 				chipKickDistance = ai->getChipKickDistance(ballInWayMetric, goal->distance);
-
+				std::cout << "chip-wait" << std::endl;
 				if (validKickFrames > 120) {
 					robot->kick();
 					wasKicked = true;
@@ -3053,6 +3054,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 					wasKicked = true;
 					validKickFrames = 0;
 				}
+
 			} else {
 				waitingBallToSettle = true;
 			}

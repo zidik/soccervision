@@ -116,9 +116,7 @@ private:
 	void updateMeasurements();
 	void updateRobotManager(Vision::Results* visionResults, float dt);
 	void updateBallManager(Vision::Results* visionResults, float dt);
-	void updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, float robotY, float robotOrientation, float dt);
-	void updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, float robotX, float robotY, float robotOrientation, float dt);
-	void debugBallList(std::string name, std::stringstream& stream, BallManager::LocalizerObjectList balls);
+	void debugBallList(std::string name, std::stringstream& stream, BallManager::BallList balls);
 	void debugRobotList(std::string name, std::stringstream& stream, RobotManager::LocalizerObjectList robots);
 	void handleQueuedChipKickRequest();
 

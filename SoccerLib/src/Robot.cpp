@@ -254,13 +254,6 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	y = odometerPosition.location.y;
 	orientation = odometerPosition.orientation;*/
 
-	//update objects location in absolute coordinate system
-	//using localizer
-	updateAllObjectsAbsoluteMovement(visionResults, localizerPosition.location.x, localizerPosition.location.y, localizerPosition.orientation, dt);
-
-	//using odometer
-	//updateAllObjectsAbsoluteMovement(visionResults, odometerLocalizer->x, odometerLocalizer->y, odometerLocalizer->orientation, dt);
-
     handleQueuedChipKickRequest();
 
 	std::stringstream stream;
@@ -315,8 +308,8 @@ void Robot::step(float dt, Vision::Results* visionResults) {
 	debugBallList("ballsRaw", stream, visibleBalls);
 	debugBallList("ballsFiltered", stream, ballManager->getBalls());
 
-    BallManager::LocalizerObjectList goingToBlue;
-    BallManager::LocalizerObjectList goingToYellow;
+    BallManager::BallList goingToBlue;
+    BallManager::BallList goingToYellow;
     ballLocalizer->getBallsGoingToBlueGoal(goingToBlue);
     ballLocalizer->getBallsGoingToYellowGoal(goingToYellow);
     debugBallList("ballsGoingBlue", stream, goingToBlue);
@@ -457,53 +450,6 @@ void Robot::updateBallManager(Vision::Results* visionResults, float dt) {
 	//std::cout << "@ UP front: " << frontBalls.size() << ", rear: " << rearBalls.size() << ", merged: " << visibleBalls.size() << std::endl;
 }
 
-void Robot::updateObjectsAbsoluteMovement(ObjectList* objectList, float robotX, float robotY, float robotOrientation, float dt) {
-	float objectGlobalX;
-	float objectGlobalY;
-	float objectGlobalAngle;
-
-	for (ObjectListItc it = objectList->begin(); it != objectList->end(); it++) {
-		Object* object = *it;
-
-		//check if object had new location added recently
-		if (object->notSeenFrames == 0) {
-			objectGlobalAngle = Math::floatModulus(robotOrientation + object->angle, Math::TWO_PI);
-			objectGlobalX = robotX + Math::cos(objectGlobalAngle) * object->distance;
-			objectGlobalY = robotY + Math::sin(objectGlobalAngle) * object->distance;
-
-			object->absoluteMovement.addLocation(objectGlobalX, objectGlobalY);
-
-			//std::cout << "Object Absolute location : " << objectGlobalX << ", " << objectGlobalY << std::endl;
-		}
-
-		object->absoluteMovement.incrementLocationsAge();
-		object->absoluteMovement.removeOldLocations();
-
-		if (object->notSeenFrames == 0) {
-			object->updateMovement(objectGlobalX, objectGlobalY, dt);
-
-			//std::cout << "Object Absolute location dx: " << object->absoluteMovement.dX << ", dy:" << object->absoluteMovement.dY << std::endl;
-
-			//std::cout << "Object absolute movement speed : " << object->absoluteMovement.speed << "m/s, angle" << object->absoluteMovement.angle << "rad" << std::endl;
-			//std::cout << "Relative movement speed : " << object->relativeMovement.speed << "m/s" << std::endl;
-		}
-	}
-}
-
-void Robot::updateAllObjectsAbsoluteMovement(Vision::Results* visionResults, float robotX, float robotY, float robotOrientation, float dt) {
-	//ObjectList* frontBalls = visionResults->front->balls;
-	//ObjectList* rearBalls = visionResults->rear->balls;
-	//ObjectList* frontRobots = visionResults->front->robots;
-	//ObjectList* rearRobots = visionResults->rear->robots;
-
-	//std::cout << "Robot coordinates - x: " << robotX << "m y: " << robotY << "m, orientation" << robotOrientation << "rad" << std::endl;
-
-	//updateObjectsAbsoluteMovement(frontBalls, robotX, robotY, robotOrientation, dt);
-	//updateObjectsAbsoluteMovement(rearBalls, robotX, robotY, robotOrientation, dt);
-	//updateObjectsAbsoluteMovement(frontRobots, robotX, robotY, robotOrientation, dt);
-	//updateObjectsAbsoluteMovement(rearRobots, robotX, robotY, robotOrientation, dt);
-}
-
 void Robot::setTargetDir(float x, float y, float omega) {
 	//std::cout << "! Setting robot target direction: " << x << "x" << y << " @ " << omega << std::endl;
 
@@ -590,6 +536,7 @@ void Robot::kick(int microseconds) {
 
 bool Robot::chipKick(float distance, bool lowerDribblerAfterwards) {
 	if (dribbler->isRaised()) {
+		std::cout << "raised" << std::endl;
 		//std::cout << "! Dribbler is raised, chip-kicking immediately targeting " << distance << " meters" << std::endl;
 
 		coilgun->chipKick(distance);
@@ -602,6 +549,7 @@ bool Robot::chipKick(float distance, bool lowerDribblerAfterwards) {
 	}
 
 	if (chipKickRequested) {
+		std::cout << "chipkickrequested" << std::endl;
 		requestedChipKickLowerDribbler = lowerDribblerAfterwards;
 		requestedChipKickDistance = distance;
 
@@ -815,13 +763,13 @@ bool Robot::handleCommand(const Command& cmd) {
 	return handled;
 }
 
-void Robot::debugBallList(std::string name, std::stringstream& stream, BallManager::LocalizerObjectList balls) {
-	BallManager::LocalizerObject* ball;
+void Robot::debugBallList(std::string name, std::stringstream& stream, BallManager::BallList balls) {
+	LocalizerObject* ball;
 	bool first = true;
 
 	stream << "\"" << name << "\": [";
 
-	for (BallManager::LocalizerObjectListIt it = balls.begin(); it != balls.end(); it++) {
+	for (BallManager::BallListIt it = balls.begin(); it != balls.end(); it++) {
 		ball = *it;
 
 		if (!first) {
@@ -851,7 +799,7 @@ void Robot::debugBallList(std::string name, std::stringstream& stream, BallManag
 }
 
 void Robot::debugRobotList(std::string name, std::stringstream& stream, RobotManager::LocalizerObjectList robots) {
-	RobotManager::LocalizerObject* robot;
+	LocalizerObject* robot;
 	bool first = true;
 
 	stream << "\"" << name << "\": [";
@@ -879,7 +827,8 @@ void Robot::debugRobotList(std::string name, std::stringstream& stream, RobotMan
 		stream << "\"updatedTime\": " << robot->updatedTime << ",";
 		stream << "\"shouldBeRemoved\": " << (robot->shouldBeRemoved() ? "true" : "false") << ",";
 		stream << "\"visible\": " << (robot->visible ? "true" : "false") << ",";
-		stream << "\"inFOV\": " << (robot->inFOV ? "true" : "false");
+		stream << "\"inFOV\": " << (robot->inFOV ? "true" : "false") << ",";
+		stream << "\"color\": " << (robot->type == RobotColor::PINK ? "\"pink\"" : robot->type == RobotColor::PURPLE ? "\"purple\"" : "\"unknown\"");
 		stream << "}";
 	}
 
