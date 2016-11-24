@@ -88,7 +88,7 @@ void TeamController::handleRefereeCommand(const Command& cmd)
 		//Command from referee
 		if (cmd.parameters[0][2] == 'X')
 		{			
-			bool isUpperLetter = isupper(cmd.parameters[0][3]);
+			bool isUpperLetter = isupper(cmd.parameters[0][3]) != 0;
 			bool commandForOurTeam = (isUpperLetter && teamID == 'A') || (!isUpperLetter && teamID == 'B');
 			char command = toupper(cmd.parameters[0][3]);
 

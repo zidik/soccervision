@@ -386,9 +386,6 @@
     <ClCompile Include="src\SoccerBot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Tasks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -2111,7 +2111,7 @@ Pixel Vision::getCornerPixel(float startAngle, float endAngle, float r, int numb
 	if (transitionVec.size() < 3) throw CouldNotFindCorner();
 
     float lastSlope = 0;
-	for (int i = 0; i+1 < transitionVec.size(); i++)
+	for (unsigned int i = 0; i+1 < transitionVec.size(); i++)
 	{
         Math::Vector diff = transitionVec.at(i + 1) - transitionVec.at(i);
         float slope = diff.y / diff.x;

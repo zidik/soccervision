@@ -324,7 +324,6 @@
     <ClCompile Include="src\Server.cpp" />
     <ClCompile Include="src\SignalHandler.cpp" />
     <ClCompile Include="src\SoccerBot.cpp" />
-    <ClCompile Include="src\stdafx.cpp" />
     <ClCompile Include="src\Tasks.cpp" />
     <ClCompile Include="src\TeamController.cpp" />
     <ClCompile Include="src\TestController.cpp" />

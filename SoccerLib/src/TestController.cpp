@@ -341,7 +341,7 @@ void TestController::handleDribblerCommand(const Command& cmd) {
 }
 
 void TestController::handleToggleDribblerCommand(const Command& cmd) {
-	bool dribblerGo = Util::toInt(cmd.parameters[0]);
+	bool dribblerGo = Util::toInt(cmd.parameters[0]) != 0;
 	if (dribblerGo) robot->dribbler->start();
 	else robot->dribbler->stop();
 

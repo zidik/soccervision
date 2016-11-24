@@ -83,8 +83,8 @@ float Object::getMergeDensity(Object * other)
 	int mWidth = maxX - minX;
 	int mHeight = maxY - minY;
 
-	float mArea = area + other->area;
-	float mBoundaryArea = mWidth * mHeight;
+	float mArea = (float)(area + other->area);
+	float mBoundaryArea = (float)(mWidth * mHeight);
 
 	return mArea / mBoundaryArea;
 }
