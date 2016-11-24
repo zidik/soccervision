@@ -229,6 +229,7 @@ public:
 		bool forceChipKick;
 		bool escapeCornerPerformed;
 		int validKickFrames;
+		int validChipKickFrames;
 	};
 
 	class DriveCircleState : public State {
@@ -287,7 +288,7 @@ public:
 
 	private:
 		bool drivePerformed;
-
+		
 	};
 
 	

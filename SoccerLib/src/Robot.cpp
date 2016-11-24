@@ -605,11 +605,14 @@ bool Robot::chipKick(float distance, bool lowerDribblerAfterwards) {
 		requestedChipKickLowerDribbler = lowerDribblerAfterwards;
 		requestedChipKickDistance = distance;
 
+		if (!dribbler->isRaisRequested()) {
+			dribbler->useChipKickLimits();
+		}
+
 		return false;
 	}
 
 	//std::cout << "! Dribbler is not raised, queuing chip-kicking targeting " << distance << " meters" << std::endl;
-
 	chipKickRequested = true;
 	requestedChipKickLowerDribbler = lowerDribblerAfterwards;
 	requestedChipKickDistance = distance;
@@ -623,7 +626,6 @@ void Robot::handleQueuedChipKickRequest() {
 	if (!chipKickRequested) {
 		return;
 	}
-
 	if (dribbler->isRaised()) {
 		//std::cout << "! Dribbler is now raised, chip-kicking targeting distance of " << requestedChipKickDistance << " meters" << std::endl;
 

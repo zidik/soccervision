@@ -10,11 +10,6 @@
 
 #define AVG(a, b) (((a) + (b)) >> 1)
 
-static inline uint8 clip(unsigned int f) {
-	const uint8 max = 255U;
-	if (f >> 1 > max) return max;
-	return f >> 1;
-}
 
 static void BayerRowBG(const uint8* src_bayer0, int src_stride_bayer,
 	uint8* dst_argb, int pix) {
@@ -57,17 +52,14 @@ static void BayerRowRG(const uint8* src_bayer0, int src_stride_bayer,
 
 	int x;
 	for (x = 0; x < pix - 2; x += 2) {
-		const uint8 b_mul = 6;
-		const uint8 g_mul = 3;
-		const uint8 r_mul = 4;
 
-		dst_argb[0] = clip(AVG(b, src_bayer1[1]) * b_mul);
-		dst_argb[1] = clip(AVG(g, src_bayer0[1]) * g_mul);
-		dst_argb[2] = clip(src_bayer0[0] * r_mul);
+		dst_argb[0] = (AVG(b, src_bayer1[1]));
+		dst_argb[1] = (AVG(g, src_bayer0[1]));
+		dst_argb[2] = (src_bayer0[0]);
 		dst_argb[3] = 255U;
-		dst_argb[4] = clip(src_bayer1[1] * b_mul);
-		dst_argb[5] = clip(src_bayer0[1] * g_mul);
-		dst_argb[6] = clip(AVG(src_bayer0[0], src_bayer0[2]) * r_mul);
+		dst_argb[4] = (src_bayer1[1]);
+		dst_argb[5] = (src_bayer0[1]);
+		dst_argb[6] = (AVG(src_bayer0[0], src_bayer0[2]));
 		dst_argb[7] = 255U;
 
 		g = src_bayer0[1];
@@ -77,19 +69,16 @@ static void BayerRowRG(const uint8* src_bayer0, int src_stride_bayer,
 		dst_argb += 8;
 
 	}
-	const uint8 b_mul = 6;
-	const uint8 g_mul = 3;
-	const uint8 r_mul = 4;
 
-	dst_argb[0] = clip(AVG(b, src_bayer1[1]) * b_mul);
-	dst_argb[1] = clip(AVG(g, src_bayer0[1]) * g_mul);
-	dst_argb[2] = clip(src_bayer0[0] * r_mul);
+	dst_argb[0] = (AVG(b, src_bayer1[1]));
+	dst_argb[1] = (AVG(g, src_bayer0[1]));
+	dst_argb[2] = (src_bayer0[0]);
 	dst_argb[3] = 255U;
 
 	if (!(pix & 1)) {
-		dst_argb[4] = clip(src_bayer1[1] * b_mul);
-		dst_argb[5] = clip(src_bayer0[1] * g_mul);
-		dst_argb[6] = clip(src_bayer0[0] * r_mul);
+		dst_argb[4] = (src_bayer1[1]);
+		dst_argb[5] = (src_bayer0[1]);
+		dst_argb[6] = (src_bayer0[0]);
 		dst_argb[7] = 255U;
 	}
 }
@@ -102,17 +91,13 @@ static void BayerRowGB(const uint8* src_bayer0, int src_stride_bayer,
 
 	for (x = 0; x < pix - 2; x += 2) {
 
-		const uint8 b_mul = 6;
-		const uint8 g_mul = 3;
-		const uint8 r_mul = 4;
-
-		dst_argb[0] = clip(AVG(b, src_bayer0[1]) * b_mul);
-		dst_argb[1] = clip(src_bayer0[0] * g_mul);
-		dst_argb[2] = clip(src_bayer1[0] * r_mul);
+		dst_argb[0] = (AVG(b, src_bayer0[1]));
+		dst_argb[1] = (src_bayer0[0]);
+		dst_argb[2] = (src_bayer1[0]);
 		dst_argb[3] = 255U;
-		dst_argb[4] = clip(src_bayer0[1] * b_mul);
-		dst_argb[5] = clip(AVG(src_bayer0[0], src_bayer0[2]) * g_mul);
-		dst_argb[6] = clip(AVG(src_bayer1[0], src_bayer1[2]) * r_mul);
+		dst_argb[4] = (src_bayer0[1]);
+		dst_argb[5] = (AVG(src_bayer0[0], src_bayer0[2]));
+		dst_argb[6] = (AVG(src_bayer1[0], src_bayer1[2]));
 		dst_argb[7] = 255U;
 
 		b = src_bayer0[1];
@@ -120,18 +105,15 @@ static void BayerRowGB(const uint8* src_bayer0, int src_stride_bayer,
 		src_bayer1 += 2;
 		dst_argb += 8;
 	}
-	const uint8 b_mul = 6;
-	const uint8 g_mul = 3;
-	const uint8 r_mul = 4;
 
-	dst_argb[0] = clip(AVG(b, src_bayer0[1]) * b_mul);
-	dst_argb[1] = clip(src_bayer0[0] * g_mul);
-	dst_argb[2] = clip(src_bayer1[0] * r_mul);
+	dst_argb[0] = (AVG(b, src_bayer0[1]));
+	dst_argb[1] = (src_bayer0[0]);
+	dst_argb[2] = (src_bayer1[0]);
 	dst_argb[3] = 255U;
 	if (!(pix & 1)) {
-		dst_argb[4] = clip(src_bayer0[1] * b_mul);
-		dst_argb[5] = clip(src_bayer0[0]* g_mul);
-		dst_argb[6] = clip(src_bayer1[0] * r_mul);
+		dst_argb[4] = (src_bayer0[1]);
+		dst_argb[5] = (src_bayer0[0]);
+		dst_argb[6] = (src_bayer1[0]);
 		dst_argb[7] = 255U;
 	}
 }

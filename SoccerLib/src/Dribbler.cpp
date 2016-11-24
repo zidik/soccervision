@@ -70,7 +70,6 @@ void Dribbler::useNormalLimits() {
 
 void Dribbler::useChipKickLimits() {
 	useChipKickLimitsMissedFrames = 0;
-
 	if (isRaiseRequested) {
 		return;
 	}
@@ -147,7 +146,6 @@ void Dribbler::step(float dt) {
 		useNormalLimits();
 	}*/
 
-	//std::cout << "ballInDribblerTime: " << ballInDribblerTime << ", ballLostTime: " << ballLostTime << ", got ball: " << (gotBall() ? "yes" : "no") << std::endl;
 }
 
 bool Dribbler::isRaised() {
@@ -156,6 +154,10 @@ bool Dribbler::isRaised() {
 
 bool Dribbler::isLowered() {
 	return timeSinceLowered >= conf->robot.dribblerMoveDuration;
+}
+
+bool Dribbler::isRaisRequested() {
+	return isRaiseRequested;
 }
 
 bool Dribbler::gotBall(bool definitive) const {

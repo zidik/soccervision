@@ -2717,6 +2717,7 @@ void TestController::AimState::onEnter(Robot* robot, Parameters parameters) {
 	reverseDuration = 0.0f;
 	avoidBallDuration = 0.0f;
 	validKickFrames = 0;
+	validChipKickFrames = 0;
 	nearLine = false;
 	forceChipKick = false;
 	escapeCornerPerformed = false;
@@ -2966,7 +2967,6 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 		// decide which way to avoid the balls once
 		if (avoidBallSide == TargetMode::UNDECIDED) {
 			if (isGoalPathObstructed) {
-				std::cout << goalPathObstruction.invalidCountLeft << " - " << goalPathObstruction.invalidCountRight << std::endl;
 				if (goalPathObstruction.invalidCountLeft > goalPathObstruction.invalidCountRight) {
 					avoidBallSide = TargetMode::RIGHT;
 				} else {
@@ -3036,14 +3036,22 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 			useChipKick = robot->dribbler->getBallInDribblerTime() >= 0.3f;
 
 			if (useChipKick) {
+				validKickFrames++;
 				// TODO closest ball may be too close to kick over
 				//float chipKickDistance = Math::max(goal->distance - 1.0f, 0.5f);
 
 				// try to kick 1m past the furhest ball but no further than 1m before the goal, also no less then 0.5m
 				chipKickDistance = ai->getChipKickDistance(ballInWayMetric, goal->distance);
 
+				if (validKickFrames > 120) {
+					robot->kick();
+					wasKicked = true;
+					validKickFrames = 0;
+				}
+
 				if (robot->chipKick(chipKickDistance)) {
 					wasKicked = true;
+					validKickFrames = 0;
 				}
 			} else {
 				waitingBallToSettle = true;
@@ -3083,6 +3091,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 	ai->dbg("isRobotOmegaLowEnough", isRobotOmegaLowEnough);
 	ai->dbg("avoidBallSide", avoidBallSide);
 	ai->dbg("validKickFrames", validKickFrames);
+	ai->dbg("validChipKickFrames", validChipKickFrames);
 	ai->dbg("leftEdge", leftEdge);
 	ai->dbg("rightEdge", rightEdge);
 	ai->dbg("halfWidth", halfWidth);
