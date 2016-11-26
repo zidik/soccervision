@@ -109,7 +109,7 @@ void LocalizerObjectManager::purge(const LocalizerObjectList& visibleObjects, co
 
 
 		if (object->velocity.getLength() > Config::objectMaxVelocity) {
-			std::cout << "@ VELOCITY" << std::endl;
+			//std::cout << "@ VELOCITY" << std::endl;
 
 			keep = false;
 		}
