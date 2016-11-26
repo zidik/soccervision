@@ -703,7 +703,7 @@ void TestController::updateBallsGoingToGoal() {
 }
 
 bool TestController::shouldIntercept() {
-	const BallManager::Ball* ball;
+	const LocalizerObject* ball;
 	if (ballsGoingToGoal.size() > 0) {
 		ball = ballsGoingToGoal[0]; // Just get one
 										//TODO: Pick most important
@@ -3485,7 +3485,7 @@ void TestController::InterceptBallState::onEnter(Robot* robot, Parameters parame
 		return;
 	}
 
-	const BallManager::Ball* ball;
+	const LocalizerObject* ball;
 	if (ai->ballsGoingToGoal.size() > 0) {
 		ball = ai->ballsGoingToGoal[0]; // Just get one
 										//TODO: Pick most important
