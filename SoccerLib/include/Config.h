@@ -24,7 +24,7 @@ namespace Config {
 
 
 	// default startup controller name
-	const std::string defaultController = "teamplay";
+	const std::string defaultController = "test";
 
 	// how big of a buffer to allocate for generating jpeg images
 	const int jpegBufferSize = 5000 * 1024;
@@ -43,6 +43,7 @@ namespace Config {
 	// minimum areas of blobs for objects
 	const int ballBlobMinArea = 4;
 	const int goalBlobMinArea = 16;
+	const int robotBlobMinArea = 6;
 
 	// minimum area for objects to be considered valid
 	const int ballMinArea = 4;
@@ -55,13 +56,10 @@ namespace Config {
 	const float robotMinWidth = 0.04f;
 
 	//Minimum density of merged robot blob
-	const float robotMinDensity = 0.05f;
+	const float robotMinDensity = 0.15f;
 
 	//Maximum valid distance of robot, taken from field size
 	const float robotMaxDistance = 5.5f;
-
-	//Maximum ratio for valid pixels to scanned pixels when searching for robot markers
-	const float robotScanMinMatchRatio = 0.225f;
 
 	// goals with area over this value are definately considered to be valid
 	const int goalCertainArea = 10000;
@@ -79,11 +77,13 @@ namespace Config {
 	// minimum object metric thresholds to be considered valid
 	const float minValidBallSurroundThreshold = 0.4f;
 	const float minValidBallPathThreshold = 0.75f;
+	const float minValidRobotPathThreshold = 0.75f;
 	const float minValidGoalPathThreshold = 0.65f;
 	const int maxGoalInvalidColorCount = 10;
 
 	// the ball/goal bottom needs to be below this line to consider path metric
 	const int ballPathSenseStartY = cameraHeight - 160;
+	const int robotPathSenseStartY = cameraHeight - 160;
 	const int goalPathSenseStartY = cameraHeight - 200;
 
 	// color sense start Y
@@ -238,9 +238,12 @@ enum Side {
 };
 
 enum RobotColor {
-	YELLOWHIGH = 4,
-	BLUEHIGH = 5,
-	WHATEVER = 6
+	PURPLE = 4,
+	PINK = 5,
+	WHATEVER = 6,
+	YELLOWHIGH = 7,
+	BLUEHIGH = 8,
+	ORANGE = 9
 };
 
 enum Dir {

@@ -31,11 +31,11 @@ public:
 private:
     void getBallsGoingToGoal(BallManager::BallList & result, Geometry::LineSegment & goalLine) const
     {
-        auto fastEnough = [this, &goalLine](BallManager::Ball* ball) -> bool {
+        auto fastEnough = [this, &goalLine](LocalizerObject* ball) -> bool {
             return ball->velocity.getLength() > 0.5f;
         };
         
-        auto hasVelocityVectorTowardsGoal = [this, &goalLine](BallManager::Ball* ball) -> bool {
+        auto hasVelocityVectorTowardsGoal = [this, &goalLine](LocalizerObject* ball) -> bool {
             auto robotPosition = this->pRobotLocalizer->getPosition();
             Math::Vector ballWorldLocation = ball->location.getRotated(robotPosition.orientation) + robotPosition.location;
             Math::Vector ballWorldVelocity = ball->velocity.getRotated(robotPosition.orientation);
@@ -51,7 +51,7 @@ private:
 
     }
 
-    static void filterBalls(BallManager::BallList & filteredBalls, const BallManager::BallList & balls, std::function<bool(BallManager::Ball * ball)> predicate) {
+    static void filterBalls(BallManager::BallList & filteredBalls, const BallManager::BallList & balls, std::function<bool(LocalizerObject* ball)> predicate) {
         std::copy_if(balls.begin(), balls.end(), std::back_inserter(filteredBalls), predicate);
     }
 

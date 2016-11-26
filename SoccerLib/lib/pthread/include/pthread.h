@@ -312,7 +312,8 @@ enum {
 # define DWORD unsigned long
 #endif
 #endif
-
+//TODO remove after testing
+#define HAVE_STRUCT_TIMESPEC
 #if !defined(HAVE_STRUCT_TIMESPEC)
 #define HAVE_STRUCT_TIMESPEC
 #if !defined(_TIMESPEC_DEFINED)

@@ -19,6 +19,7 @@ public:
 	void onKick();
 	bool isActive() const { return targetOmega > 0; }
 	bool isRaised();
+	bool isRaisRequested();
 	bool isLowered();
 	bool gotBall(bool definitive = false) const;
 	bool handleCommand(const Command& cmd);

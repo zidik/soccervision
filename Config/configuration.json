@@ -11,7 +11,10 @@
         },
         "settings": {
             "gain": 1,
-            "exposure": 10000
+            "exposure": 10000,
+			"balance_red": 6,
+			"balance_green": 3,
+			"balance_blue": 4
         },
         "translation": {
             "front": {

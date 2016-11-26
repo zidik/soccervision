@@ -13,6 +13,8 @@ Vision::Vision(Blobber* blobber, CameraTranslator* cameraTranslator, Dir dir, in
     validBallBgColors.push_back("ball");
     validBallBgColors.push_back("yellow-goal");
     validBallBgColors.push_back("blue-goal");
+	validBallBgColors.push_back("pink-robot");
+	validBallBgColors.push_back("purple-robot");
 
     validBallPathColors.push_back("green");
     validBallPathColors.push_back("white");
@@ -63,10 +65,9 @@ Vision::Result* Vision::process() {
 
 	result->vision = this;
 	
-	result->goals = processGoalsUpdateRobots(dir);
-	result->robots = &persistentRobots;
-	updateBalls(dir, result->goals);
-	result->balls = &persistentBalls;
+	result->goals = processGoals(dir);
+	result->robots = processRobots(dir);
+	result->balls = processBalls(dir, result->goals);
 
 	updateColorDistances();
 	updateColorOrder();
@@ -87,17 +88,6 @@ void Vision::processCorners(std::vector<Pixel>& fieldCorners)
 		fieldCorners.push_back(cornerPixel);
 	}
 	catch (const CouldNotFindCorner &) {}
-}
-
-ObjectList Vision::processGoalsUpdateRobots(Dir dir) {
-	std::pair<ObjectList, ObjectList> goalsAndRobots;
-
-	goalsAndRobots = processGoalsAndRobots(dir);
-
-	//this is the real deal
-	bool updateSuccess = updatePersistentObjects(&(this->persistentRobots), goalsAndRobots.second);
-
-	return goalsAndRobots.first;
 }
 
 ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
@@ -143,9 +133,7 @@ ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
 			distance.x,
 			distance.y,
             distance.angle,
-			movementVector(0.0f, 0.0f),
-			movementVector(0.0f, 0.0f),
-			3,
+			RobotColor::ORANGE,
 			dir == Dir::FRONT ? false : true
         );
 		
@@ -197,124 +185,87 @@ ObjectList Vision::processBalls(Dir dir, ObjectList& goals) {
 	return filteredBalls;
 }
 
-bool Vision::updateBalls(Dir dir, ObjectList& goals) {
-	ObjectList newBalls;
-
-	newBalls = processBalls(dir, goals);
-
-	//std::cout << "Number of new balls : " << newBalls.size() << std::endl;
-	//std::cout << "Number of persistent balls : " << this->persistentBalls.size() << std::endl;
-
-	return updatePersistentObjects(&(this->persistentBalls), newBalls);
-}
-
-bool Vision::updatePersistentObjects(ObjectList* persistentObjects, ObjectList newObjects) {
-	for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end(); it++) {
-		Object* persistentObject = *it;
-
-		persistentObject->notSeenFrames++;
-	}
-
-	//vector for holding pairs close enough to each other
-	std::vector<PersistenceMatchPair*> matchList;
-
-	//find close enough pairs of old and new objects
-	for (ObjectListItc it = newObjects.begin(); it != newObjects.end(); it++) {
-		Object* newObject = *it;
-
-		for (ObjectListItc jt = persistentObjects->begin(); jt != persistentObjects->end(); jt++) {
-			Object* persistentObject = *jt;
-
-			//check if objects are the same type
-			if (persistentObject->type != newObject->type) continue;
-
-			//calculate estimated position of persistent object
-			float estimateX = persistentObject->distanceX + persistentObject->relativeMovement.dX * persistentObject->notSeenFrames;
-			float estimateY = persistentObject->distanceY + persistentObject->relativeMovement.dY * persistentObject->notSeenFrames;
-
-			//calculate distance between estimated persistent object and new object
-			float deltaX = estimateX - newObject->distanceX;
-			float deltaY = estimateY - newObject->distanceY;
-			float distance = Math::sqrt(Math::pow(deltaX, 2.0f) + Math::pow(deltaY, 2.0f));
-
-			if (distance < Config::objectPersistenceMinDistance) {
-				PersistenceMatchPair* matchPair = new PersistenceMatchPair(jt - persistentObjects->begin(), it - newObjects.begin(), distance);
-				matchList.push_back(matchPair);
-			}
-		}
-	}
-
-	//sort matchlist by distance, smallest elements at the back
-	std::sort(matchList.begin(), matchList.end(), PersistenceMatchPair::EntityComp(PersistenceMatchPair::property::DISTANCE));
-	std::reverse(matchList.begin(), matchList.end());
-
-
-	//std::cout << "starting matchlist loop" << std::endl;
-	//go through matchlist until empty
-	while (!matchList.empty()) {
-		PersistenceMatchPair* currentPair = matchList.back();
-		matchList.pop_back();
-
-		//std::cout << "current match distance : " << currentPair->distance << std::endl;
-
-		//check if persistent object has already been updated
-		Object* persistentObject = *(persistentObjects->begin() + currentPair->persistentIndex);
-		if (persistentObject->notSeenFrames == 0) continue;
-
-		//check if new object has already been used
-		Object* newObject = *(newObjects.begin() + currentPair->newIndex);
-		if (newObject->notSeenFrames < 0) continue;
-
-		//update persistent object with new information
-		persistentObject->relativeMovement.addLocation(newObject->distanceX, newObject->distanceY);
-		persistentObject->copyWithoutMovement(newObject);
-
-		//mark new object as used
-		newObject->notSeenFrames = -1;
-	}
-
-	//add other new objects to persistent objects
-	while (!newObjects.empty()) {
-		Object* newObject = newObjects.back();
-		newObjects.pop_back();
-		
-		if (newObject->notSeenFrames < 0) continue;
-
-		newObject->relativeMovement.addLocation(newObject->distanceX, newObject->distanceY);
-		persistentObjects->push_back(newObject);
-	}
-
-	//increase locations ages
-	for (ObjectListItc it = persistentObjects->begin(); it != persistentObjects->end();) {
-		Object* persistentObject = *it;
-
-		persistentObject->relativeMovement.incrementLocationsAge();
-		persistentObject->relativeMovement.removeOldLocations();
-
-		if (persistentObject->relativeMovement.locationBuffer.size() <= 0) {
-			persistentObjects->erase(it);
-		}
-		else {
-			it++;
-		}
-	}
-
-	return true;
-}
-
-std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
-	ObjectList robots;
+ObjectList Vision::processRobots(Dir dir) {
+	Distance distance;
+	ObjectList allRobotBlobs;
 	ObjectList mergedRobots;
-	ObjectList allGoalBlobs;
-	ObjectList filteredGoals;
 	ObjectList filteredRobots;
 
-    Distance distance;
-    
-    for (int i = 0; i < 2; i++) {
-        Blobber::Blob* blob = blobber->getBlobs(i == 0 ? "yellow-goal" : "blue-goal");
+	for (int i = 0; i < 2; i++) {
+		Blobber::Blob* blob = blobber->getBlobs(i == 0 ? "purple-robot" : "pink-robot");
+		while (blob != NULL) {
+			if (blob->area < Config::robotBlobMinArea) {
+				blob = blob->next;
 
-        while (blob != NULL) {
+				continue;
+			}
+
+			//TODO THIS CRASHES THE CODE FOR SOME REASON
+			//if (distance.straight > 8.0f) continue;
+
+			distance = getDistance((int)blob->centerX, (int)blob->y2);
+
+			if (dir == Dir::REAR) {
+				if (distance.angle > 0.0f) {
+					distance.angle -= Math::PI;
+				}
+				else {
+					distance.angle += Math::PI;
+				}
+			}
+
+			if (blob->x1 < 0) blob->x1 = 0;
+			if (blob->x2 > width - 1) blob->x2 = width - 1;
+			if (blob->y1 < 0) blob->y1 = 0;
+			if (blob->y2 > height - 1) blob->y2 = height - 1;
+
+			int width = blob->x2 - blob->x1;
+			int height = blob->y2 - blob->y1;
+
+			Object* robot = new Object(
+				blob->x1 + width / 2,
+				blob->y1 + height / 2,
+				width,
+				height,
+				blob->area,
+				distance.straight,
+				distance.x,
+				distance.y,
+				distance.angle,
+				i == 0 ? RobotColor::PURPLE : RobotColor::PINK,
+				dir == Dir::FRONT ? false : true
+			);
+
+			robot->processed = false;
+			allRobotBlobs.push_back(robot);
+
+			blob = blob->next;
+		}
+	}
+
+	mergedRobots = mergeRobotBlobs(dir, allRobotBlobs);
+
+	for (ObjectListItc it = mergedRobots.begin(); it != mergedRobots.end(); it++) {
+		Object* robot = *it;
+
+		if (isValidRobot(robot)) {
+			filteredRobots.push_back(robot);
+		}
+	}
+
+	return filteredRobots;
+}
+
+ObjectList Vision::processGoals(Dir dir) {
+	ObjectList allGoalBlobs;
+	ObjectList filteredGoals;
+
+	Distance distance;
+
+	for (int i = 0; i < 2; i++) {
+		Blobber::Blob* blob = blobber->getBlobs(i == 0 ? "yellow-goal" : "blue-goal");
+
+		while (blob != NULL) {
 			if (blob->area < Config::goalBlobMinArea) {
 				blob = blob->next;
 
@@ -326,7 +277,8 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 			if (dir == Dir::REAR) {
 				if (distance.angle > 0.0f) {
 					distance.angle -= Math::PI;
-				} else {
+				}
+				else {
 					distance.angle += Math::PI;
 				}
 			}
@@ -348,9 +300,7 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 				distance.straight,
 				distance.x,
 				distance.y,
-				distance.angle,
-				movementVector(0.0f, 0.0f),
-				movementVector(0.0f, 0.0f),
+				distance.angle,			
 				i == 0 ? Side::YELLOW : Side::BLUE,
 				dir == Dir::FRONT ? false : true
 			);
@@ -358,19 +308,7 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 			goal->processed = false;
 			allGoalBlobs.push_back(goal);
 
-            blob = blob->next;
-        }
-    }
-
-	bool robotSuccess = findRobotBlobs(dir, &allGoalBlobs, &robots);
-
-	mergedRobots = mergeRobotBlobs(dir, robots);
-
-	for (ObjectListItc it = mergedRobots.begin(); it != mergedRobots.end(); it++) {
-		Object* robot = *it;
-
-		if (isValidRobot(robot)) {
-			filteredRobots.push_back(robot);
+			blob = blob->next;
 		}
 	}
 
@@ -409,159 +347,7 @@ std::pair<ObjectList, ObjectList> Vision::processGoalsAndRobots(Dir dir) {
 		}
 	}
 
-	std::pair<ObjectList, ObjectList> goalsAndRobotsResult;
-
-	goalsAndRobotsResult = make_pair(filteredGoals, mergedRobots);
-
-	return goalsAndRobotsResult;
-}
-
-bool Vision::findRobotBlobs(Dir dir, ObjectList* blobs, ObjectList* robots) {
-	std::string targetColor = "";
-
-	for (ObjectListItc jt = blobs->begin(); jt != blobs->end(); jt++) {
-		Object* goal = *jt;
-
-		if (goal->type == Side::BLUE) targetColor = "yellow-goal";
-		else if (goal->type == Side::YELLOW) targetColor = "blue-goal";
-		else continue;
-
-		int blobMinArea = (int)(15.0f * Math::pow(Math::E, -0.715f * goal->distance));
-
-		if (goal->area < blobMinArea) continue;
-
-		//if blob is too far, it is not tested
-		if (goal->distance > 6.5f) continue;
-
-		//new algorithm, works kinda well
-		//FALSE POSITIVES NEEDS TO BE LOOKED INTO
-
-		int iterations, endX, endY, x, y;
-		int leftX, rightX, leftY, rightY;
-		float matchRatio;
-		std::vector<std::pair<int, int>> scanPointsUp;
-		std::vector<std::pair<int, int>> scanPointsDown;
-
-		x = goal->x;
-		y = goal->y;
-
-		endX = Config::cameraWidth / 2;
-		endY = Config::cameraHeight;
-
-		//create additional scan origin points
-		leftX = x - goal->width / 3;
-		rightX = x + goal->width / 3;
-		if (x < endX) {
-			leftY = y + goal->height / 3;
-			rightY = y - goal->height / 3;
-		}
-		else if (x > endX) {
-			leftY = y - goal->height / 3;
-			rightY = y + goal->height / 3;
-		}
-
-		iterations = (int)(Math::min((float)(goal->height), (float)(goal->width) / 2.0f) + 5);
-
-		//calculate scanning points
-		if (endX == x) {
-			for (int i = 0; i < iterations; i++) {
-				scanPointsUp.push_back(std::pair<int, int>(x, y - i));
-				scanPointsUp.push_back(std::pair<int, int>(leftX, y - i));
-				scanPointsUp.push_back(std::pair<int, int>(rightX, y - i));
-				scanPointsDown.push_back(std::pair<int, int>(x, y + i));
-				scanPointsDown.push_back(std::pair<int, int>(leftX, y + i));
-				scanPointsDown.push_back(std::pair<int, int>(rightX, y + i));
-			}
-		}
-		else {
-			float a, b, leftA, leftB, rightA, rightB;
-			a = (float)(endY - y) / (float)(endX - x);
-			leftA = (float)(endY - leftY) / (float)(endX - leftX);
-			rightA = (float)(endY - rightY) / (float)(endX - rightX);
-			b = y - a * x;
-			leftB = leftY - leftA * leftX;
-			rightB = rightY - rightA * rightX;
-			for (int i = 0; i < iterations; i++) {
-				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(y - i - b) / a), y - i));
-				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(leftY - i - leftB) / leftA), leftY - i));
-				scanPointsUp.push_back(std::pair<int, int>((int)Math::round((float)(rightY - i - rightB) / rightA), rightY - i));
-				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(y + i - b) / a), y + i));
-				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(leftY + i - leftB) / leftA), leftY + i));
-				scanPointsDown.push_back(std::pair<int, int>((int)Math::round((float)(rightY + i - rightB) / rightA), rightY + i));
-			}
-		}
-
-		//Scanning pixels down
-		matchRatio = getColorMatchRatio(&scanPointsDown, targetColor);
-
-		if (matchRatio > Config::robotScanMinMatchRatio) {
-			int iterations = (int)(Math::min((float)(goal->height), (float)(goal->width) * 1.5f) + 10);
-			Distance robotDistance = getRobotDistance(goal->x, goal->y, iterations, dir);
-			Object* robot = new Object(
-				goal->x,
-				goal->y,
-				goal->width,
-				goal->height,
-				goal->area,
-				goal->distance,
-				goal->distanceX,
-				goal->distanceY,
-				goal->angle,
-				goal->relativeMovement,
-				goal->absoluteMovement,
-				goal->type == Side::BLUE ? RobotColor::BLUEHIGH : RobotColor::YELLOWHIGH,
-				dir == Dir::FRONT ? false : true
-				);
-
-			if (robotDistance.straight > 0 && (robot->distance / robotDistance.straight) < 2.0f) {
-				robot->distance = robotDistance.straight;
-				robot->distanceX = robotDistance.x;
-				robot->distanceY = robotDistance.y;
-				robot->angle = robotDistance.angle;
-			}
-
-			goal->processed = true;
-			robot->processed = false;
-			robots->push_back(robot);
-		}
-		else {
-			//scans up
-			matchRatio = getColorMatchRatio(&scanPointsUp, targetColor);
-
-			if (matchRatio > Config::robotScanMinMatchRatio) {
-				int iterations = (int)(Math::min((float)(goal->height), (float)(goal->width) * 1.5f) + 10);
-				Distance robotDistance = getRobotDistance(goal->x, goal->y, iterations, dir);
-				Object* robot = new Object(
-					goal->x,
-					goal->y,
-					goal->width,
-					goal->height,
-					goal->area,
-					goal->distance,
-					goal->distanceX,
-					goal->distanceY,
-					goal->angle,
-					goal->relativeMovement,
-					goal->absoluteMovement,
-					goal->type == Side::BLUE ? RobotColor::YELLOWHIGH : RobotColor::BLUEHIGH,
-					dir == Dir::FRONT ? false : true
-					);
-
-				if (robotDistance.straight > 0) {
-					robot->distance = robotDistance.straight;
-					robot->distanceX = robotDistance.x;
-					robot->distanceY = robotDistance.y;
-					robot->angle = robotDistance.angle;
-				}
-
-				goal->processed = true;
-				robot->processed = false;
-				robots->push_back(robot);
-			}
-		}
-	}
-
-	return true;
+	return filteredGoals;
 }
 
 ObjectList Vision::mergeRobotBlobs(Dir dir, ObjectList blobs) {
@@ -584,7 +370,7 @@ ObjectList Vision::mergeRobotBlobs(Dir dir, ObjectList blobs) {
 
 		if (focusBlob->processed) continue;
 
-		bool merged = false;
+		//bool merged = false;
 
 		angleA = focusBlob->angle;
 		distanceA = focusBlob->distance;
@@ -606,29 +392,29 @@ ObjectList Vision::mergeRobotBlobs(Dir dir, ObjectList blobs) {
 
 				blobDistance = Math::sqrt(Math::pow(distanceA, 2.0f) + Math::pow(distanceB, 2.0f) - 2 * distanceA * distanceB * Math::cos(angleA - angleB));
 
-				//0.35m is maximum robot diameter by the rules
-				if (blobDistance < 0.35f) {
-					mergedBlob = mergedBlob->mergeWith(checkBlob);
-					merged = true;
-					checkBlob->processed = true;
-				}
+				int minArea = Math::min(checkBlob->area, focusBlob->area);
+				int maxArea = Math::max(checkBlob->area, focusBlob->area);
+
+				if (blobDistance > 0.35f) continue; //0.35m is maximum robot diameter by the rules
+				if (checkBlob->getMergeDensity(focusBlob) < Config::robotMinDensity) continue;
+				if (maxArea / minArea > 5) continue;
+
+				mergedBlob = mergedBlob->mergeWith(checkBlob);
+				//merged = true;
+				checkBlob->processed = true;
 			}
 		}
 
-		if (merged) {
-			//recalculate distance of merged robot
-			int iterations = (int)(Math::min((float)(mergedBlob->height), (float)(mergedBlob->width) * 1.5f) + 10);
-			Distance robotDistance = getRobotDistance(mergedBlob->x, mergedBlob->y, iterations, dir);
-			if (robotDistance.straight > 0) {
-				mergedBlob->distance = robotDistance.straight;
-				mergedBlob->distanceX = robotDistance.x;
-				mergedBlob->distanceY = robotDistance.y;
-				mergedBlob->angle = robotDistance.angle;
-			}
+		//recalculate distance of merged robot
+		int iterations = (int)(Math::min((float)(mergedBlob->height), (float)(mergedBlob->width) * 1.5f) + 10);
+		Distance robotDistance = getRobotDistance(mergedBlob->x, mergedBlob->y, iterations, dir);
+		if (robotDistance.straight > 0) {
+			mergedBlob->distance = robotDistance.straight;
+			mergedBlob->distanceX = robotDistance.x;
+			mergedBlob->distanceY = robotDistance.y;
+			mergedBlob->angle = robotDistance.angle;
 		}
-		else if (mergedBlob->angle > Math::PI) {
-			mergedBlob->angle -= (2.0f * Math::PI);
-		}
+
 		mergedRobots.push_back(mergedBlob);
 	}
 
@@ -670,65 +456,85 @@ Vision::Distance Vision::getRobotDistance(int x, int y, int iterations, Dir dir)
 	int endX = Config::cameraWidth / 2;
 	int endY = Config::cameraHeight;
 	bool debug = canvas.data != NULL;
-	
-	if (endX == x) {
-		Blobber::Color* currentColor;
+	float dXSum = 0;
+	float dYSum = 0;
+	float dStraightSum = 0;
+	float dAngleSum = 0;
+	int cnt = 0;
 
-		for (int i = 0; y + i < endY && i < iterations; i++) {
-			currentColor = getColorAt(x, y + i);
+	for (int n = -4; n < 5; n += 2) {
+		int scanX = x + n;
 
-			if (currentColor != NULL) {
-				//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
+		if (endX == scanX) {
+			Blobber::Color* currentColor;
 
-				if (strcmp(currentColor->name, "green") == 0) {
-					if (debug) canvas.drawMarker(x, y + i, 0, 255, 0);
-					distance = getDistance(x, y + i);
+			for (int i = 0; y + i < endY && i < iterations; i++) {
+				currentColor = getColorAt(scanX, y + i);
 
-					if (dir == Dir::REAR) {
-						if (distance.angle > 0.0f) {
-							distance.angle -= Math::PI;
+				if (currentColor != NULL) {
+					//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
+
+					if (strcmp(currentColor->name, "green") == 0 || strcmp(currentColor->name, "white") == 0) {
+						if (debug) canvas.drawMarker(scanX, y + i, 0, 255, 0);
+						distance = getDistance(scanX, y + i);
+
+						if (dir == Dir::REAR) {
+							if (distance.angle > 0.0f) {
+								distance.angle -= Math::PI;
+							}
+							else {
+								distance.angle += Math::PI;
+							}
 						}
-						else {
-							distance.angle += Math::PI;
-						}
+
+						dXSum += distance.x;
+						dYSum += distance.y;
+						dStraightSum += distance.straight;
+						dAngleSum += distance.angle;
+						cnt++;
+						break;
 					}
+				}
+			}
+		}
+		else {
+			float a, b;
+			a = (float)(endY - y) / (float)(endX - scanX);
+			b = y - a * scanX;
+			Blobber::Color* currentColor;
 
-					return distance;
+			for (int i = 0; y + i < endY && i < iterations; i++) {
+				currentColor = getColorAt((int)Math::round((float)(y + i - b) / a), y + i);
+
+				if (currentColor != NULL) {
+					//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
+
+					if (strcmp(currentColor->name, "green") == 0 || strcmp(currentColor->name, "white") == 0) {
+						if (debug) canvas.drawMarker((int)Math::round((float)(y + i - b) / a), y + i, 0, 255, 0);
+						distance = getDistance((int)Math::round((float)(y + i - b) / a), y + i);
+
+						if (dir == Dir::REAR) {
+							if (distance.angle > 0.0f) {
+								distance.angle -= Math::PI;
+							}
+							else {
+								distance.angle += Math::PI;
+							}
+						}
+						dXSum += distance.x;
+						dYSum += distance.y;
+						dStraightSum += distance.straight;
+						dAngleSum += distance.angle;
+						cnt++;
+						break;
+					}
 				}
 			}
 		}
 	}
-	else {
-		float a, b;
-		a = (float)(endY - y) / (float)(endX - x);
-		b = y - a * x;
-		Blobber::Color* currentColor;
 
-		for (int i = 0; y + i < endY && i < iterations; i++) {
-			currentColor = getColorAt((int)Math::round((float)(y + i - b) / a), y + i);
-
-			if (currentColor != NULL) {
-				//std::cout << "Current pixel Color name: " << (currentColor->name[0] == 'y') << std::endl;
-
-				if (strcmp(currentColor->name, "green") == 0) {
-					if (debug) canvas.drawMarker((int)Math::round((float)(y + i - b) / a), y + i, 0, 255, 0);
-					distance =  getDistance((int)Math::round((float)(y + i - b) / a), y + i);
-
-					if (dir == Dir::REAR) {
-						if (distance.angle > 0.0f) {
-							distance.angle -= Math::PI;
-						}
-						else {
-							distance.angle += Math::PI;
-						}
-					}
-
-					return distance;
-				}
-			}			
-		}
-	}
-	return Distance(-1, -1, -1, -1);
+	if (cnt == 0) return Distance(-1, -1, -1, -1);
+	return Distance(dXSum / cnt, dYSum / cnt, dStraightSum / cnt, dAngleSum / cnt);
 }
 
 bool Vision::isValidGoal(Object* goal, Side side) {
@@ -872,15 +678,36 @@ bool Vision::isValidGoal(Object* goal, Side side) {
 }
 
 bool Vision::isValidRobot(Object* robot) {
+	//TODO
+	//Remove balls that are detected as robots.
+	//further reduce false positives in robot detection.
+	//Purple is currently very bad, investigate/improve
+
 	//Write validation code here!!
+	int robotMinArea = (int)(450.0f * Math::pow(Math::E, -0.715f * robot->distance));
+
+	if (robot->area < robotMinArea) return false;
+
+	//check if robot Y coordinate is as expecter
+	int robotUpperEdgeY = robot->y - robot->height / 2;
+	if (robotUpperEdgeY < 50) return false;
 
 	//check if robot size is expected
 	Distance dist_left, dist_right;
 	float meterDistance;
-	dist_left = getDistance(robot->x - robot->width / 2, robot->y - robot->height / 2);
-	dist_right = getDistance(robot->x + robot->width / 2, robot->y - robot->height / 2);
+	dist_left = getDistance(robot->x - robot->width / 2, robot->y);
+	dist_right = getDistance(robot->x + robot->width / 2, robot->y);
 	meterDistance = Math::sqrt(Math::pow(dist_left.straight, 2.0f) + Math::pow(dist_right.straight, 2.0f) - 2 * dist_left.straight * dist_right.straight * Math::cos(dist_left.angle - dist_right.angle));
 	if (meterDistance < Config::robotMinWidth) return false;
+
+	//check if robot blob distance is okay
+	Distance distBlobCentre;
+	distBlobCentre = getDistance(robot->x, robot->y + robot->height / 2);
+	float blobDistance = distBlobCentre.straight;
+	if (blobDistance >= Config::robotMaxDistance) return false;
+
+	//check if blobDistance and robotDistance are similar enough
+	if (Math::abs(blobDistance - robot->distance) > 0.5f) return false;
 
 	//check if robot density is normal
 	float robotDensity;
@@ -888,8 +715,36 @@ bool Vision::isValidRobot(Object* robot) {
 	if (robotDensity < Config::robotMinDensity) return false;
 
 	//check if robot distance is normal
-	if (robot->distance > Config::robotMaxDistance) return false;
+	if (robot->distance >= Config::robotMaxDistance) return false;
 
+	/*
+	// don't calculate path metric if senseY is too low
+	if (Config::robotPathSenseStartY - pathMetricSenseY > 50) {
+		PathMetric pathMetric = getPathMetric(
+			Config::cameraWidth / 2,
+			Config::ballPathSenseStartY,
+			ball->x,
+			//(int)((float)ball->y + (float)ballRadius * 0.75f + (float)senseRadius),
+			//ball->y + ballRadius + senseRadius / 2 + 10,
+			pathMetricSenseY,
+			validBallPathColors
+			//,"green"
+		);
+
+		//std::cout << "Ball path: " << pathMetric << std::endl;
+
+		if (
+			pathMetric.percentage < Config::minValidRobotPathThreshold
+			|| pathMetric.out
+			//|| !pathMetric.validColorFound
+			//|| pathMetric.invalidSpree > getBallMaxInvalidSpree(ball->y + ball->height / 2)
+			) {
+			//std::cout << "@ BALL PATH FAIL: " << pathMetric.percentage << " VS " << Config::minValidBallPathThreshold << ", OUT: " << (pathMetric.out ? "YES" : "NO") << " FROM " << Config::ballPathSenseStartY << " TO " << pathMetricSenseY << std::endl;
+
+			return false;
+		}
+	}
+	*/
 	return true;
 }
 
@@ -1662,8 +1517,11 @@ Vision::EdgeDistanceMetric Vision::getEdgeDistanceMetric(int x, int y, int width
 	return EdgeDistanceMetric(leftTopDistance, rightTopDistance, centerDistance, newX, newWidth);
 }
 
-Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
+Vision::Obstruction Vision::getGoalPathObstruction(Object* goal) {
+	Math::Vector goalBack = cameraTranslator->getWorldPosition(Pixel(goal->goal_x, goal->goal_y));
+
 	Obstruction obstruction;
+	float goalDistance = goal->distance;
 	//float corridorWidth = 0.1f;
 	float yStep = 0.05f;
 	float xStep = 0.05f;
@@ -1733,13 +1591,16 @@ Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
 					lastColorBall = false;
 				}
 
-				if (strcmp(color->name, "blue-goal") == 0 || strcmp(color->name, "yellow-goal") == 0) {
+				Math::Vector lineVector = Math::Vector(yDistance, xDistance);
+				
+				if ((strcmp(color->name, "blue-goal") == 0 || strcmp(color->name, "yellow-goal") == 0) && lineVector.getLength() > goalBack.getLength() ) {
+					
 					goalColorCount++;
 
 					// stop if found enough goal colors
 					if (goalColorCount >= stopGoalColorCount) {
 						if (debug) {
-							canvas.drawMarker(pos.x, pos.y, 255, 0, 0);
+							canvas.drawMarker(pos.x, pos.y, 255, 0, 128); //violet
 						}
 
 						//running = false;
@@ -1752,13 +1613,20 @@ Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
 					}
 
 					continue;
-				} else if (strcmp(color->name, "black") == 0) {
-					blackColorCount++;
+				} else if ((strcmp(color->name, "blue-goal") == 0 || strcmp(color->name, "yellow-goal") == 0) && lineVector.getLength() < goalDistance) {
+					if (isLeft) {
+						//sampleCountLeft++;
+						invalidCounterLeft++;
+					}
+					else {
+						//sampleCountRight++;
+						invalidCounterRight++;
+					}
 				}
 
 				if (find(goalObstructedValidColors.begin(), goalObstructedValidColors.end(), std::string(color->name)) != goalObstructedValidColors.end()) {
 					if (debug) {
-						canvas.drawMarker(pos.x, pos.y, 0, 255, 0);
+						canvas.drawMarker(pos.x, pos.y, 0, 255, 0); //green
 					}
 
 					if (isLeft) {
@@ -1773,7 +1641,9 @@ Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
 
 						invalidCounterRight = (int)Math::max((float)invalidCounterRight - 1.0f, 0.0f);
 					}
-				} else {
+				}
+				
+				else {
 					if (isLeft) {
 						sampleCountLeft++;
 					}
@@ -1782,7 +1652,7 @@ Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
 					}
 
 					if (debug) {
-						canvas.drawMarker(pos.x, pos.y, 128, 0, 0);
+						canvas.drawMarker(pos.x, pos.y, 255, 0, 255); //magenta
 					}
 				}
 			} else {
@@ -1813,7 +1683,7 @@ Vision::Obstruction Vision::getGoalPathObstruction(float goalDistance) {
 					}
 
 					if (debug) {
-						canvas.drawMarker(pos.x, pos.y, 128, 0, 0);
+						canvas.drawMarker(pos.x, pos.y, 0, 255, 255); //cyan
 					}
 				} else {
 					if (debug) {
@@ -2241,7 +2111,7 @@ Pixel Vision::getCornerPixel(float startAngle, float endAngle, float r, int numb
 	if (transitionVec.size() < 3) throw CouldNotFindCorner();
 
     float lastSlope = 0;
-	for (int i = 0; i+1 < transitionVec.size(); i++)
+	for (unsigned int i = 0; i+1 < transitionVec.size(); i++)
 	{
         Math::Vector diff = transitionVec.at(i + 1) - transitionVec.at(i);
         float slope = diff.y / diff.x;
@@ -2632,7 +2502,7 @@ Object* Vision::Results::getClosestBall(Dir dir, bool nextClosest, bool preferLe
 	Object* nextClosestBall = NULL;
 
 	if (front != NULL && dir != Dir::REAR) {
-		for (ObjectListItc it = front->balls->begin(); it != front->balls->end(); it++) {
+		for (ObjectListItc it = front->balls.begin(); it != front->balls.end(); it++) {
 			ball = *it;
 
 			if (isBallInGoal(ball, blueGoal, yellowGoal)) {
@@ -2665,7 +2535,7 @@ Object* Vision::Results::getClosestBall(Dir dir, bool nextClosest, bool preferLe
 	}
 
 	if (rear != NULL && dir != Dir::FRONT) {
-		for (ObjectListItc it = rear->balls->begin(); it != rear->balls->end(); it++) {
+		for (ObjectListItc it = rear->balls.begin(); it != rear->balls.end(); it++) {
 			ball = *it;
 
 			if (isBallInGoal(ball, blueGoal, yellowGoal)) {
@@ -2708,7 +2578,7 @@ Object* Vision::Results::getFurthestBall(Dir dir) {
 	Object* furthestBall = NULL;
 
 	if (front != NULL && dir != Dir::REAR) {
-		for (ObjectListItc it = front->balls->begin(); it != front->balls->end(); it++) {
+		for (ObjectListItc it = front->balls.begin(); it != front->balls.end(); it++) {
 			ball = *it;
 
 			if (isBallInGoal(ball, blueGoal, yellowGoal)) {
@@ -2723,7 +2593,7 @@ Object* Vision::Results::getFurthestBall(Dir dir) {
 	}
 
 	if (rear != NULL && dir != Dir::FRONT) {
-		for (ObjectListItc it = rear->balls->begin(); it != rear->balls->end(); it++) {
+		for (ObjectListItc it = rear->balls.begin(); it != rear->balls.end(); it++) {
 			ball = *it;
 
 			if (isBallInGoal(ball, blueGoal, yellowGoal)) {
@@ -2820,7 +2690,7 @@ Object* Vision::Results::getLargestRobot(RobotColor color, Dir dir) {
 	Object* largestRobot = NULL;
 
 	if (front != NULL && dir != Dir::REAR) {
-		for (ObjectListItc it = front->robots->begin(); it != front->robots->end(); it++) {
+		for (ObjectListItc it = front->robots.begin(); it != front->robots.end(); it++) {
 			robot = *it;
 
 			if (color != RobotColor::WHATEVER && robot->type != (int)color) {
@@ -2837,7 +2707,7 @@ Object* Vision::Results::getLargestRobot(RobotColor color, Dir dir) {
 	}
 
 	if (rear != NULL && dir != Dir::FRONT) {
-		for (ObjectListItc it = rear->robots->begin(); it != rear->robots->end(); it++) {
+		for (ObjectListItc it = rear->robots.begin(); it != rear->robots.end(); it++) {
 			robot = *it;
 
 			if (color != RobotColor::WHATEVER && robot->type != (int)color) {
@@ -2867,7 +2737,7 @@ Object* Vision::Results::getRobotNearObject(RobotColor color, Object* object, Di
 	float closestDistance = 999.0f;
 
 	if (front != NULL && dir != Dir::REAR) {
-		for (ObjectListItc it = front->robots->begin(); it != front->robots->end(); it++) {
+		for (ObjectListItc it = front->robots.begin(); it != front->robots.end(); it++) {
 			robot = *it;
 
 			if (color != RobotColor::WHATEVER && robot->type != (int)color) {
@@ -2884,7 +2754,7 @@ Object* Vision::Results::getRobotNearObject(RobotColor color, Object* object, Di
 	}
 
 	if (rear != NULL && dir != Dir::FRONT) {
-		for (ObjectListItc it = front->robots->begin(); it != front->robots->end(); it++) {
+		for (ObjectListItc it = front->robots.begin(); it != front->robots.end(); it++) {
 			robot = *it;
 
 			if (color != RobotColor::WHATEVER && robot->type != (int)color) {
@@ -3062,7 +2932,7 @@ bool Vision::Results::isRobotOut(Dir dir) {
 }
 
 int Vision::Results::getVisibleBallCount() {
-	return front->balls->size() + rear->balls->size();
+	return front->balls.size() + rear->balls.size();
 }
 
 float Vision::Results::getObjectPartAngle(Object* object, Part part) {

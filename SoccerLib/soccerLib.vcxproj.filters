@@ -162,8 +162,32 @@
     <ClInclude Include="include\XimeaCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\MouseListener.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="include\Pixel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Configuration.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\TeamController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ClientConnectionMetadata.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Ray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\LineSegment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BallManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\BallLocalizer.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lib\enumser\AutoHandle.h">
       <Filter>libs</Filter>
@@ -183,10 +207,16 @@
     <ClInclude Include="lib\jpeg\jpge.h">
       <Filter>libs</Filter>
     </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv.h">
+      <Filter>libs</Filter>
+    </ClInclude>
     <ClInclude Include="lib\libyuv\include\libyuv\basic_types.h">
       <Filter>libs</Filter>
     </ClInclude>
     <ClInclude Include="lib\libyuv\include\libyuv\compare.h">
+      <Filter>libs</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\compare_row.h">
       <Filter>libs</Filter>
     </ClInclude>
     <ClInclude Include="lib\libyuv\include\libyuv\convert.h">
@@ -204,9 +234,6 @@
     <ClInclude Include="lib\libyuv\include\libyuv\cpu_id.h">
       <Filter>libs</Filter>
     </ClInclude>
-    <ClInclude Include="lib\libyuv\include\libyuv\format_conversion.h">
-      <Filter>libs</Filter>
-    </ClInclude>
     <ClInclude Include="lib\libyuv\include\libyuv\mjpeg_decoder.h">
       <Filter>libs</Filter>
     </ClInclude>
@@ -219,6 +246,9 @@
     <ClInclude Include="lib\libyuv\include\libyuv\rotate_argb.h">
       <Filter>libs</Filter>
     </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\rotate_row.h">
+      <Filter>libs</Filter>
+    </ClInclude>
     <ClInclude Include="lib\libyuv\include\libyuv\row.h">
       <Filter>libs</Filter>
     </ClInclude>
@@ -228,13 +258,13 @@
     <ClInclude Include="lib\libyuv\include\libyuv\scale_argb.h">
       <Filter>libs</Filter>
     </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\scale_row.h">
+      <Filter>libs</Filter>
+    </ClInclude>
     <ClInclude Include="lib\libyuv\include\libyuv\version.h">
       <Filter>libs</Filter>
     </ClInclude>
     <ClInclude Include="lib\libyuv\include\libyuv\video_common.h">
-      <Filter>libs</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\libyuv\include\libyuv.h">
       <Filter>libs</Filter>
     </ClInclude>
     <ClInclude Include="lib\pthread\include\pthread.h">
@@ -246,25 +276,19 @@
     <ClInclude Include="lib\pthread\include\semaphore.h">
       <Filter>libs</Filter>
     </ClInclude>
-    <ClInclude Include="include\Pixel.h">
+    <ClInclude Include="CRC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Configuration.h">
+    <ClInclude Include="include\RobotManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\TeamController.h">
+    <ClInclude Include="include\LocalizerObjectManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Client.h">
+    <ClInclude Include="src\MouseListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ClientConnectionMetadata.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\BallManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\BallLocalizer.h">
+    <ClInclude Include="include\LocalizerObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Geometry.h">
@@ -365,9 +389,6 @@
     <ClCompile Include="src\SoccerBot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Tasks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -395,6 +416,21 @@
     <ClCompile Include="src\XimeaCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\TeamController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ClientConnectionMetadata.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Ray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\BallManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="lib\enumser\enumser.cpp">
       <Filter>libs</Filter>
     </ClCompile>
@@ -407,11 +443,20 @@
     <ClCompile Include="lib\libyuv\source\compare.cc">
       <Filter>libs</Filter>
     </ClCompile>
+    <ClCompile Include="lib\libyuv\source\compare_common.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\compare_gcc.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
     <ClCompile Include="lib\libyuv\source\compare_neon.cc">
       <Filter>libs</Filter>
     </ClCompile>
-    <ClCompile Include="src\TeamController.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="lib\libyuv\source\compare_neon64.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\compare_win.cc">
+      <Filter>libs</Filter>
     </ClCompile>
     <ClCompile Include="lib\libyuv\source\convert.cc">
       <Filter>libs</Filter>
@@ -425,13 +470,22 @@
     <ClCompile Include="lib\libyuv\source\convert_from_argb.cc">
       <Filter>libs</Filter>
     </ClCompile>
+    <ClCompile Include="lib\libyuv\source\convert_jpeg.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\convert_to_argb.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\convert_to_i420.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
     <ClCompile Include="lib\libyuv\source\cpu_id.cc">
       <Filter>libs</Filter>
     </ClCompile>
-    <ClCompile Include="lib\libyuv\source\format_conversion.cc">
+    <ClCompile Include="lib\libyuv\source\mjpeg_decoder.cc">
       <Filter>libs</Filter>
     </ClCompile>
-    <ClCompile Include="lib\libyuv\source\mjpeg_decoder.cc">
+    <ClCompile Include="lib\libyuv\source\mjpeg_validate.cc">
       <Filter>libs</Filter>
     </ClCompile>
     <ClCompile Include="lib\libyuv\source\planar_functions.cc">
@@ -440,19 +494,46 @@
     <ClCompile Include="lib\libyuv\source\rotate.cc">
       <Filter>libs</Filter>
     </ClCompile>
+    <ClCompile Include="lib\libyuv\source\rotate_any.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
     <ClCompile Include="lib\libyuv\source\rotate_argb.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\rotate_common.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\rotate_gcc.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\rotate_mips.cc">
       <Filter>libs</Filter>
     </ClCompile>
     <ClCompile Include="lib\libyuv\source\rotate_neon.cc">
       <Filter>libs</Filter>
     </ClCompile>
+    <ClCompile Include="lib\libyuv\source\rotate_neon64.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\rotate_win.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\row_any.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
     <ClCompile Include="lib\libyuv\source\row_common.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\row_gcc.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\row_mips.cc">
       <Filter>libs</Filter>
     </ClCompile>
     <ClCompile Include="lib\libyuv\source\row_neon.cc">
       <Filter>libs</Filter>
     </ClCompile>
-    <ClCompile Include="lib\libyuv\source\row_posix.cc">
+    <ClCompile Include="lib\libyuv\source\row_neon64.cc">
       <Filter>libs</Filter>
     </ClCompile>
     <ClCompile Include="lib\libyuv\source\row_win.cc">
@@ -461,25 +542,53 @@
     <ClCompile Include="lib\libyuv\source\scale.cc">
       <Filter>libs</Filter>
     </ClCompile>
+    <ClCompile Include="lib\libyuv\source\scale_any.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
     <ClCompile Include="lib\libyuv\source\scale_argb.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\scale_common.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\scale_gcc.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\scale_mips.cc">
       <Filter>libs</Filter>
     </ClCompile>
     <ClCompile Include="lib\libyuv\source\scale_neon.cc">
       <Filter>libs</Filter>
     </ClCompile>
+    <ClCompile Include="lib\libyuv\source\scale_neon64.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libyuv\source\scale_win.cc">
+      <Filter>libs</Filter>
+    </ClCompile>
     <ClCompile Include="lib\libyuv\source\video_common.cc">
       <Filter>libs</Filter>
     </ClCompile>
-    <ClCompile Include="src\Client.cpp">
+    <ClCompile Include="CRC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ClientConnectionMetadata.cpp">
+    <ClCompile Include="src\RobotManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\BallManager.cpp">
+    <ClCompile Include="src\Ray.cpp">    
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Geometry.cpp">
+    <ClCompile Include="src\LocalizerObjectManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+
+    <ClCompile Include="src\LocalizerObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LocalizerObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

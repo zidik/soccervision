@@ -62,6 +62,8 @@
 						<option value="yellow-goal-wide">Yellow goal wide</option>
 						<option value="blue-goal">Blue goal</option>
 						<option value="blue-goal-wide">Blue goal wide</option>
+						<option value="purple-robot">Purple robot</option>
+						<option value="pink-robot">Pink robot</option>
 						<option value="ball">Ball</option>
 					</select>
 					<select name="threshold-brush" id="threshold-brush">
@@ -139,36 +141,36 @@
 					<option value="test">Test Controller</option>
 					<!--option value="offensive-ai">Offensive AI</option-->
 					<option value="teamplay">Team Controller</option>
-				</select>	
-				
+				</select>
+
 				<select name="field-id-choice" id="field-id-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
 					<option value="">-- Select field ID --</option>
 					<option value="A">Field A</option>
 					<option value="B">Field B</option>
 					<option value="X">Field X</option>
 				</select>
-				
+
 				<select name="team-id-choice" id="team-id-choice" class="live-only ctrl teamplay-ctrl" disabled="disabled">
 					<option value="">-- Select team ID --</option>
 					<option value="A">Team A</option>
 					<option value="B">Team B</option>
 					<option value="X">Team X</option>
 				</select>
-				
+
 				<select name="team-color-choice" id="team-color-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
 					<option value="">-- Select team color --</option>
 					<option value="4">Team is YellowHigh</option>
 					<option value="5">Team is BlueHigh</option>
 					<option value="6">Team is WhatEver</option>
 				</select>
-				
+
 				<select name="enemy-color-choice" id="enemy-color-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
 					<option value="">-- Select enemy color --</option>
 					<option value="4">Enemy is YellowHigh</option>
 					<option value="5">Enemy is BlueHigh</option>
 					<option value="6">Enemy is WhatEver</option>
 				</select>
-				
+
 				<select name="robot-id-choice" id="robot-id-choice" class="live-only ctrl test-ctrl teamplay-ctrl" disabled="disabled">
 					<option value="">-- Select robot ID --</option>
 					<option value="A">Robot A</option>
@@ -177,12 +179,12 @@
 					<option value="D">Robot D</option>
 					<option value="X">Robot X</option>
 				</select>
-				
+
 				<!-- manual controller -->
 				<button id="reset-position-btn" class="live-only ctrl manual-ctrl" disabled="disabled">Reset position</button>
 				<button id="toggle-dribbler-btn" class="live-only ctrl manual-ctrl" disabled="disabled">Toggle Dribbler</button>
 				<button id="kick-btn" class="live-only ctrl manual-ctrl" disabled="disabled">Kick</button>
-				
+
 				<!-- test controller -->
 				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-manual-control" disabled="disabled">Manual Control</button>
 				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="run-watch-ball" disabled="disabled">Watch Ball</button>
@@ -203,7 +205,7 @@
 				<button class="live-only ctrl test-ctrl send-cmd-btn" data-cmd="reset-position" disabled="disabled">Reset position</button>
 				<button id="drive-to-btn" class="live-only ctrl test-ctrl" disabled="disabled">Drive to</button>
 				<button id="turn-by-btn" class="live-only ctrl test-ctrl" disabled="disabled">Turn by</button>
-				
+
 
 				<!--button id="test-turn-btn" class="live-only ctrl test-ctrl" disabled="disabled">Turn 90°</button>
 				<button id="test-drive-to-btn" class="live-only ctrl test-ctrl" disabled="disabled">Call Home</button>
@@ -213,11 +215,11 @@
 
 				<button id="test-chase-ball-btn" class="live-only ctrl test-ctrl" disabled="disabled">Chase Ball</button>
 				<button id="test-find-goal-btn" class="live-only ctrl test-ctrl" disabled="disabled">Find Goal</button-->
-				
+
 				<!-- offensive-ai controller -->
 				<button id="ai-toggle-go-btn" class="live-only ctrl offensive-ai-ctrl" disabled="disabled">Start</button>
 				<button id="ai-toggle-side-btn" class="live-only ctrl offensive-ai-ctrl" disabled="disabled">Toggle side</button>
-				
+
 				<!-- team controller -->
 				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-manual-control" disabled="disabled">Manual Control</button>
 				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-take-kickoff" disabled="disabled">Take Kickoff</button>
@@ -242,7 +244,7 @@
 				<button class="live-only ctrl teamplay-ctrl send-cmd-btn" data-cmd="run-press-opponent" disabled="disabled">Press opponent</button>
 				<button id="drive-to-btn" class="live-only ctrl teamplay-ctrl" disabled="disabled">Drive to</button>
 				<button id="turn-by-btn" class="live-only ctrl teamplay-ctrl" disabled="disabled">Turn by</button>
-				
+
 			</div>
 			<div id="parameters">
 				<input type="text" class="send-parameter-field" data-index="0" value="" placeholder="Parameter 1"/>

@@ -70,14 +70,16 @@ void* ProcessThread::run() {
 	done = false;
 	
 	//Util::timerStart();
+	
 	ImageProcessor::bayerRGGBToI420(
 		frame,
 		dataY, dataU, dataV,
 		width, height
 	);
+	
 	//std::cout << "  - RGGB > I420: " << Util::timerEnd() << std::endl;
 
-	//Util::timerStart();
+	Util::timerStart();
 	ImageProcessor::I420ToYUYV(
 		dataY, dataU, dataV,
 		dataYUYV,
@@ -121,8 +123,8 @@ void* ProcessThread::run() {
 
 	if (debug) {
 		DebugRenderer::renderBlobs(classification, blobber);
-		DebugRenderer::renderBalls(rgb, vision, *visionResult->balls);
-		DebugRenderer::renderRobots(rgb, vision, *visionResult->robots);
+		DebugRenderer::renderBalls(rgb, vision, visionResult->balls);
+		DebugRenderer::renderRobots(rgb, vision, visionResult->robots);
 		DebugRenderer::renderGoals(rgb, visionResult->goals);
 		//DebugRenderer::renderObstructions(rgb, visionResult->goalPathObstruction);
 		

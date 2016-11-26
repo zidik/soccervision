@@ -6,7 +6,7 @@ Dash.Renderer = function(id) {
 	this.driveToOrientation = 0.0;
 	this.mouseX = 0;
 	this.mouseY = 0;
-	
+
 	this.wheelGraphs = {
 		FL: null,
 		FR: null,
@@ -19,14 +19,14 @@ Dash.Renderer = function(id) {
 Dash.Renderer.prototype.init = function() {
 	this.element = document.getElementById(this.id);
 	this.c = this.element.getContext('2d');
-	
+
 	this.widthToHeightRatio = 4.5 / 3.0;
 	this.canvasWidth = 600;
 	this.canvasHeight = this.canvasWidth / this.widthToHeightRatio;
 	this.canvasToWorldRatio = this.canvasWidth / 4.5;
 	this.fieldOffsetX = -(6.0 - 4.5) / 2;
 	this.fieldOffsetY = -(4.0 - 3.0) / 2;
-	
+
 	this.c.setTransform(
 		this.canvasToWorldRatio,
 		0,
@@ -35,10 +35,10 @@ Dash.Renderer.prototype.init = function() {
 		100,
 		66
 	);
-		
+
 	this.width = this.element.width;
 	this.height = this.element.height;
-	
+
 	this.wheelGraphs = {
 		FL: new Dash.WheelGraph('wheel-graph-fl'),
 		FR: new Dash.WheelGraph('wheel-graph-fr'),
@@ -48,7 +48,7 @@ Dash.Renderer.prototype.init = function() {
 
 	this.voltageGraph = new Dash.WheelGraph('voltage-graph');
 	this.voltageGraph.init();
-	
+
 	for (var name in this.wheelGraphs) {
 		this.wheelGraphs[name].init();
 	}
@@ -91,6 +91,22 @@ Dash.Renderer.prototype.showDriveTo = function() {
 	this.driveToOrientation = 0.0;
 };
 
+Dash.Renderer.prototype.drawRobotsColored = function(robots, color, radius) {
+	for (var i = 0; i < robots.length; i++) {
+		this.drawOtherRobotColored(robots[i], color, radius);
+	}
+}
+
+Dash.Renderer.prototype.drawRobots = function(robots, radius) {
+	for (var i = 0; i < robots.length; i++) {
+		this.drawRobotVelocity(robots[i], radius);
+	}
+}
+
+Dash.Renderer.prototype.drawOtherRobotColored = function(robot, color, radius) {
+	this.drawRobot(radius, color, robot.x, robot.y, Math.atan(robot.velocityY/robot.velocityX) * 180 / Math.PI, false);
+}
+
 Dash.Renderer.prototype.drawRobot = function(radius, color, x, y, orientation, gotBall) {
 	this.c.save();
 	
@@ -98,7 +114,7 @@ Dash.Renderer.prototype.drawRobot = function(radius, color, x, y, orientation, g
 	this.c.rotate(orientation);
 	this.c.fillStyle = color;
 	this.c.beginPath();
-	this.c.arc(0, 0, radius, 0, Math.PI * 2, true); 
+	this.c.arc(0, 0, radius, 0, Math.PI * 2, true);
 	this.c.closePath();
 	this.c.fill();
 
@@ -115,7 +131,42 @@ Dash.Renderer.prototype.drawRobot = function(radius, color, x, y, orientation, g
 		this.c.closePath();
 		this.c.fill();
 	}
-	
+
+	this.c.restore();
+};
+
+Dash.Renderer.prototype.drawRobotVelocity = function(robot, radius) {
+	this.c.save();
+
+	var drawColor = '#E411BE';
+	switch (robot.color) {
+		case "pink":
+			drawColor = '#FF60CA';
+			break;
+		case "purple":
+			drawColor = '#8808D8';
+			break
+		case "unknown":
+			drawColor = '#FF0000';
+			break;
+	}
+
+	this.c.translate(robot.x, robot.y);
+	this.c.fillStyle = drawColor;
+	this.c.beginPath();
+	this.c.arc(0, 0, radius, 0, Math.PI * 2, true);
+	this.c.closePath();
+	this.c.fill();
+
+	var dirHeight = radius / 5;
+
+	this.c.lineWidth = 2 / this.canvasToWorldRatio;
+	this.c.strokeStyle = '#FFF';
+	this.c.beginPath();
+	this.c.moveTo(0, 0);
+	this.c.lineTo(robot.velocityX, robot.velocityY);
+	this.c.stroke();
+
 	this.c.restore();
 };
 
@@ -246,7 +297,7 @@ Dash.Renderer.prototype.drawParticle = function(x, y) {
 
 Dash.Renderer.prototype.drawRuler = function() {
 	this.c.save();
-	
+
 	this.c.beginPath();
 	this.c.lineWidth = 0.3;
 	this.c.strokeStyle = '#090';
@@ -254,7 +305,7 @@ Dash.Renderer.prototype.drawRuler = function() {
 	this.c.lineTo(3.0, 1.0);
 	this.c.closePath();
 	this.c.stroke();
-	
+
 	this.c.restore();
 };
 
@@ -342,9 +393,9 @@ Dash.Renderer.prototype.drawDriveTo = function(x, y) {
 
 Dash.Renderer.prototype.renderState = function(state) {
 	this.c.clearRect(-1, -1, this.width + 1, this.height + 1);
-	
+
 	//this.drawRuler();
-	
+
 	this.drawRobot(
 		dash.config.robot.radius,
 		state.targetSide == 1 ? '#00F' : state.targetSide == 0 ? '#DD0' : '#CCC',
@@ -365,6 +416,17 @@ Dash.Renderer.prototype.renderState = function(state) {
 	this.drawPath(state, '#060');
 
 	this.drawPolygon(state.robot.cameraFOV, 'rgba(255, 255, 255, 0.25)');
+
+	this.drawRobotsColored(
+		state.robot.robotsRaw,
+		'#40175A',
+		dash.config.robot.radius
+	);
+
+	this.drawRobots(
+		state.robot.robotsFiltered,
+		dash.config.robot.radius / 1.3
+	);
 
 	this.drawBalls(
 		state.robot.ballsGoingBlue,
@@ -412,13 +474,15 @@ Dash.Renderer.prototype.renderState = function(state) {
 				state.controllerState.particleLocalizer.orientation
 			);
 
-			/*for (var i = 0; i < state.controllerState.particleLocalizer.particles.length; i++) {
-				this.drawParticle(
-					state.controllerState.particleLocalizer.particles[i][0],
-					state.controllerState.particleLocalizer.particles[i][1]
-				);
+
+			if (typeof state.controllerState.particleLocalizer.particles !== 'undefined') {
+				for (var i = 0; i < state.controllerState.particleLocalizer.particles.length; i++) {
+					this.drawParticle(
+						state.controllerState.particleLocalizer.particles[i][0],
+						state.controllerState.particleLocalizer.particles[i][1]
+					);
+				}
 			}
-			*/
 			//this.drawPath(state, 'particleLocalizer', '#060');
 		}
 
@@ -437,7 +501,7 @@ Dash.Renderer.prototype.renderState = function(state) {
 	if (this.renderDriveTo) {
 		this.drawDriveTo();
 	}
-		
+
 	this.wheelGraphs.FL.render.apply(this.wheelGraphs.FL, [state, 'wheelFL']);
 	this.wheelGraphs.FR.render.apply(this.wheelGraphs.FR, [state, 'wheelFR']);
 	this.wheelGraphs.RL.render.apply(this.wheelGraphs.RL, [state, 'wheelRL']);
