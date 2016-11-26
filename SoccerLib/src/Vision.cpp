@@ -683,6 +683,12 @@ bool Vision::isValidRobot(Object* robot) {
 	//further reduce false positives in robot detection.
 	//Purple is currently very bad, investigate/improve
 
+	//check if robot distance is normal
+	if (robot->distance >= Config::robotMaxDistance) return false;
+
+	//check if robot shape is satisfactory
+	if (robot->height > 2 * robot->width) return false;
+
 	//Write validation code here!!
 	int robotMinArea = (int)(450.0f * Math::pow(Math::E, -0.715f * robot->distance));
 
@@ -714,8 +720,10 @@ bool Vision::isValidRobot(Object* robot) {
 	robotDensity = (float)robot->area / (robot->height * robot->width);
 	if (robotDensity < Config::robotMinDensity) return false;
 
-	//check if robot distance is normal
-	if (robot->distance >= Config::robotMaxDistance) return false;
+	//check if robot edge is located in a reasonable position related to the robot blob
+	auto edgePixel = getPixelAt(robot->distanceX, robot->distanceY);
+	auto bottomPixelY = robot->y + robot->height / 2;
+	if ((edgePixel.y - bottomPixelY) > robot->height) return false;
 
 	//check if ball is right above "robot"
 	int ballColorCount = getBallColorCountAbove(robot);
