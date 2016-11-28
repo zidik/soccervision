@@ -344,8 +344,16 @@ void TestController::handleDribblerCommand(const Command& cmd) {
 
 void TestController::handleToggleDribblerCommand(const Command& cmd) {
 	int dribblerGo = Util::toInt(cmd.parameters[0]);
-	if (dribblerGo > 0) robot->dribbler->start();
-	else robot->dribbler->stop();
+	//std::cout << "Received toggle dribbler: " << dribblerGo << std::endl;
+	if (dribblerGo > 0) {
+		//robot->dribbler->start();
+		manualDribblerSpeed = -(robot->getConf()->robot.dribblerSpeed);
+		//manualDribblerSpeed = 9000;
+	}
+	else {
+		manualDribblerSpeed = 0;
+		//robot->dribbler->stop();
+	}
 
 	lastCommandTime = Util::millitime();
 }
