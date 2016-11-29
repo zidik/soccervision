@@ -1205,6 +1205,8 @@ void TestController::WatchBallState::step(float dt, Vision::Results* visionResul
 	Object* ball = visionResults->getClosestBall(Dir::FRONT);
 	Object* goal = visionResults->getLargestGoal(ai->targetSide, Dir::FRONT);
 
+	//std::cout << "WatchBallState loop time: " << totalDuration << std::endl;
+
 	if (goal == NULL || ball == NULL) {
 		robot->setTargetDir(ai->manualSpeedX, ai->manualSpeedY, ai->manualOmega);
 
@@ -1212,7 +1214,7 @@ void TestController::WatchBallState::step(float dt, Vision::Results* visionResul
 	}
 
 	if (ai->shouldIntercept()) {
-		ai->setState("intecept-ball");
+		ai->setState("intercept-ball");
 		return;
 	}
 
@@ -3514,6 +3516,11 @@ void TestController::InterceptBallState::onEnter(Robot* robot, Parameters parame
 		return;
 	}
 
+	if (ball->velocity.getLength() == 0.0f) {
+		std::cout << "Can't intercept a stationary ball, yo." << std::endl;
+		return;
+	}
+
 	float ballTravelDistance = ball->location.distanceTo(interceptPoint);
 	float travelTime = ballTravelDistance / ball->velocity.getLength();
 	float interceptSpeed = 2.0f * interceptPoint.getLength() / (Math::limit(travelTime - 0.25f, 0.05f, 99.0f));
@@ -3534,6 +3541,7 @@ void TestController::InterceptBallState::onEnter(Robot* robot, Parameters parame
 }
 
 void TestController::InterceptBallState::step(float dt, Vision::Results* visionResults, Robot* robot, float totalDuration, float stateDuration, float combinedDuration) {
+	//std::cout << "InterceptBallState loop time: " << totalDuration << std::endl;
 	timeoutCounter++;
 	if (timeoutCounter > 45) robot->clearTasks();
 	if (robot->hasTasks()) return;
