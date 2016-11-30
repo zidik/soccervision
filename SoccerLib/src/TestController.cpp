@@ -3103,8 +3103,7 @@ void TestController::AimState::step(float dt, Vision::Results* visionResults, Ro
 
 				// try to kick 1m past the furhest ball but no further than 1m before the goal, also no less then 0.5m
 				chipKickDistance = ai->getChipKickDistance(ballInWayMetric, goal->distance);
-				std::cout << "chip-wait" << std::endl;
-				if (validKickFrames > 120) {
+				if (validKickFrames > 60) {
 					robot->kick();
 					wasKicked = true;
 					validKickFrames = 0;
