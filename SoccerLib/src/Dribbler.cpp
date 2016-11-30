@@ -22,12 +22,11 @@ void Dribbler::prime() {
 
 void Dribbler::start() {
 	setTargetSpeed(-conf->robot.dribblerSpeed);
-	//std::cout << "Starting dribbler with speed: " << -conf->robot.dribblerSpeed << std::endl;
+
 	stopRequestedTime = -1.0;
 }
 
 void Dribbler::stop() {
-	//std::cout << "Requesting dribbler stop." << std::endl;
 	if (stopRequestedTime == -1.0) {
 		stopRequestedTime = Util::millitime();
 	}
@@ -96,8 +95,6 @@ void Dribbler::applyLimits() {
 }
 void Dribbler::step(float dt) {
 	Wheel::step(dt);
-
-	//std::cout << "Dribbler target speed: " << Wheel::getTargetSpeed() << std::endl;
 
 	double delayStopPeriod = 0.1;
 
