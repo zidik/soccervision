@@ -109,7 +109,7 @@ Dash.Renderer.prototype.drawOtherRobotColored = function(robot, color, radius) {
 
 Dash.Renderer.prototype.drawRobot = function(radius, color, x, y, orientation, gotBall) {
 	this.c.save();
-	
+
 	this.c.translate(x, y);
 	this.c.rotate(orientation);
 	this.c.fillStyle = color;
@@ -430,15 +430,15 @@ Dash.Renderer.prototype.renderState = function(state) {
 
 	this.drawBalls(
 		state.robot.ballsGoingBlue,
-		'#00F',
-		dash.config.ball.radius * 3,
+		'#4286f4',
+		dash.config.ball.radius * 4,
 		false
 	);
 
 	this.drawBalls(
 		state.robot.ballsGoingYellow,
 		'#DD0',
-		dash.config.ball.radius * 3,
+		dash.config.ball.radius * 4,
 		false
 	);
 
