@@ -23,6 +23,11 @@ ProcessThread::ProcessThread(BaseCamera* camera, Blobber* blobber, Vision* visio
 
 	visionResult = new Vision::Result();
 	visionResult->vision = vision;
+
+	rggb420Times = new std::vector<double>();
+	i420yuyvTimes = new std::vector<double>();
+	visionTimes = new std::vector<double>();
+	blobberTimes = new std::vector<double>();
 }
 
 ProcessThread::~ProcessThread() {
@@ -69,7 +74,7 @@ void* ProcessThread::run() {
 
 	done = false;
 	
-	//Util::timerStart();
+	Util::timerStart();
 	
 	ImageProcessor::bayerRGGBToI420(
 		frame,
@@ -77,6 +82,7 @@ void* ProcessThread::run() {
 		width, height
 	);
 	
+	rggb420Times->push_back(Util::timerEnd());
 	//std::cout << "  - RGGB > I420: " << Util::timerEnd() << std::endl;
 
 	Util::timerStart();
@@ -85,11 +91,13 @@ void* ProcessThread::run() {
 		dataYUYV,
 		width, height
 	);
+	i420yuyvTimes->push_back(Util::timerEnd());
 	//std::cout << "  - I420 > YUYV: " << Util::timerEnd() << std::endl;
 
-	//Util::timerStart();
+	Util::timerStart();
 	blobber->processFrame((Blobber::Pixel*)dataYUYV);
-	//std::cout << "  - Process:     " << Util::timerEnd() << " (" << blobber->getBlobCount("ball") << " ball blobs)" << std::endl;
+	blobberTimes->push_back(Util::timerEnd());
+	//std::cout << "  - Blobber process:     " << Util::timerEnd() << " (" << blobber->getBlobCount("ball") << " ball blobs)" << std::endl;
 
 	if (debug) {
 		//Util::timerStart();
@@ -118,9 +126,10 @@ void* ProcessThread::run() {
 		//DebugRenderer::renderMapping(rgb, vision);
 		DebugRenderer::renderGrid(rgb, vision);
 	}
-
+	Util::timerStart();
 	visionResult = vision->process();
-
+	visionTimes->push_back(Util::timerEnd());
+	//std::cout << "  - Vision process : " << Util::timerEnd() << std::endl;
 	if (debug) {
 		DebugRenderer::renderBlobs(classification, blobber);
 		DebugRenderer::renderBalls(rgb, vision, visionResult->balls);
@@ -131,6 +140,11 @@ void* ProcessThread::run() {
 		// TODO Show whether a ball is in the way
 	}
 
+	std::cout << "  - RGGB - I420 average: " << std::accumulate(rggb420Times->begin(), rggb420Times->end(), 0.0) / rggb420Times->size() << std::endl;
+	std::cout << "  - I420 - YUYV average: " << std::accumulate(i420yuyvTimes->begin(), i420yuyvTimes->end(), 0.0) / i420yuyvTimes->size() << std::endl;
+	std::cout << "  - Blobber average: " << std::accumulate(blobberTimes->begin(), blobberTimes->end(), 0.0) / blobberTimes->size() << std::endl;
+	std::cout << "  - Vision average: " << std::accumulate(visionTimes->begin(), visionTimes->end(), 0.0) / visionTimes->size() << std::endl;
+	
 	done = true;
 
 	return NULL;

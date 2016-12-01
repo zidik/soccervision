@@ -39,6 +39,11 @@ public:
 	unsigned char* argb;
 	unsigned char* rgb;
 
+	std::vector<double>* rggb420Times;
+	std::vector<double>* i420yuyvTimes;
+	std::vector<double>* blobberTimes;
+	std::vector<double>* visionTimes;
+
 private:
 	void* run();
 	bool fetchFrame();
