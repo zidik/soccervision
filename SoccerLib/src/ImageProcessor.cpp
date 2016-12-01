@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include "libyuv/basic_types.h"
+#include "CL/cl.h"
 
 #define AVG(a, b) (((a) + (b)) >> 1)
 

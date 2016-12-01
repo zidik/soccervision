@@ -16,6 +16,10 @@
     <Filter Include="libs">
       <UniqueIdentifier>{68534436-98a6-4ea7-96a8-f760dddaec2f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="OpenCL Files">
+      <UniqueIdentifier>{D011BB44-1BF7-4113-997B-A081035B40D8}</UniqueIdentifier>
+      <Extensions>cl</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\AbstractCommunication.h">
@@ -292,6 +296,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Geometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libyuv\include\libyuv\format_conversion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -575,13 +582,12 @@
     <ClCompile Include="src\RobotManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Ray.cpp">    
+    <ClCompile Include="src\Ray.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\LocalizerObjectManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-
     <ClCompile Include="src\LocalizerObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -589,6 +595,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

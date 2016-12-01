@@ -18,6 +18,10 @@ INSTALL BOOST
    > .\b2 runtime-link=static --with-date_time --with-thread --with-regex --with-test --with-random
 3. create BOOSTROOT environment variable pointing to the library path (C:\boost etc)
 
+INSTALL INTEL OPENCL SDK
+1. download latest https://software.intel.com/en-us/intel-opencl
+2. Install it
+
 CONFIGURE
 1)Create file "ID.txt" in folder "Config/"
 2)Add a robot's name in there (for example "Telliskivi" or "001TRT")
