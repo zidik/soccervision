@@ -449,6 +449,13 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 		ballError = ball->location.y;
 	}
 
+	Math::Vector interceptPoint;
+	//calculate interception point between robot and ball
+	//drive robot to that point if ball is moving fast enough
+	Geometry::Ray ballRay(ball->location, ball->velocity);
+	Geometry::Ray robotRay(robot->getPosition().location, ball->velocity.getRotated(Math::PI / 2));
+	interceptPoint = ballRay.intersection_point(robotRay);
+	float positionError = robot->getPosition().location.y - interceptPoint.y;
 
 	// pid-based
 	pidUpdateCounter++;
@@ -457,7 +464,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	pid.setProcessValue(ballError);
 
 	float sideSpeed = -pid.compute();
-	float sidePower = 0.15f;
+	float sidePower = 1.5f;
 	if (ball != nullptr) {
 		//std::cout << "Distance between robot and ball: " << ball->location.getLength() << std::endl;
 		sidePower = Math::map(ball->location.getLength(), 0.0f, 2.0f, 1.0f, 0.15f);
