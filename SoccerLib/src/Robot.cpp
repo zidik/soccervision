@@ -868,7 +868,6 @@ void Robot::sendAcknowledgement(bool shortCmd, char field, char robot)
 		command += robot;
 		command += "ACK-----";		
 	}
-	std::cout << "sendACK: " << command << std::endl;
 	sendToRF(command);
 }
 

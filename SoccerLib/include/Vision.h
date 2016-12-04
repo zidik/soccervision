@@ -183,6 +183,7 @@ private:
     bool isValidGoal(Object* goal, Side side);
 	bool isValidRobot(Object* robot);
 	bool isBallInGoal(Object* ball, Dir dir, ObjectList& goals);
+	int getBallColorCountAbove(Object* robot);
 	int getBallRadius(int width, int height);
 	int getBallSenseRadius(int ballRadius, float distance);
 	int getPixelsBelow(int x, int y, std::vector<std::string> validColors, int allowedWrongPixels = 3);

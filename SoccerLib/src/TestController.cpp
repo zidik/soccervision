@@ -451,6 +451,12 @@ void TestController::handleSetTeamColorCommand(const Command& cmd)
 
 	std::string printout = "unknown";
 	switch (teamColor) {
+	case RobotColor::PURPLE:
+		printout = "PURPLE";
+		break;
+	case RobotColor::PINK:
+		printout = "PINK";
+		break;
 	case RobotColor::YELLOWHIGH:
 		printout = "YELLOWHIGH";
 		break;
@@ -471,6 +477,12 @@ void TestController::handleSetEnemyColorCommand(const Command& cmd)
 
 	std::string printout = "unknown";
 	switch (enemyColor) {
+	case RobotColor::PURPLE:
+		printout = "PURPLE";
+		break;
+	case RobotColor::PINK:
+		printout = "PINK";
+		break;
 	case RobotColor::YELLOWHIGH:
 		printout = "YELLOWHIGH";
 		break;

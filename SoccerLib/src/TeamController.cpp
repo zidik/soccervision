@@ -1269,6 +1269,7 @@ void TeamController::GetPassState::step(float dt, Vision::Results* visionResults
 
 	float maxStateDuration = 6.0f;
 
+	//if kickoff timelimit is reached
 	if (combinedDuration > maxStateDuration) {
 		if (ai->isCaptain) {
 			ai->setState("fetch-ball-front");
@@ -1278,10 +1279,10 @@ void TeamController::GetPassState::step(float dt, Vision::Results* visionResults
 		}
 		return;
 	}
-
+	
 	robot->stop();
 	if (ball != NULL) {
-		if (ball->distance > 1.0f) robot->setTargetDir(ball->angle, ball->distance);
+		if (ball->distance > 1.0f) robot->setTargetDir(Math::Rad(ball->angle), ball->distance);
 		robot->lookAt(ball);
 	}
 	else if (teamMate != NULL) {
