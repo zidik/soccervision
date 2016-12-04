@@ -11,6 +11,9 @@
 TeamController::TeamController(Robot* robot, AbstractCommunication* com, Client* client) : TestController(robot, com, client) {
 	setupStates();
 
+	yellowGoalDefend = Math::Rectangle(Math::Vector(0, 2.0), Math::Vector(0.75, 1.0));
+	blueGoalDefend = Math::Rectangle(Math::Vector(3.75, 2.0), Math::Vector(4.5, 1.0));
+
 	speedMultiplier = 1.0f;
 	whoHasBall = TeamInPossession::NOONE;
 	currentSituation = GameSituation::UNKNOWN;
@@ -75,6 +78,11 @@ void TeamController::setupStates() {
 	states["back-around-opponent"] = new BackAroundOpponentState(this);
 	states["press-opponent"] = new PressOpponentState(this);
 	states["maneuver"] = new ManeuverState(this);
+}
+
+bool TeamController::interceptPointValid(Math::Vector point, Side defendSide)
+{
+	return ((defendSide == Side::YELLOW) ? yellowGoalDefend.containsPoint(point) : blueGoalDefend.containsPoint(point));
 }
 
 void TeamController::handleRefereeCommand(const Command& cmd)
@@ -452,10 +460,19 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	Math::Vector interceptPoint;
 	//calculate interception point between robot and ball
 	//drive robot to that point if ball is moving fast enough
-	Geometry::Ray ballRay(ball->location, ball->velocity);
-	Geometry::Ray robotRay(robot->getPosition().location, ball->velocity.getRotated(Math::PI / 2));
-	interceptPoint = ballRay.intersection_point(robotRay);
-	float positionError = robot->getPosition().location.y - interceptPoint.y;
+	//intercept like this only if interceptpoint is in the appropriate defending area
+	//determine intercept direction based on defended goal
+	if (ball != nullptr) {
+		Geometry::Ray ballRay(ball->location, ball->velocity);
+		Geometry::Ray robotRay(robot->getPosition().location, ball->velocity.getRotated(Math::PI / 2));
+		interceptPoint = ballRay.intersection_point(robotRay);
+		interceptPoint.x = robot->getPosition().location.x;
+		bool useInterceptPoint = ((ball->velocity.getLength() > 0.5f) && ai->interceptPointValid(interceptPoint, ai->defendSide));
+		if (useInterceptPoint) {
+			float positionError = robot->getPosition().location.y - interceptPoint.y;
+			ballError = ai->defendSide == Side::YELLOW ? positionError : -positionError ;
+		}
+	}
 
 	// pid-based
 	pidUpdateCounter++;
@@ -464,7 +481,7 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	pid.setProcessValue(ballError);
 
 	float sideSpeed = -pid.compute();
-	float sidePower = 1.5f;
+	float sidePower = 0.15f;
 	if (ball != nullptr) {
 		//std::cout << "Distance between robot and ball: " << ball->location.getLength() << std::endl;
 		sidePower = Math::map(ball->location.getLength(), 0.0f, 2.0f, 1.0f, 0.15f);

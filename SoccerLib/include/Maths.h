@@ -416,6 +416,17 @@ class Rad : public Angle {
 typedef std::vector<Vector> PointList;
 typedef std::vector<Vector>::iterator PointListIt;
 
+class Rectangle {
+public:
+	Rectangle();
+	Rectangle(Vector upperLeft, Vector lowerRight);
+
+	bool containsPoint(Vector point);
+private:
+	Vector upperLeft;
+	Vector lowerRight;
+};
+
 class Polygon {
 
 public:

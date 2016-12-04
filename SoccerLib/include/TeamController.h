@@ -3,6 +3,7 @@
 
 #include "TestController.h"
 #include "../CRC.h"
+#include "Maths.h"
 
 class TeamController : public TestController {
 
@@ -337,6 +338,7 @@ public:
 
 private:
 	void setupStates();
+	bool interceptPointValid(Math::Vector point, Side defendSide);
 	GameSituation currentSituation;
 	TeamInPossession whoHasBall;
 	bool passNeeded;
@@ -347,7 +349,8 @@ private:
 	int directKickStrength;
 	float chipKickAdjust;
 	CRC crcCalc;
-
+	Math::Rectangle yellowGoalDefend;
+	Math::Rectangle blueGoalDefend;
 };
 
 #endif // TEAMCONTROLLER_H

@@ -189,6 +189,18 @@ Vector& Vector::operator/=(float magnitude) {
 	return *this;
 }
 
+Rectangle::Rectangle() {}
+
+Rectangle::Rectangle(Vector upperLeft, Vector lowerRight) {
+	this->upperLeft = upperLeft;
+	this->lowerRight = lowerRight;
+}
+
+bool Rectangle::containsPoint(Vector point)
+{
+	return ((point.x >= upperLeft.x) && (point.x <= lowerRight.x) && (point.y >= lowerRight.y) && (point.y <= upperLeft.y));
+}
+
 // 2D Polygon
 Polygon::Polygon() {}
 
