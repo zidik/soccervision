@@ -481,10 +481,10 @@ void TeamController::DefendGoalState::step(float dt, Vision::Results* visionResu
 	pid.setProcessValue(ballError);
 
 	float sideSpeed = -pid.compute();
-	float sidePower = 0.15f;
+	float sidePower = 0.45f;
 	if (ball != nullptr) {
 		//std::cout << "Distance between robot and ball: " << ball->location.getLength() << std::endl;
-		sidePower = Math::map(ball->location.getLength(), 0.0f, 2.0f, 1.0f, 0.15f);
+		sidePower = Math::map(ball->location.getLength(), 0.0f, 2.0f, 3.0f, 0.45f);
 	}
 
 	//std::cout << "Sidepower: " << sidePower << std::endl;
